@@ -1,0 +1,33 @@
+/* DiscordModal.css */
+
+/* Fade-in animation */
+.fade-in {
+    animation: fadeIn 1s ease-out;
+  }
+  
+  @keyframes fadeIn {
+    0% {
+      opacity: 0;
+    }
+    100% {
+      opacity: 1;
+    }
+  }
+  
+  /* Custom theme colors */
+  .bg-theme-primary {
+    background-color: #4b9ed4; /* Your app's primary color */
+  }
+  
+  .bg-theme-primary-dark {
+    background-color: #3b7b96; /* A darker shade of your primary color */
+  }
+  
+  .bg-theme-background {
+    background-color: #2d2d2d; /* Your background color */
+  }
+  
+  .text-theme-text {
+    color: #f2f2f2; /* Your primary text color */
+  }
+  
