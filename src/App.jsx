@@ -2,6 +2,7 @@ import React, { Suspense, lazy, useEffect } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
 import { Analytics } from "@vercel/analytics/react";
+import { SpeedInsights } from "@vercel/speed-insights/next"
 import "./App.css";
 const Home = lazy(() => import("./pages/Home"));
 const Lore = lazy(() => import("./pages/Lore"));
@@ -60,6 +61,7 @@ function App() {
       <InteractionFeedbackLayer />
       <Toaster />
       <Analytics />
+      <SpeedInsights />
       <Suspense
         fallback={
           <div className="min-h-screen bg-gray-900 text-gray-200 flex items-center justify-center">
