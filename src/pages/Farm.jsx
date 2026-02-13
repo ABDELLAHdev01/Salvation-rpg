@@ -1,14 +1,14 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
+import OrnateButton from '../components/OrnateButton';
 import authService from '../services/AuthService';
 import characterService from '../services/CharacterService';
-import { ensureFarmTasks, ensureFarmWeather, farmCrops, farmGoods } from '../data/farmData';
+import { ensureFarmTasks, ensureFarmWeather, farmCrops } from '../data/farmData';
 import { getSeedItemId } from '../data/itemsCatalog';
 import { getItemCount } from '../services/inventoryService';
 
 const MOCK_AUTH = import.meta.env.VITE_MOCK_AUTH === 'true';
-
 export default function Farm() {
   const [profile, setProfile] = useState(null);
 
@@ -51,11 +51,6 @@ export default function Farm() {
     return Object.values(animals).reduce((sum, entry) => sum + (entry?.count || 0), 0);
   }, [profile]);
 
-  const goodsCount = useMemo(
-    () => farmGoods.reduce((sum, good) => sum + getItemCount(inventory, good.id), 0),
-    [inventory]
-  );
-
   const farmLevel = profile?.farmLevel ?? 1;
   const farmWeather = profile?.farmWeather;
   const dailyDone = (profile?.farmTasks?.daily?.tasks || []).filter((task) => task.claimed).length;
@@ -73,21 +68,21 @@ export default function Farm() {
       <div className="dashboard-orb orb-3" />
       <div className="relative z-10 mx-auto max-w-4xl px-6 py-16 pt-24">
         <div className="rounded-2xl p-8 shadow-xl backdrop-blur court-reveal glass-panel">
-          <div className="flex flex-wrap items-center justify-between gap-4">
+          <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
               <p className="section-kicker text-xs uppercase tracking-[0.4em] text-yellow-500">Harvestlands</p>
               <h1 className="mt-3 text-4xl font-extrabold text-white hero-title">Farmstead</h1>
               <p className="mt-3 text-base text-gray-300">
                 Manage plots, collect animal goods, and sell your harvest.
               </p>
-              <p className="mt-3 text-sm text-yellow-200">Farm level: {farmLevel}</p>
+              <div className="mt-4 inline-flex items-center gap-2 rounded-full border border-yellow-700/40 bg-gray-950/70 px-4 py-2 text-xs font-semibold text-yellow-200">
+                <span className="text-[10px] uppercase tracking-[0.3em] text-yellow-400">Farm Level</span>
+                <span className="text-sm font-bold text-white">{farmLevel}</span>
+              </div>
             </div>
-            <Link
-              to="/dashboard"
-              className="inline-flex items-center rounded-full px-4 py-2 text-xs font-semibold text-yellow-200 action-ghost"
-            >
+            <OrnateButton to="/dashboard" className="text-sm">
               Back to Dashboard
-            </Link>
+            </OrnateButton>
           </div>
 
           <div className="mt-6 overflow-hidden rounded-2xl border border-yellow-700/30 bg-gray-950/70">
@@ -99,12 +94,12 @@ export default function Farm() {
           </div>
 
           {farmWeather && (
-            <div className="mt-4 rounded-2xl border border-yellow-700/20 bg-gray-950/70 p-4">
-              <p className="text-xs uppercase tracking-[0.3em] text-gray-400">Today</p>
-              <p className="mt-2 text-sm font-semibold text-white">
+            <div className="mt-6 rounded-2xl border border-yellow-700/30 bg-gray-950/80 p-5">
+              <p className="text-xs uppercase tracking-[0.35em] text-yellow-300">Today</p>
+              <p className="mt-2 text-base font-semibold text-white">
                 {farmWeather.label} · {farmWeather.season}
               </p>
-              <p className="mt-1 text-xs text-gray-400">
+              <p className="mt-2 text-sm text-gray-300">
                 Grow time x{farmWeather.growMultiplier} · Yield x{farmWeather.yieldMultiplier}
               </p>
             </div>
@@ -115,7 +110,7 @@ export default function Farm() {
               to="/farm/plots"
               className="hint-wrap farm-hub-card farm-hub-card--plots rounded-2xl p-5"
             >
-              <span className="mt-3 inline-flex rounded-full bg-yellow-500/10 px-3 py-1 text-xs text-yellow-200">
+              <span className="farm-hub-card__meta inline-flex rounded-full bg-yellow-500/10 px-3 py-1 text-xs text-yellow-200">
                 Seeds owned: {seedCount}
               </span>
             </Link>
@@ -123,16 +118,8 @@ export default function Farm() {
               to="/farm/animals"
               className="hint-wrap farm-hub-card farm-hub-card--animals rounded-2xl p-5"
             >
-              <span className="mt-3 inline-flex rounded-full bg-yellow-500/10 px-3 py-1 text-xs text-yellow-200">
+              <span className="farm-hub-card__meta inline-flex rounded-full bg-yellow-500/10 px-3 py-1 text-xs text-yellow-200">
                 Animals owned: {animalCount}
-              </span>
-            </Link>
-            <Link
-              to="/market"
-              className="hint-wrap farm-hub-card farm-hub-card--market rounded-2xl p-5"
-            >
-              <span className="mt-3 inline-flex rounded-full bg-yellow-500/10 px-3 py-1 text-xs text-yellow-200">
-                Goods stored: {goodsCount}
               </span>
             </Link>
             <Link
@@ -140,7 +127,7 @@ export default function Farm() {
               className="hint-wrap farm-hub-card farm-hub-card--tasks rounded-2xl p-5"
               onClick={() => sessionStorage.setItem('farmTasksAccess', 'true')}
             >
-              <span className="mt-3 inline-flex flex-wrap gap-2 text-xs text-yellow-200">
+              <span className="farm-hub-card__meta inline-flex flex-wrap gap-2 text-xs text-yellow-200">
                 <span className="rounded-full bg-yellow-500/10 px-3 py-1">Daily {dailyDone}/{dailyTotal}</span>
                 <span className="rounded-full bg-yellow-500/10 px-3 py-1">Weekly {weeklyDone}/{weeklyTotal}</span>
                 <span className="rounded-full bg-yellow-500/10 px-3 py-1">Monthly {monthlyDone}/{monthlyTotal}</span>

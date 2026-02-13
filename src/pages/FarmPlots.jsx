@@ -24,6 +24,14 @@ const MOCK_AUTH = import.meta.env.VITE_MOCK_AUTH === 'true';
 const UI_TICK_MS = 3000;
 const BASE_LAND_SIZE = 3;
 const LAND_EXPAND_SIZE = 2;
+const seasonBannerMap = {
+  spring: '/farm/seasons/Spring.png',
+  summer: '/farm/seasons/Summer.png',
+  autumn: '/farm/seasons/Autumnpng.png',
+  winter: '/farm/seasons/winterpng.png',
+};
+
+const getSeasonBanner = (season) => seasonBannerMap[season] || '/farm.png';
 
 const buildEmptyPlot = (index) => ({
   id: index,
@@ -423,6 +431,11 @@ export default function FarmPlots() {
           {farmWeather && (
             <div className="mt-4 rounded-2xl border border-yellow-700/20 bg-gray-950/70 p-4">
               <p className="text-xs uppercase tracking-[0.3em] text-gray-400">Today</p>
+              <img
+                src={getSeasonBanner(farmWeather.season)}
+                alt={`${farmWeather.season} banner`}
+                className="mt-3 h-32 w-full rounded-lg object-contain bg-gray-950/70"
+              />
               <p className="mt-2 text-sm font-semibold text-white">
                 {farmWeather.label} · {farmWeather.season}
               </p>

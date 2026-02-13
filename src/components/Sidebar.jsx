@@ -59,13 +59,13 @@ const CompassIcon = ({ className }) => (
 
 const navItems = [
   { name: 'Dashboard', href: '/dashboard', icon: Squares2X2Icon },
+  { name: 'Farm', href: '/farm', icon: PigIcon },
+  { name: 'Mine', href: '/mining', icon: PickaxeIcon },
+  { name: 'Market', href: '/market', icon: BriefcaseIcon },
+  { name: 'Workshop', href: '/workshop', icon: HammerIcon },
   { name: 'Adventure', href: '/adventure', icon: BookOpenIcon },
   { name: 'Zones', href: '/zones', icon: CompassIcon },
   { name: 'Residence', href: '/housing', icon: HomeIcon },
-  { name: 'Farm', href: '/farm', icon: PigIcon },
-  { name: 'Mine', href: '/mining', icon: PickaxeIcon },
-  { name: 'Workshop', href: '/workshop', icon: HammerIcon },
-  { name: 'Market', href: '/market', icon: BriefcaseIcon },
   { name: 'Discord', href: 'https://discord.gg/BgqSghsmWY', icon: UserCircleIcon, external: true },
 ];
 

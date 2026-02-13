@@ -456,8 +456,10 @@
   overflow: hidden;
   min-height: 190px;
   clip-path: polygon(14px 0%, calc(100% - 14px) 0%, 100% 14px, 100% calc(100% - 14px), calc(100% - 14px) 100%, 14px 100%, 0% calc(100% - 14px), 0% 14px);
-  background-image: url('/farmHUb.png');
-  background-size: 200% 200%;
+  display: flex;
+  align-items: flex-end;
+  background-size: cover;
+  background-position: center;
   background-repeat: no-repeat;
   box-shadow: 0 12px 30px rgba(0, 0, 0, 0.45);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
@@ -469,31 +471,19 @@
 }
 
 .farm-hub-card--plots {
-  background-position: 0% 0%;
+  background-image: url('/farm/hub/plots.png');
 }
 
 .farm-hub-card--animals {
-  background-position: 100% 0%;
-}
-
-.farm-hub-card--market {
-  background-position: 0% 100%;
+  background-image: url('/farm/hub/animals.png');
 }
 
 .farm-hub-card--tasks {
-  background-position: 100% 100%;
+  background-image: url('/farm/hub/tasks.png');
 }
 
-.farm-hub-card::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(140deg, rgba(2, 6, 23, 0.35), rgba(2, 6, 23, 0.12));
-}
-
-.farm-hub-card > * {
-  position: relative;
-  z-index: 1;
+.farm-hub-card__meta {
+  margin-top: auto;
 }
 
 .animal-card {
