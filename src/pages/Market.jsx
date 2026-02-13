@@ -133,14 +133,14 @@ export default function Market() {
     localStorage.setItem(BULK_SELL_CONFIRM_KEY, skipBulkConfirm ? 'true' : 'false');
   }, [skipBulkConfirm]);
 
-  const inventory = profile?.inventory || {};
-  const farmAnimalsOwned = profile?.farmAnimals || {};
+  const inventory = useMemo(() => profile?.inventory || {}, [profile?.inventory]);
+  const farmAnimalsOwned = useMemo(() => profile?.farmAnimals || {}, [profile?.farmAnimals]);
   const gold = profile?.stats?.gold ?? 0;
   const farmLevel = profile?.farmLevel ?? 1;
   const miningLevel = profile?.miningLevel ?? 1;
   const playerLevel = profile?.stats?.level ?? 1;
 
-  const isAvailableForLevel = (item) => {
+  const isAvailableForLevel = React.useCallback((item) => {
     if (!item || !item.buyable) {
       return true;
     }
@@ -166,7 +166,7 @@ export default function Market() {
     }
 
     return true;
-  };
+  }, [farmLevel, miningLevel, playerLevel]);
 
   const marketItems = useMemo(() => {
     return itemsCatalog.map((item, index) => {
@@ -200,7 +200,7 @@ export default function Market() {
       const matchesLevel = isAvailableForLevel(item);
       return matchesFilter && matchesSearch && matchesOwned && matchesLevel;
     });
-  }, [marketItems, filterId, normalizedSearch, showOwnedOnly, farmLevel, miningLevel, playerLevel]);
+  }, [marketItems, filterId, normalizedSearch, showOwnedOnly, isAvailableForLevel]);
 
   const sortedItems = useMemo(() => {
     const rows = [...filteredItems];
@@ -222,7 +222,7 @@ export default function Market() {
       ).length;
     });
     return counts;
-  }, [marketItems, farmLevel, miningLevel, playerLevel]);
+  }, [marketItems, isAvailableForLevel]);
 
   const groupedSections = useMemo(() => {
     if (filterId !== 'all') {
@@ -550,11 +550,10 @@ export default function Market() {
                   key={filter.id}
                   type="button"
                   onClick={() => setFilterId(filter.id)}
-                  className={`rounded-full px-3 py-1 text-xs font-semibold ${
-                    filterId === filter.id
-                      ? 'action-primary text-white'
-                      : 'border border-yellow-700/40 text-yellow-200'
-                  }`}
+                  className={`rounded-full px-3 py-1 text-xs font-semibold ${filterId === filter.id
+                    ? 'action-primary text-white'
+                    : 'border border-yellow-700/40 text-yellow-200'
+                    }`}
                 >
                   {filter.label} ({filterCounts[filter.id] || 0})
                 </button>
@@ -564,9 +563,8 @@ export default function Market() {
               <button
                 type="button"
                 onClick={() => setShowOwnedOnly((prev) => !prev)}
-                className={`rounded-full px-3 py-1 text-xs font-semibold ${
-                  showOwnedOnly ? 'action-primary text-white' : 'border border-yellow-700/40 text-yellow-200'
-                }`}
+                className={`rounded-full px-3 py-1 text-xs font-semibold ${showOwnedOnly ? 'action-primary text-white' : 'border border-yellow-700/40 text-yellow-200'
+                  }`}
               >
                 Show owned only
               </button>
@@ -597,11 +595,10 @@ export default function Market() {
                           <button
                             type="button"
                             onClick={handleSellAllGoods}
-                            className={`rounded-full border border-yellow-700/40 px-2 py-0.5 text-[10px] font-semibold ${
-                              sellAllGoods.totalCount > 0
-                                ? 'text-yellow-200'
-                                : 'text-gray-400'
-                            }`}
+                            className={`rounded-full border border-yellow-700/40 px-2 py-0.5 text-[10px] font-semibold ${sellAllGoods.totalCount > 0
+                              ? 'text-yellow-200'
+                              : 'text-gray-400'
+                              }`}
                             disabled={sellAllGoods.totalCount <= 0}
                           >
                             Sell all ({sellAllGoods.totalCount}) · {formatGold(sellAllGoods.totalValue)}g
@@ -611,11 +608,10 @@ export default function Market() {
                           <button
                             type="button"
                             onClick={handleSellAllOres}
-                            className={`rounded-full border border-yellow-700/40 px-2 py-0.5 text-[10px] font-semibold ${
-                              sellAllOres.totalCount > 0
-                                ? 'text-yellow-200'
-                                : 'text-gray-400'
-                            }`}
+                            className={`rounded-full border border-yellow-700/40 px-2 py-0.5 text-[10px] font-semibold ${sellAllOres.totalCount > 0
+                              ? 'text-yellow-200'
+                              : 'text-gray-400'
+                              }`}
                             disabled={sellAllOres.totalCount <= 0}
                           >
                             Sell all ({sellAllOres.totalCount}) · {formatGold(sellAllOres.totalValue)}g
@@ -703,9 +699,8 @@ export default function Market() {
                                       type="button"
                                       onClick={() => handleBuy(item)}
                                       disabled={!item.buyable}
-                                      className={`rounded-lg px-3 py-2 text-xs font-semibold ${
-                                        item.buyable ? 'action-primary text-white' : 'bg-gray-700 text-gray-300'
-                                      }`}
+                                      className={`rounded-lg px-3 py-2 text-xs font-semibold ${item.buyable ? 'action-primary text-white' : 'bg-gray-700 text-gray-300'
+                                        }`}
                                     >
                                       Buy
                                     </button>
@@ -713,11 +708,10 @@ export default function Market() {
                                       type="button"
                                       onClick={() => handleSell(item)}
                                       disabled={!item.sellable || owned <= 0}
-                                      className={`rounded-lg px-3 py-2 text-xs font-semibold ${
-                                        item.sellable && owned > 0
-                                          ? 'border border-yellow-700/40 text-yellow-200'
-                                          : 'bg-gray-700 text-gray-300'
-                                      }`}
+                                      className={`rounded-lg px-3 py-2 text-xs font-semibold ${item.sellable && owned > 0
+                                        ? 'border border-yellow-700/40 text-yellow-200'
+                                        : 'bg-gray-700 text-gray-300'
+                                        }`}
                                     >
                                       Sell
                                     </button>
@@ -738,11 +732,10 @@ export default function Market() {
                       <button
                         type="button"
                         onClick={filterId === 'farm-goods' ? handleSellAllGoods : handleSellAllOres}
-                        className={`rounded-full border border-yellow-700/40 px-3 py-1 text-xs font-semibold ${
-                          filterId === 'farm-goods'
-                            ? (sellAllGoods.totalCount > 0 ? 'text-yellow-200' : 'text-gray-400')
-                            : (sellAllOres.totalCount > 0 ? 'text-yellow-200' : 'text-gray-400')
-                        }`}
+                        className={`rounded-full border border-yellow-700/40 px-3 py-1 text-xs font-semibold ${filterId === 'farm-goods'
+                          ? (sellAllGoods.totalCount > 0 ? 'text-yellow-200' : 'text-gray-400')
+                          : (sellAllOres.totalCount > 0 ? 'text-yellow-200' : 'text-gray-400')
+                          }`}
                         disabled={filterId === 'farm-goods'
                           ? sellAllGoods.totalCount <= 0
                           : sellAllOres.totalCount <= 0}
@@ -823,9 +816,8 @@ export default function Market() {
                                   type="button"
                                   onClick={() => handleBuy(item)}
                                   disabled={!item.buyable}
-                                  className={`rounded-lg px-3 py-2 text-xs font-semibold ${
-                                    item.buyable ? 'action-primary text-white' : 'bg-gray-700 text-gray-300'
-                                  }`}
+                                  className={`rounded-lg px-3 py-2 text-xs font-semibold ${item.buyable ? 'action-primary text-white' : 'bg-gray-700 text-gray-300'
+                                    }`}
                                 >
                                   Buy
                                 </button>
@@ -833,11 +825,10 @@ export default function Market() {
                                   type="button"
                                   onClick={() => handleSell(item)}
                                   disabled={!item.sellable || owned <= 0}
-                                  className={`rounded-lg px-3 py-2 text-xs font-semibold ${
-                                    item.sellable && owned > 0
-                                      ? 'border border-yellow-700/40 text-yellow-200'
-                                      : 'bg-gray-700 text-gray-300'
-                                  }`}
+                                  className={`rounded-lg px-3 py-2 text-xs font-semibold ${item.sellable && owned > 0
+                                    ? 'border border-yellow-700/40 text-yellow-200'
+                                    : 'bg-gray-700 text-gray-300'
+                                    }`}
                                 >
                                   Sell
                                 </button>

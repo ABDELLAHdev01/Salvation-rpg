@@ -73,17 +73,17 @@ export default function Mining() {
   const pickaxeLevel = profile?.pickaxeLevel ?? 1;
   const miningForgeLevel = profile?.miningForgeLevel ?? 1;
   const miningPrestigeLevel = profile?.miningPrestigeLevel ?? 0;
-  const inventory = profile?.inventory || {};
+  const inventory = useMemo(() => profile?.inventory || {}, [profile?.inventory]);
   const gold = profile?.stats?.gold ?? 0;
   const activeBoostId = profile?.activeMiningBoost || null;
   const activeBoost = activeBoostId ? getMiningConsumable(activeBoostId) : null;
-  const boosterCooldowns = profile?.miningBoosterCooldowns || {};
+  const boosterCooldowns = useMemo(() => profile?.miningBoosterCooldowns || {}, [profile?.miningBoosterCooldowns]);
   const miningCooldownUntil = profile?.miningCooldownUntil ?? 0;
   const miningCooldownRemaining = Math.max(0, miningCooldownUntil - now);
   const isMiningCooldown = miningCooldownRemaining > 0;
   const miningContracts = profile?.miningContracts || null;
   const miningContractTokens = getItemCount(inventory, miningContractToken.id);
-  const miningHirelingsOwned = profile?.miningHirelings || [];
+  const miningHirelingsOwned = useMemo(() => profile?.miningHirelings || [], [profile?.miningHirelings]);
   const miningClickState = profile?.miningClickState || null;
   const momentumValue = miningClickState?.momentum?.value || 0;
   const momentumMultiplier = 1 + Math.min(0.1, momentumValue * 0.001);
@@ -105,7 +105,7 @@ export default function Mining() {
   const dailyVeinBonus = useMemo(() => getDailyVeinBonus(now), [now]);
   const weeklySurgeBonus = useMemo(() => getWeeklySurgeBonus(now), [now]);
 
-  const getClickPreview = (nodeTier) => {
+  const getClickPreview = React.useCallback((nodeTier) => {
     const tier = nodeTier || getTierByMiningLevel(miningLevel);
     const forge = getForgeUpgrade(miningForgeLevel) || { rareChanceBonus: 0, mishapReduction: 0 };
     const prestigeRareBonus = Math.min(0.06, miningPrestigeLevel * 0.01);
@@ -125,9 +125,9 @@ export default function Mining() {
       critChance,
       rareChance,
     };
-  };
+  }, [miningLevel, miningForgeLevel, miningPrestigeLevel, pickaxeLevel]);
 
-  const buildClickNode = (tierOverride = null) => {
+  const buildClickNode = React.useCallback((tierOverride = null) => {
     const tier = tierOverride || getTierByMiningLevel(miningLevel);
     const baseDurability = 10 + tier * 6;
     const pickaxeBoost = Math.floor(pickaxeLevel * 1.5);
@@ -139,9 +139,9 @@ export default function Mining() {
       durability: maxDurability,
       createdAt: Date.now(),
     };
-  };
+  }, [miningLevel, pickaxeLevel]);
 
-  const ensureClickState = () => {
+  const ensureClickState = React.useCallback(() => {
     const nextState = miningClickState ? { ...miningClickState } : {};
     const nodeTier = nextState.node?.tier || getTierByMiningLevel(miningLevel);
     let changed = false;
@@ -167,7 +167,7 @@ export default function Mining() {
     }
 
     return { nextState, changed };
-  };
+  }, [miningClickState, miningLevel, buildClickNode, getClickPreview]);
 
   const getRandomAutoClaimDelay = () => {
     const minDelay = 30 * 1000;
@@ -339,6 +339,9 @@ export default function Mining() {
     weeklySurgeBonus,
     miningPrestigeLevel,
     momentumMultiplier,
+    miningHirelingsOwned,
+    zoneMiningYieldMultiplier,
+    zoneMiningXpMultiplier,
   ]);
 
   useEffect(() => {
@@ -355,7 +358,7 @@ export default function Mining() {
       miningClickState: nextState,
     });
     setProfile(updated);
-  }, [profile, miningLevel, pickaxeLevel]);
+  }, [profile, miningLevel, pickaxeLevel, ensureClickState]);
 
   const handleStartMining = () => {
     if (!MOCK_AUTH || !profile) {
@@ -386,12 +389,12 @@ export default function Mining() {
       hirelingTicks: 0,
       hirelingTickMap: {},
       hirelingIndex: 0,
-            eventCounts: {
-              normal: 0,
-              rare: 0,
-              crit: 0,
-              mishap: 0,
-            },
+      eventCounts: {
+        normal: 0,
+        rare: 0,
+        crit: 0,
+        mishap: 0,
+      },
       claimed: false,
     };
 
@@ -450,7 +453,7 @@ export default function Mining() {
     setShowStopModal(false);
   };
 
-  const handleClaim = (sessionOverride = null) => {
+  const handleClaim = React.useCallback((sessionOverride = null) => {
     if (!MOCK_AUTH || !profile) {
       return;
     }
@@ -488,20 +491,20 @@ export default function Mining() {
     const nextSession = isSessionComplete
       ? null
       : {
-          ...session,
-                    eventCounts: {
-                      normal: 0,
-                      rare: 0,
-                      crit: 0,
-                      mishap: 0,
-                    },
-          accruedYield: {},
-          accruedXp: 0,
-          accruedTicks: 0,
-          hirelingTicks: 0,
-          hirelingTickMap: {},
-          hirelingIndex: 0,
-        };
+        ...session,
+        eventCounts: {
+          normal: 0,
+          rare: 0,
+          crit: 0,
+          mishap: 0,
+        },
+        accruedYield: {},
+        accruedXp: 0,
+        accruedTicks: 0,
+        hirelingTicks: 0,
+        hirelingTickMap: {},
+        hirelingIndex: 0,
+      };
 
     const sessionTier = session.tier ?? getTierByMiningLevel(miningLevel);
     const updated = characterService.updateMockProfile({
@@ -531,9 +534,9 @@ export default function Mining() {
       }
     }
     toast.success('Mining rewards collected.');
-  };
+  }, [profile, miningLevel, miningXp, inventory, activeBoostId, pushReward]);
 
-  const handleAutoClaimPartial = () => {
+  const handleAutoClaimPartial = React.useCallback(() => {
     if (!MOCK_AUTH || !profile || !profile.miningSession) {
       return;
     }
@@ -615,9 +618,9 @@ export default function Mining() {
         pushReward(`+${claimedXp} XP`, { tone: 'xp', anchor, delay: entries.length * 120 });
       }
     }
-  };
+  }, [profile, inventory, miningLevel, activeBoostId, pushReward, applyMiningXp]);
 
-  const applyMiningXp = (xpGain) => {
+  const applyMiningXp = React.useCallback((xpGain) => {
     let nextLevel = miningLevel;
     let nextXp = miningXp + xpGain;
     let xpNeeded = getMiningXpForLevel(nextLevel);
@@ -629,7 +632,7 @@ export default function Mining() {
     }
 
     return { nextLevel, nextXp };
-  };
+  }, [miningLevel, miningXp]);
 
   const handleDeliverContract = (type) => {
     if (!MOCK_AUTH || !profile || !miningContracts?.[type]) {
@@ -843,7 +846,7 @@ export default function Mining() {
     if (miningSession.endAt <= now && hasAccrued) {
       handleClaim();
     }
-  }, [now, miningSession, hasAccrued, profile]);
+  }, [now, miningSession, hasAccrued, profile, handleClaim]);
 
   useEffect(() => {
     if (!MOCK_AUTH || !profile) {
@@ -868,7 +871,7 @@ export default function Mining() {
 
     handleAutoClaimPartial();
     setNextAutoClaimAt(now + getRandomAutoClaimDelay());
-  }, [now, isMining, miningSession, nextAutoClaimAt, profile]);
+  }, [now, isMining, miningSession, nextAutoClaimAt, profile, handleAutoClaimPartial]);
 
   useEffect(() => {
     if (!MOCK_AUTH || !profile || !miningClickState?.momentum) {
@@ -1016,7 +1019,7 @@ export default function Mining() {
         name: miningHirelings.find((item) => item.id === id)?.name || id,
       }))
       .filter((entry) => entry.count > 0);
-  }, [miningSession, miningHirelings]);
+  }, [miningSession]);
 
   return (
     <section className="min-h-screen bg-center bg-cover bg-no-repeat bg-[url('./jbm.jpg')] bg-gray-900 bg-blend-multiply dashboard-shell lg:pl-64">
@@ -1145,9 +1148,8 @@ export default function Mining() {
               type="button"
               onClick={handleStartMining}
               disabled={isMining || isMiningCooldown}
-              className={`inline-flex items-center rounded-lg px-4 py-2 text-sm font-semibold ${
-                isMining || isMiningCooldown ? 'bg-gray-700 text-gray-300' : 'action-primary text-white'
-              }`}
+              className={`inline-flex items-center rounded-lg px-4 py-2 text-sm font-semibold ${isMining || isMiningCooldown ? 'bg-gray-700 text-gray-300' : 'action-primary text-white'
+                }`}
             >
               Start Mining
             </button>
@@ -1155,9 +1157,8 @@ export default function Mining() {
               type="button"
               onClick={handleStopMining}
               disabled={!isMining}
-              className={`inline-flex items-center rounded-lg px-4 py-2 text-sm font-semibold ${
-                isMining ? 'border border-yellow-600/60 text-yellow-200' : 'bg-gray-700 text-gray-300'
-              }`}
+              className={`inline-flex items-center rounded-lg px-4 py-2 text-sm font-semibold ${isMining ? 'border border-yellow-600/60 text-yellow-200' : 'bg-gray-700 text-gray-300'
+                }`}
             >
               Stop Mining
             </button>
@@ -1264,11 +1265,10 @@ export default function Mining() {
                       <button
                         type="button"
                         onClick={handleUpgradePickaxe}
-                        className={`mt-3 w-full rounded-lg px-3 py-2 text-xs font-semibold ${
-                          miningLevel >= nextPickaxe.requiredMiningLevel && gold >= nextPickaxe.price
-                            ? 'action-primary text-white'
-                            : 'bg-gray-700 text-gray-300'
-                        }`}
+                        className={`mt-3 w-full rounded-lg px-3 py-2 text-xs font-semibold ${miningLevel >= nextPickaxe.requiredMiningLevel && gold >= nextPickaxe.price
+                          ? 'action-primary text-white'
+                          : 'bg-gray-700 text-gray-300'
+                          }`}
                         disabled={miningLevel < nextPickaxe.requiredMiningLevel || gold < nextPickaxe.price}
                       >
                         Upgrade Pickaxe
@@ -1319,11 +1319,10 @@ export default function Mining() {
                     <button
                       type="button"
                       onClick={handleUpgradeForge}
-                      className={`mt-3 w-full rounded-lg px-3 py-2 text-xs font-semibold ${
-                        miningLevel >= nextForge.requiredMiningLevel && gold >= nextForge.price
-                          ? 'action-primary text-white'
-                          : 'bg-gray-700 text-gray-300'
-                      }`}
+                      className={`mt-3 w-full rounded-lg px-3 py-2 text-xs font-semibold ${miningLevel >= nextForge.requiredMiningLevel && gold >= nextForge.price
+                        ? 'action-primary text-white'
+                        : 'bg-gray-700 text-gray-300'
+                        }`}
                       disabled={miningLevel < nextForge.requiredMiningLevel || gold < nextForge.price}
                     >
                       Upgrade Forge
@@ -1386,9 +1385,8 @@ export default function Mining() {
             <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
               <p className="text-xs uppercase tracking-[0.3em] text-gray-400">Mining Contracts</p>
               <span
-                className={`${
-                  miningContractTokens > 0 ? 'token-glow ' : ''
-                }inline-flex items-center gap-2 rounded-full bg-yellow-500/10 px-3 py-1 text-[10px] font-semibold text-yellow-200`}
+                className={`${miningContractTokens > 0 ? 'token-glow ' : ''
+                  }inline-flex items-center gap-2 rounded-full bg-yellow-500/10 px-3 py-1 text-[10px] font-semibold text-yellow-200`}
               >
                 <span className="inline-flex h-4 w-4 items-center justify-center rounded-full bg-yellow-500/20 text-[10px] text-yellow-200">
                   <svg viewBox="0 0 24 24" className="h-3 w-3" fill="currentColor" aria-hidden="true">
@@ -1399,69 +1397,67 @@ export default function Mining() {
               </span>
             </div>
             <div className="grid gap-6 lg:grid-cols-2">
-            {['daily', 'weekly'].map((type) => {
-              const contract = miningContracts?.[type];
-              const ore = miningOres.find((item) => item.id === contract?.oreId);
-              const owned = contract ? getItemCount(inventory, contract.oreId) : 0;
-              const isClaimed = contract?.claimed;
-              const canDeliver = contract && owned >= contract.amount && !isClaimed;
-              const timeLeft = contract?.expiresAt ? Math.max(0, contract.expiresAt - now) : 0;
-              return (
-                <div key={type} className="court-card rounded-2xl p-6">
-                  <p className="text-xs uppercase tracking-[0.3em] text-gray-400">
-                    {type === 'weekly' ? 'Weekly Contract' : 'Daily Contract'}
-                  </p>
-                  {contract ? (
-                    <div className="mt-3 space-y-2 text-sm text-gray-300">
-                      <p className="text-white font-semibold">Deliver {contract.amount} {ore?.name || 'Ore'}</p>
-                      <p>Reward: {contract.rewardGold} gold + {contract.rewardXp} XP</p>
-                      <p>Progress: {owned}/{contract.amount}</p>
-                      <p>Time left: {formatDuration(timeLeft)}</p>
-                      {isClaimed ? (
-                        <span className="inline-flex rounded-full bg-yellow-500/10 px-3 py-1 text-xs text-yellow-200">
-                          Completed
-                        </span>
-                      ) : (
-                        <div className="flex flex-wrap items-center gap-2">
-                          <button
-                            type="button"
-                            onClick={() => handleDeliverContract(type)}
-                            className={`rounded-lg px-3 py-2 text-xs font-semibold ${
-                              canDeliver ? 'action-primary text-white' : 'bg-gray-700 text-gray-300'
-                            }`}
-                            disabled={!canDeliver}
-                          >
-                            Deliver Ore
-                          </button>
-                          <div className="relative group">
+              {['daily', 'weekly'].map((type) => {
+                const contract = miningContracts?.[type];
+                const ore = miningOres.find((item) => item.id === contract?.oreId);
+                const owned = contract ? getItemCount(inventory, contract.oreId) : 0;
+                const isClaimed = contract?.claimed;
+                const canDeliver = contract && owned >= contract.amount && !isClaimed;
+                const timeLeft = contract?.expiresAt ? Math.max(0, contract.expiresAt - now) : 0;
+                return (
+                  <div key={type} className="court-card rounded-2xl p-6">
+                    <p className="text-xs uppercase tracking-[0.3em] text-gray-400">
+                      {type === 'weekly' ? 'Weekly Contract' : 'Daily Contract'}
+                    </p>
+                    {contract ? (
+                      <div className="mt-3 space-y-2 text-sm text-gray-300">
+                        <p className="text-white font-semibold">Deliver {contract.amount} {ore?.name || 'Ore'}</p>
+                        <p>Reward: {contract.rewardGold} gold + {contract.rewardXp} XP</p>
+                        <p>Progress: {owned}/{contract.amount}</p>
+                        <p>Time left: {formatDuration(timeLeft)}</p>
+                        {isClaimed ? (
+                          <span className="inline-flex rounded-full bg-yellow-500/10 px-3 py-1 text-xs text-yellow-200">
+                            Completed
+                          </span>
+                        ) : (
+                          <div className="flex flex-wrap items-center gap-2">
                             <button
                               type="button"
-                              onClick={() => handleRefreshContract(type)}
-                              className={`rounded-lg px-3 py-2 text-xs font-semibold ${
-                                miningContractTokens > 0 ? 'action-ghost text-yellow-200' : 'bg-gray-700 text-gray-300'
-                              }`}
-                              disabled={miningContractTokens <= 0}
+                              onClick={() => handleDeliverContract(type)}
+                              className={`rounded-lg px-3 py-2 text-xs font-semibold ${canDeliver ? 'action-primary text-white' : 'bg-gray-700 text-gray-300'
+                                }`}
+                              disabled={!canDeliver}
                             >
-                              Refresh ({miningContractTokens})
+                              Deliver Ore
                             </button>
-                            <div className="pointer-events-none absolute left-1/2 top-full z-20 mt-2 w-44 -translate-x-1/2 rounded-lg border border-yellow-700/30 bg-gray-950/95 px-3 py-2 text-[10px] text-gray-200 opacity-0 transition duration-200 ease-out group-hover:opacity-100 group-hover:translate-y-0 translate-y-1 group-hover:shadow-[0_0_12px_rgba(250,204,21,0.35)]">
-                              <div className="flex items-start gap-2">
-                                <span className="mt-0.5 inline-flex h-4 w-4 items-center justify-center rounded-full bg-yellow-500/20 text-[10px] text-yellow-200">
-                                  i
-                                </span>
-                                <span>Uses one token to reroll this contract.</span>
+                            <div className="relative group">
+                              <button
+                                type="button"
+                                onClick={() => handleRefreshContract(type)}
+                                className={`rounded-lg px-3 py-2 text-xs font-semibold ${miningContractTokens > 0 ? 'action-ghost text-yellow-200' : 'bg-gray-700 text-gray-300'
+                                  }`}
+                                disabled={miningContractTokens <= 0}
+                              >
+                                Refresh ({miningContractTokens})
+                              </button>
+                              <div className="pointer-events-none absolute left-1/2 top-full z-20 mt-2 w-44 -translate-x-1/2 rounded-lg border border-yellow-700/30 bg-gray-950/95 px-3 py-2 text-[10px] text-gray-200 opacity-0 transition duration-200 ease-out group-hover:opacity-100 group-hover:translate-y-0 translate-y-1 group-hover:shadow-[0_0_12px_rgba(250,204,21,0.35)]">
+                                <div className="flex items-start gap-2">
+                                  <span className="mt-0.5 inline-flex h-4 w-4 items-center justify-center rounded-full bg-yellow-500/20 text-[10px] text-yellow-200">
+                                    i
+                                  </span>
+                                  <span>Uses one token to reroll this contract.</span>
+                                </div>
                               </div>
                             </div>
                           </div>
-                        </div>
-                      )}
-                    </div>
-                  ) : (
-                    <p className="mt-3 text-sm text-gray-300">Contract parchment is being prepared.</p>
-                  )}
-                </div>
-              );
-            })}
+                        )}
+                      </div>
+                    ) : (
+                      <p className="mt-3 text-sm text-gray-300">Contract parchment is being prepared.</p>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           </div>
 
@@ -1509,18 +1505,16 @@ export default function Mining() {
                       {owned && (
                         <p className="mt-2 text-xs text-gray-500">Dismiss refund: {refundAmount}g</p>
                       )}
-                      <span className={`mt-3 inline-flex rounded-full px-3 py-1 text-xs ${
-                        owned ? 'bg-yellow-500/10 text-yellow-200' : 'bg-gray-800 text-gray-400'
-                      }`}>
+                      <span className={`mt-3 inline-flex rounded-full px-3 py-1 text-xs ${owned ? 'bg-yellow-500/10 text-yellow-200' : 'bg-gray-800 text-gray-400'
+                        }`}>
                         {owned ? 'Hired' : 'Not hired'}
                       </span>
                       <div className="mt-3 grid gap-2 sm:grid-cols-2">
                         <button
                           type="button"
                           onClick={() => handleHirelingPurchase(hireling.id)}
-                          className={`rounded-lg px-3 py-2 text-xs font-semibold ${
-                            canHire ? 'action-primary text-white' : 'bg-gray-700 text-gray-300'
-                          }`}
+                          className={`rounded-lg px-3 py-2 text-xs font-semibold ${canHire ? 'action-primary text-white' : 'bg-gray-700 text-gray-300'
+                            }`}
                           disabled={!canHire}
                         >
                           Hire
@@ -1528,9 +1522,8 @@ export default function Mining() {
                         <button
                           type="button"
                           onClick={() => handleOpenDismiss(hireling.id)}
-                          className={`rounded-lg px-3 py-2 text-xs font-semibold ${
-                            owned ? 'border border-yellow-700/40 text-yellow-200' : 'bg-gray-700 text-gray-300'
-                          }`}
+                          className={`rounded-lg px-3 py-2 text-xs font-semibold ${owned ? 'border border-yellow-700/40 text-yellow-200' : 'bg-gray-700 text-gray-300'
+                            }`}
                           disabled={!owned}
                         >
                           Dismiss
@@ -1590,9 +1583,8 @@ export default function Mining() {
                           <button
                             type="button"
                             onClick={() => handleArmBooster(booster.id)}
-                            className={`rounded-lg px-3 py-1 text-xs font-semibold ${
-                              canArm ? 'action-primary text-white' : 'bg-gray-700 text-gray-300'
-                            }`}
+                            className={`rounded-lg px-3 py-1 text-xs font-semibold ${canArm ? 'action-primary text-white' : 'bg-gray-700 text-gray-300'
+                              }`}
                             disabled={!canArm}
                           >
                             Arm

@@ -141,7 +141,7 @@ export default function ArenaResult() {
         },
       ],
     };
-  }, [opponent, result]);
+  }, [opponent, result, playerStats]);
 
   return (
     <section className="min-h-screen bg-center bg-cover bg-no-repeat bg-[url('./jbm.jpg')] bg-gray-900 bg-blend-multiply dashboard-shell lg:pl-64">
@@ -168,20 +168,20 @@ export default function ArenaResult() {
           <div className="mt-8 grid gap-6 sm:grid-cols-2">
             <div className="image-panel image-panel-arena ornament-frame p-6">
               <div className="image-panel-content">
-              <p className="text-xs uppercase tracking-[0.3em] text-gray-400">Opponent</p>
-              <p className="mt-2 text-2xl font-semibold text-white">{opponent.name}</p>
-              <p className="mt-1 text-sm text-gray-300">Level {opponent.level} · Rank {opponent.rank}</p>
-              <div className="mt-4 h-40 overflow-hidden rounded-xl border border-yellow-700/30 bg-gray-900/70">
-                <img
-                  src={opponent.image}
-                  alt="Opponent portrait"
-                  className="h-full w-full object-contain"
-                  onError={(event) => {
-                    event.target.onerror = null;
-                    event.target.src = '/raceicon/noimage.jpg';
-                  }}
-                />
-              </div>
+                <p className="text-xs uppercase tracking-[0.3em] text-gray-400">Opponent</p>
+                <p className="mt-2 text-2xl font-semibold text-white">{opponent.name}</p>
+                <p className="mt-1 text-sm text-gray-300">Level {opponent.level} · Rank {opponent.rank}</p>
+                <div className="mt-4 h-40 overflow-hidden rounded-xl border border-yellow-700/30 bg-gray-900/70">
+                  <img
+                    src={opponent.image}
+                    alt="Opponent portrait"
+                    className="h-full w-full object-contain"
+                    onError={(event) => {
+                      event.target.onerror = null;
+                      event.target.src = '/raceicon/noimage.jpg';
+                    }}
+                  />
+                </div>
               </div>
             </div>
             <div className="court-card rounded-2xl p-6">

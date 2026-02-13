@@ -36,7 +36,7 @@ export default function Missions() {
     }
   }, []);
 
-  const missions = profile?.generalMissions || [];
+  const missions = useMemo(() => profile?.generalMissions || [], [profile?.generalMissions]);
   const playerLevel = profile?.stats?.level ?? 1;
   const playerXp = profile?.stats?.xp ?? 0;
   const gold = profile?.stats?.gold ?? 0;
@@ -166,13 +166,12 @@ export default function Missions() {
                   <button
                     type="button"
                     onClick={() => handleClaim(mission.id)}
-                    className={`rounded-lg px-3 py-2 text-xs font-semibold ${
-                      mission.claimed
+                    className={`rounded-lg px-3 py-2 text-xs font-semibold ${mission.claimed
                         ? 'bg-gray-700 text-gray-300'
                         : isComplete
-                        ? 'action-primary text-white'
-                        : 'bg-gray-700 text-gray-300'
-                    }`}
+                          ? 'action-primary text-white'
+                          : 'bg-gray-700 text-gray-300'
+                      }`}
                     disabled={!isComplete || mission.claimed}
                   >
                     {mission.claimed ? 'Claimed' : isComplete ? 'Claim Reward' : 'In Progress'}

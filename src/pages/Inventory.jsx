@@ -46,7 +46,7 @@ export default function Inventory() {
     setProfile(nextProfile);
   }, []);
 
-  const inventory = profile?.inventory || {};
+  const inventory = useMemo(() => profile?.inventory || {}, [profile?.inventory]);
   const inventoryRows = useMemo(() => {
     return Object.entries(inventory)
       .map(([itemId, amount]) => {
@@ -271,9 +271,8 @@ export default function Inventory() {
                         </span>
                         {item.rarity && (
                           <span
-                            className={`rounded-full border px-3 py-1 ${
-                              rarityStyles[item.rarity] || rarityStyles.Common
-                            }`}
+                            className={`rounded-full border px-3 py-1 ${rarityStyles[item.rarity] || rarityStyles.Common
+                              }`}
                           >
                             {item.rarity}
                           </span>

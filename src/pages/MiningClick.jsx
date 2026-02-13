@@ -102,7 +102,7 @@ export default function MiningClick() {
 
   const xpToNext = getMiningXpForLevel(miningLevel);
 
-  const getClickPreview = (nodeTier) => {
+  const getClickPreview = React.useCallback((nodeTier) => {
     const tier = nodeTier || getTierByMiningLevel(miningLevel);
     const forge = getForgeUpgrade(miningForgeLevel) || { rareChanceBonus: 0, mishapReduction: 0 };
     const prestigeRareBonus = Math.min(0.06, miningPrestigeLevel * 0.01);
@@ -122,9 +122,9 @@ export default function MiningClick() {
       critChance,
       rareChance,
     };
-  };
+  }, [miningLevel, miningForgeLevel, miningPrestigeLevel, pickaxeLevel]);
 
-  const buildClickNode = (tierOverride = null) => {
+  const buildClickNode = React.useCallback((tierOverride = null) => {
     const tier = tierOverride || getTierByMiningLevel(miningLevel);
     const baseDurability = 10 + tier * 6;
     const pickaxeBoost = Math.floor(pickaxeLevel * 1.5);
@@ -136,9 +136,9 @@ export default function MiningClick() {
       durability: maxDurability,
       createdAt: Date.now(),
     };
-  };
+  }, [miningLevel, pickaxeLevel]);
 
-  const ensureClickState = () => {
+  const ensureClickState = React.useCallback(() => {
     const nextState = miningClickState ? { ...miningClickState } : {};
     const nodeTier = nextState.node?.tier || getTierByMiningLevel(miningLevel);
     let changed = false;
@@ -169,7 +169,7 @@ export default function MiningClick() {
     }
 
     return { nextState, changed };
-  };
+  }, [miningClickState, miningLevel, buildClickNode, getClickPreview]);
 
   useEffect(() => {
     if (!MOCK_AUTH || !profile) {
@@ -185,7 +185,7 @@ export default function MiningClick() {
       miningClickState: nextState,
     });
     setProfile(updated);
-  }, [profile, miningLevel, pickaxeLevel]);
+  }, [profile, miningLevel, pickaxeLevel, ensureClickState]);
 
   const applyMiningXp = (xpGain) => {
     let nextLevel = miningLevel;
@@ -280,9 +280,9 @@ export default function MiningClick() {
 
     const totalYieldOnBreak = remainingDurability <= 0
       ? Object.entries({ ...nextPendingYield, ...burstReward }).reduce((acc, [oreId, amount]) => {
-          acc[oreId] = (acc[oreId] || 0) + amount;
-          return acc;
-        }, {})
+        acc[oreId] = (acc[oreId] || 0) + amount;
+        return acc;
+      }, {})
       : {};
 
     if (remainingDurability <= 0) {
@@ -365,17 +365,17 @@ export default function MiningClick() {
   const canClick = isMining;
   const lastRewardItems = lastClickReward
     ? Object.entries(lastClickReward.yieldMap || {}).map(([oreId, amount]) => ({
-        id: oreId,
-        amount,
-        name: (miningOres.find((ore) => ore.id === oreId) || {}).name || oreId,
-      }))
+      id: oreId,
+      amount,
+      name: (miningOres.find((ore) => ore.id === oreId) || {}).name || oreId,
+    }))
     : [];
   const lastBurstItems = lastClickReward
     ? Object.entries(lastClickReward.burstYield || {}).map(([oreId, amount]) => ({
-        id: oreId,
-        amount,
-        name: (miningOres.find((ore) => ore.id === oreId) || {}).name || oreId,
-      }))
+      id: oreId,
+      amount,
+      name: (miningOres.find((ore) => ore.id === oreId) || {}).name || oreId,
+    }))
     : [];
   const pendingItems = Object.entries(pendingYield).map(([oreId, amount]) => ({
     id: oreId,
@@ -488,9 +488,8 @@ export default function MiningClick() {
                   type="button"
                   onClick={handleClickMine}
                   disabled={!canClick}
-                  className={`inline-flex items-center rounded-lg px-4 py-2 text-sm font-semibold ${
-                    canClick ? 'action-primary text-white' : 'bg-gray-700 text-gray-300'
-                  }`}
+                  className={`inline-flex items-center rounded-lg px-4 py-2 text-sm font-semibold ${canClick ? 'action-primary text-white' : 'bg-gray-700 text-gray-300'
+                    }`}
                 >
                   Mine Node
                 </button>

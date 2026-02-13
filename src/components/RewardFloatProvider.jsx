@@ -16,9 +16,10 @@ export function RewardFloatProvider({ children }) {
   const timeoutsRef = useRef(new Set());
 
   useEffect(() => {
+    const timeouts = timeoutsRef.current;
     return () => {
-      timeoutsRef.current.forEach((timeoutId) => window.clearTimeout(timeoutId));
-      timeoutsRef.current.clear();
+      timeouts.forEach((timeoutId) => window.clearTimeout(timeoutId));
+      timeouts.clear();
     };
   }, []);
 
@@ -108,7 +109,8 @@ export function RewardFloatProvider({ children }) {
   );
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useRewardFloat() {
   const context = useContext(RewardFloatContext);
-  return context || (() => {});
+  return context || (() => { });
 }

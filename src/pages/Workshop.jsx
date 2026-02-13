@@ -134,7 +134,7 @@ export default function Workshop() {
   const upgrade = useMemo(() => getWorkshopUpgrade(uiState?.workshopUpgradeLevel ?? 1), [uiState]);
   const nextUpgrade = useMemo(() => getNextWorkshopUpgrade(uiState?.workshopUpgradeLevel ?? 1), [uiState]);
 
-  const inventory = profile?.inventory || {};
+  const inventory = useMemo(() => profile?.inventory || {}, [profile?.inventory]);
   const workshopInventory = useMemo(() => {
     const craftedIds = new Set(workshopItems.map((item) => item.id));
     return Object.entries(inventory).reduce((acc, [itemId, amount]) => {
@@ -171,27 +171,27 @@ export default function Workshop() {
     return input.id;
   };
 
-  const getOwnedForInput = (input) => {
+  const getOwnedForInput = React.useCallback((input) => {
     return getItemCount(inventory, input.id);
-  };
+  }, [inventory]);
 
-  const canCraft = (recipe, quantity) => {
+  const canCraft = React.useCallback((recipe, quantity) => {
     if (!profile) {
       return false;
     }
     const scaled = clampQuantity(quantity, 1);
     return recipe.inputs.every((input) => getOwnedForInput(input) >= input.amount * scaled);
-  };
+  }, [profile, getOwnedForInput]);
 
   const normalizedSearch = searchTerm.trim().toLowerCase();
-  const matchesSearch = (recipe) => {
+  const matchesSearch = React.useCallback((recipe) => {
     if (!normalizedSearch) {
       return true;
     }
     const outputName = getOutputName(recipe).toLowerCase();
     const recipeId = recipe.id.toLowerCase();
     return outputName.includes(normalizedSearch) || recipeId.includes(normalizedSearch);
-  };
+  }, [normalizedSearch]);
 
   const getOutputName = (recipe) => {
     const output = recipe.outputs?.[0];
@@ -241,14 +241,14 @@ export default function Workshop() {
     return counts;
   }, [filteredRecipePool]);
 
-  const matchesTag = (recipe) => {
+  const matchesTag = React.useCallback((recipe) => {
     if (tagFilter === 'all') {
       return true;
     }
     return getRecipeTags(recipe).includes(tagFilter);
-  };
+  }, [tagFilter]);
 
-  const shouldShowRecipe = (recipe, quantity) => {
+  const shouldShowRecipe = React.useCallback((recipe, quantity) => {
     if (!matchesSearch(recipe) || !matchesTag(recipe)) {
       return false;
     }
@@ -256,11 +256,11 @@ export default function Workshop() {
       return false;
     }
     return true;
-  };
+  }, [matchesSearch, matchesTag, showCraftableOnly, canCraft]);
 
   const filteredRecipeCount = useMemo(() => {
     return filteredRecipePool.filter((recipe) => shouldShowRecipe(recipe, quantities[recipe.id] || 1)).length;
-  }, [filteredRecipePool, quantities, stationFilter, tagFilter, searchTerm, showCraftableOnly]);
+  }, [filteredRecipePool, quantities, shouldShowRecipe]);
 
   const handleQueue = (recipeId, quantity) => {
     if (!MOCK_AUTH || !profile) {
@@ -434,11 +434,10 @@ export default function Workshop() {
                 type="button"
                 onClick={handleUpgrade}
                 disabled={!nextUpgrade || gold < nextUpgrade.cost}
-                className={`mt-4 inline-flex items-center rounded-lg px-4 py-2 text-xs font-semibold ${
-                  nextUpgrade && gold >= nextUpgrade.cost
-                    ? 'action-primary text-white'
-                    : 'bg-gray-700 text-gray-300'
-                }`}
+                className={`mt-4 inline-flex items-center rounded-lg px-4 py-2 text-xs font-semibold ${nextUpgrade && gold >= nextUpgrade.cost
+                  ? 'action-primary text-white'
+                  : 'bg-gray-700 text-gray-300'
+                  }`}
               >
                 Upgrade Workshop
               </button>
@@ -498,33 +497,30 @@ export default function Workshop() {
                   <button
                     type="button"
                     onClick={() => setTagFilter('all')}
-                    className={`rounded-full border px-3 py-1 uppercase tracking-[0.3em] ${
-                      tagFilter === 'all'
-                        ? 'border-yellow-500/60 bg-yellow-500/10 text-yellow-200'
-                        : 'border-yellow-700/30 text-gray-300'
-                    }`}
+                    className={`rounded-full border px-3 py-1 uppercase tracking-[0.3em] ${tagFilter === 'all'
+                      ? 'border-yellow-500/60 bg-yellow-500/10 text-yellow-200'
+                      : 'border-yellow-700/30 text-gray-300'
+                      }`}
                   >
                     All
                   </button>
                   <button
                     type="button"
                     onClick={() => setTagFilter('ore')}
-                    className={`rounded-full border px-3 py-1 uppercase tracking-[0.3em] ${
-                      tagFilter === 'ore'
-                        ? 'border-yellow-500/60 bg-yellow-500/10 text-yellow-200'
-                        : 'border-yellow-700/30 text-gray-300'
-                    }`}
+                    className={`rounded-full border px-3 py-1 uppercase tracking-[0.3em] ${tagFilter === 'ore'
+                      ? 'border-yellow-500/60 bg-yellow-500/10 text-yellow-200'
+                      : 'border-yellow-700/30 text-gray-300'
+                      }`}
                   >
                     Ore ({tagCounts.ore})
                   </button>
                   <button
                     type="button"
                     onClick={() => setTagFilter('crop')}
-                    className={`rounded-full border px-3 py-1 uppercase tracking-[0.3em] ${
-                      tagFilter === 'crop'
-                        ? 'border-yellow-500/60 bg-yellow-500/10 text-yellow-200'
-                        : 'border-yellow-700/30 text-gray-300'
-                    }`}
+                    className={`rounded-full border px-3 py-1 uppercase tracking-[0.3em] ${tagFilter === 'crop'
+                      ? 'border-yellow-500/60 bg-yellow-500/10 text-yellow-200'
+                      : 'border-yellow-700/30 text-gray-300'
+                      }`}
                   >
                     Crop ({tagCounts.crop})
                   </button>
@@ -535,103 +531,101 @@ export default function Workshop() {
               </div>
               {unlockedStations.map((station) => (
                 stationFilter !== 'all' && stationFilter !== station.id ? null : (
-                <div key={station.id} className="rounded-2xl border border-yellow-700/30 bg-gray-950/70 p-5">
-                  <div className="flex flex-wrap items-center justify-between gap-3">
-                    <div>
-                      <p className="text-xs uppercase tracking-[0.3em] text-gray-400">{station.name}</p>
-                      <p className="mt-2 text-lg font-semibold text-white">{station.description}</p>
+                  <div key={station.id} className="rounded-2xl border border-yellow-700/30 bg-gray-950/70 p-5">
+                    <div className="flex flex-wrap items-center justify-between gap-3">
+                      <div>
+                        <p className="text-xs uppercase tracking-[0.3em] text-gray-400">{station.name}</p>
+                        <p className="mt-2 text-lg font-semibold text-white">{station.description}</p>
+                      </div>
+                      {!station.unlocked ? (
+                        <span className="rounded-full border border-yellow-700/40 bg-gray-900/80 px-3 py-1 text-xs text-yellow-200">
+                          Unlocks at level {station.unlockLevel}
+                        </span>
+                      ) : null}
                     </div>
-                    {!station.unlocked ? (
-                      <span className="rounded-full border border-yellow-700/40 bg-gray-900/80 px-3 py-1 text-xs text-yellow-200">
-                        Unlocks at level {station.unlockLevel}
-                      </span>
-                    ) : null}
-                  </div>
 
-                  {station.unlocked ? (
-                    <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                      {(uiState.recipes[station.id] || []).map((recipe) => {
-                        const quantity = quantities[recipe.id] || 1;
-                        if (!shouldShowRecipe(recipe, quantity)) {
-                          return null;
-                        }
-                        const craftable = canCraft(recipe, quantity);
-                        const tags = getRecipeTags(recipe);
-                        return (
-                          <div key={recipe.id} className="rounded-xl border border-yellow-700/20 bg-gray-900/80 p-4">
-                            <p className="text-sm font-semibold text-white">{getOutputName(recipe)}</p>
-                            <p className="mt-1 text-xs text-gray-400">Requires level {recipe.levelRequired}</p>
-                            {tags.length ? (
-                              <div className="mt-2 flex flex-wrap gap-2 text-[10px] uppercase tracking-[0.3em] text-yellow-200">
-                                {tags.map((tag) => (
-                                  <span key={tag} className="rounded-full border border-yellow-700/30 px-2 py-1">
-                                    {tag}
-                                  </span>
+                    {station.unlocked ? (
+                      <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                        {(uiState.recipes[station.id] || []).map((recipe) => {
+                          const quantity = quantities[recipe.id] || 1;
+                          if (!shouldShowRecipe(recipe, quantity)) {
+                            return null;
+                          }
+                          const craftable = canCraft(recipe, quantity);
+                          const tags = getRecipeTags(recipe);
+                          return (
+                            <div key={recipe.id} className="rounded-xl border border-yellow-700/20 bg-gray-900/80 p-4">
+                              <p className="text-sm font-semibold text-white">{getOutputName(recipe)}</p>
+                              <p className="mt-1 text-xs text-gray-400">Requires level {recipe.levelRequired}</p>
+                              {tags.length ? (
+                                <div className="mt-2 flex flex-wrap gap-2 text-[10px] uppercase tracking-[0.3em] text-yellow-200">
+                                  {tags.map((tag) => (
+                                    <span key={tag} className="rounded-full border border-yellow-700/30 px-2 py-1">
+                                      {tag}
+                                    </span>
+                                  ))}
+                                </div>
+                              ) : null}
+                              <div className="mt-3 space-y-1 text-xs text-gray-300">
+                                {recipe.inputs.map((input) => (
+                                  <div key={input.id} className="flex items-center justify-between">
+                                    <span>
+                                      {input.amount} {getInputName(input)}
+                                    </span>
+                                    <span className="text-gray-400">Owned: {getOwnedForInput(input)}</span>
+                                  </div>
                                 ))}
                               </div>
-                            ) : null}
-                            <div className="mt-3 space-y-1 text-xs text-gray-300">
-                              {recipe.inputs.map((input) => (
-                                <div key={input.id} className="flex items-center justify-between">
-                                  <span>
-                                    {input.amount} {getInputName(input)}
-                                  </span>
-                                  <span className="text-gray-400">Owned: {getOwnedForInput(input)}</span>
-                                </div>
-                              ))}
+                              <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-gray-400">
+                                <span>
+                                  Duration:{' '}
+                                  {formatDuration(
+                                    recipe.durationMs * quantity * (upgrade?.durationMultiplier || 1)
+                                  )}
+                                </span>
+                                <span>·</span>
+                                <span>XP: {recipe.xp * quantity}</span>
+                              </div>
+                              <div className="mt-3 flex flex-wrap items-center gap-2">
+                                <input
+                                  type="number"
+                                  min="1"
+                                  value={quantity}
+                                  onChange={(event) =>
+                                    setQuantities((prev) => ({
+                                      ...prev,
+                                      [recipe.id]: clampQuantity(event.target.value, 1),
+                                    }))
+                                  }
+                                  className="w-20 rounded-lg border border-yellow-700/30 bg-gray-950/70 px-2 py-1 text-xs text-gray-100"
+                                />
+                                <button
+                                  type="button"
+                                  onClick={() => handleQueue(recipe.id, quantity)}
+                                  disabled={!craftable}
+                                  className={`rounded-lg px-3 py-2 text-xs font-semibold ${craftable ? 'action-primary text-white' : 'bg-gray-700 text-gray-300'
+                                    }`}
+                                >
+                                  Craft
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => handleQueue(recipe.id, 5)}
+                                  disabled={!canCraft(recipe, 5)}
+                                  className={`rounded-lg px-3 py-2 text-xs font-semibold ${canCraft(recipe, 5) ? 'action-ghost text-yellow-200' : 'bg-gray-700 text-gray-300'
+                                    }`}
+                                >
+                                  Craft 5
+                                </button>
+                              </div>
                             </div>
-                            <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-gray-400">
-                              <span>
-                                Duration:{' '}
-                                {formatDuration(
-                                  recipe.durationMs * quantity * (upgrade?.durationMultiplier || 1)
-                                )}
-                              </span>
-                              <span>·</span>
-                              <span>XP: {recipe.xp * quantity}</span>
-                            </div>
-                            <div className="mt-3 flex flex-wrap items-center gap-2">
-                              <input
-                                type="number"
-                                min="1"
-                                value={quantity}
-                                onChange={(event) =>
-                                  setQuantities((prev) => ({
-                                    ...prev,
-                                    [recipe.id]: clampQuantity(event.target.value, 1),
-                                  }))
-                                }
-                                className="w-20 rounded-lg border border-yellow-700/30 bg-gray-950/70 px-2 py-1 text-xs text-gray-100"
-                              />
-                              <button
-                                type="button"
-                                onClick={() => handleQueue(recipe.id, quantity)}
-                                disabled={!craftable}
-                                className={`rounded-lg px-3 py-2 text-xs font-semibold ${
-                                  craftable ? 'action-primary text-white' : 'bg-gray-700 text-gray-300'
-                                }`}
-                              >
-                                Craft
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => handleQueue(recipe.id, 5)}
-                                disabled={!canCraft(recipe, 5)}
-                                className={`rounded-lg px-3 py-2 text-xs font-semibold ${
-                                  canCraft(recipe, 5) ? 'action-ghost text-yellow-200' : 'bg-gray-700 text-gray-300'
-                                }`}
-                              >
-                                Craft 5
-                              </button>
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  ) : (
-                    <p className="mt-4 text-sm text-gray-400">Reach workshop level {station.unlockLevel} to unlock.</p>
-                  )}
-                </div>
+                          );
+                        })}
+                      </div>
+                    ) : (
+                      <p className="mt-4 text-sm text-gray-400">Reach workshop level {station.unlockLevel} to unlock.</p>
+                    )}
+                  </div>
                 )
               ))}
             </div>
@@ -664,11 +658,10 @@ export default function Workshop() {
                     type="button"
                     onClick={handleSellAllCrafted}
                     disabled={workshopInventoryTotal <= 0}
-                    className={`rounded-lg px-3 py-2 text-xs font-semibold ${
-                      workshopInventoryTotal > 0
-                        ? 'action-ghost text-yellow-200'
-                        : 'bg-gray-700 text-gray-300'
-                    }`}
+                    className={`rounded-lg px-3 py-2 text-xs font-semibold ${workshopInventoryTotal > 0
+                      ? 'action-ghost text-yellow-200'
+                      : 'bg-gray-700 text-gray-300'
+                      }`}
                   >
                     Sell All
                   </button>

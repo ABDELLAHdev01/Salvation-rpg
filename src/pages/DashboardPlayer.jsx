@@ -111,7 +111,10 @@ export default function DashboardPlayer() {
   const workshopLevel = profile?.workshopLevel ?? 1;
   const workshopXp = profile?.workshopXp ?? 0;
   const workshopXpTarget = getWorkshopXpForLevel(workshopLevel);
-  const workshopQueue = profile?.workshopQueue || [];
+  const workshopQueue = useMemo(
+    () => profile?.workshopQueue || [],
+    [profile?.workshopQueue]
+  );
   const nextWorkshopJob = useMemo(() => {
     if (!workshopQueue.length) {
       return null;
@@ -119,7 +122,7 @@ export default function DashboardPlayer() {
     return [...workshopQueue].sort((a, b) => a.finishAt - b.finishAt)[0] || null;
   }, [workshopQueue]);
   const workshopRemaining = nextWorkshopJob ? Math.max(0, nextWorkshopJob.finishAt - now) : 0;
-  const inventory = profile?.inventory || {};
+  const inventory = useMemo(() => profile?.inventory || {}, [profile?.inventory]);
   const inventoryTotals = useMemo(() => {
     const totals = {};
     Object.entries(inventory).forEach(([itemId, amount]) => {

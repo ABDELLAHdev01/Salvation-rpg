@@ -40,7 +40,7 @@ export default function FarmTasks() {
     } else {
       setProfile(nextProfile);
     }
-  }, []);
+  }, [navigate]);
 
   const farmLevel = profile?.farmLevel ?? 1;
   const farmXp = profile?.farmXp ?? 0;
@@ -48,10 +48,10 @@ export default function FarmTasks() {
   const inventory = profile?.inventory || {};
   const farmXpTarget = getFarmXpForLevel(farmLevel);
 
-  const tasks = profile?.farmTasks || {};
-  const dailyTasks = tasks.daily?.tasks || [];
-  const weeklyTasks = tasks.weekly?.tasks || [];
-  const monthlyTasks = tasks.monthly?.tasks || [];
+  const tasks = useMemo(() => profile?.farmTasks || {}, [profile?.farmTasks]);
+  const dailyTasks = useMemo(() => tasks.daily?.tasks || [], [tasks.daily?.tasks]);
+  const weeklyTasks = useMemo(() => tasks.weekly?.tasks || [], [tasks.weekly?.tasks]);
+  const monthlyTasks = useMemo(() => tasks.monthly?.tasks || [], [tasks.monthly?.tasks]);
 
   const totals = useMemo(() => {
     const countClaimed = (list) => list.filter((task) => task.claimed).length;
@@ -134,8 +134,7 @@ export default function FarmTasks() {
         gold: gold + updatedTask.rewardGold,
       };
       toast.success(
-        `Delivered ${updatedTask.target} ${getGoodName(updatedTask.goodId)} · +${updatedTask.rewardGold}g${
-          leveledUp ? ' · Farm level up!' : ''
+        `Delivered ${updatedTask.target} ${getGoodName(updatedTask.goodId)} · +${updatedTask.rewardGold}g${leveledUp ? ' · Farm level up!' : ''
         }`
       );
     } else {
@@ -184,13 +183,12 @@ export default function FarmTasks() {
                 <button
                   type="button"
                   onClick={() => handleDeliver(periodKey, task.id)}
-                  className={`rounded-lg px-3 py-2 text-xs font-semibold ${
-                    task.claimed
-                      ? 'bg-gray-700 text-gray-300'
-                      : canDeliver
+                  className={`rounded-lg px-3 py-2 text-xs font-semibold ${task.claimed
+                    ? 'bg-gray-700 text-gray-300'
+                    : canDeliver
                       ? 'action-primary text-white'
                       : 'bg-gray-700 text-gray-300'
-                  }`}
+                    }`}
                   disabled={!canDeliver}
                 >
                   {task.claimed ? 'Complete' : remaining === 0 ? 'Complete' : 'Deliver'}

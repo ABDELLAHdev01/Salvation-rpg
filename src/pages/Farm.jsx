@@ -39,7 +39,7 @@ export default function Farm() {
     }
   }, []);
 
-  const inventory = profile?.inventory || {};
+  const inventory = useMemo(() => profile?.inventory || {}, [profile?.inventory]);
 
   const seedCount = useMemo(
     () => farmCrops.reduce((sum, crop) => sum + getItemCount(inventory, getSeedItemId(crop.id)), 0),
