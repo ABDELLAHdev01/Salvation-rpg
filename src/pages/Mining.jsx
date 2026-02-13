@@ -2,7 +2,6 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import Sidebar from '../components/Sidebar';
-import XpBar from '../components/XpBar';
 import { useRewardFloat } from '../components/RewardFloatProvider';
 import authService from '../services/AuthService';
 import characterService from '../services/CharacterService';
@@ -23,15 +22,24 @@ import {
   getWeeklyKey,
   MINING_DURATION_MS,
   MINING_TICK_MS,
-  miningBoosterIcons,
-  miningConsumables,
   miningContractToken,
-  miningHirelings,
-  miningOres,
   rollMiningTick,
+  miningOres,
+  miningConsumables,
+  miningHirelings,
 } from '../data/miningData';
 import { getZoneModifiers } from '../data/zonesData';
 import { addItems, getItemCount, removeItems } from '../services/inventoryService';
+
+import MiningInventory from '../features/mining/MiningInventory';
+import MiningBoosters from '../features/mining/MiningBoosters';
+import MiningContracts from '../features/mining/MiningContracts';
+import MiningHirelings from '../features/mining/MiningHirelings';
+import MiningSessionStatus from '../features/mining/MiningSessionStatus';
+import MiningLevelCard from '../features/mining/MiningLevelCard';
+import MiningPickaxeCard from '../features/mining/MiningPickaxeCard';
+import MiningPickaxeDetail from '../features/mining/MiningPickaxeDetail';
+import MiningForgeDetail from '../features/mining/MiningForgeDetail';
 
 const MOCK_AUTH = import.meta.env.VITE_MOCK_AUTH === 'true';
 const UI_TICK_MS = 3000;
@@ -63,9 +71,9 @@ export default function Mining() {
   const endAt = miningSession?.endAt || 0;
   const remainingMs = endAt - now;
   const isMining = remainingMs > 0;
-  const accruedYield = miningSession?.accruedYield || {};
+
   const accruedXp = miningSession?.accruedXp || 0;
-  const hasAccrued = Object.keys(accruedYield).length > 0 || accruedXp > 0;
+  // hasAccrued removed
   const eventCounts = miningSession?.eventCounts || {};
 
   const miningLevel = profile?.miningLevel ?? 1;
@@ -76,7 +84,7 @@ export default function Mining() {
   const inventory = useMemo(() => profile?.inventory || {}, [profile?.inventory]);
   const gold = profile?.stats?.gold ?? 0;
   const activeBoostId = profile?.activeMiningBoost || null;
-  const activeBoost = activeBoostId ? getMiningConsumable(activeBoostId) : null;
+  // activeBoost removed
   const boosterCooldowns = useMemo(() => profile?.miningBoosterCooldowns || {}, [profile?.miningBoosterCooldowns]);
   const miningCooldownUntil = profile?.miningCooldownUntil ?? 0;
   const miningCooldownRemaining = Math.max(0, miningCooldownUntil - now);
@@ -96,7 +104,7 @@ export default function Mining() {
   const currentForge = getForgeUpgrade(miningForgeLevel);
   const nextForge = getNextForgeUpgrade(miningForgeLevel);
   const miningProgress = Math.max(0, Math.min(100, Math.round((remainingMs / MINING_DURATION_MS) * 100)));
-  const dismissHireling = dismissTarget ? getMiningHireling(dismissTarget) : null;
+  // dismissHireling removed
   const hirelingTicksPerHour = miningHirelingsOwned
     .map((id) => getMiningHireling(id))
     .filter(Boolean)
@@ -104,6 +112,22 @@ export default function Mining() {
 
   const dailyVeinBonus = useMemo(() => getDailyVeinBonus(now), [now]);
   const weeklySurgeBonus = useMemo(() => getWeeklySurgeBonus(now), [now]);
+
+  // Moved applyMiningXp up as it is needed by handleAutoClaimPartial
+  const applyMiningXp = React.useCallback((xpGain) => {
+    let nextLevel = miningLevel;
+    let nextXp = miningXp + xpGain;
+    let xpNeeded = getMiningXpForLevel(nextLevel);
+
+    while (nextXp >= xpNeeded) {
+      nextXp -= xpNeeded;
+      nextLevel += 1;
+      xpNeeded = getMiningXpForLevel(nextLevel);
+    }
+
+    return { nextLevel, nextXp };
+  }, [miningLevel, miningXp]);
+
 
   const getClickPreview = React.useCallback((nodeTier) => {
     const tier = nodeTier || getTierByMiningLevel(miningLevel);
@@ -620,20 +644,6 @@ export default function Mining() {
     }
   }, [profile, inventory, miningLevel, activeBoostId, pushReward, applyMiningXp]);
 
-  const applyMiningXp = React.useCallback((xpGain) => {
-    let nextLevel = miningLevel;
-    let nextXp = miningXp + xpGain;
-    let xpNeeded = getMiningXpForLevel(nextLevel);
-
-    while (nextXp >= xpNeeded) {
-      nextXp -= xpNeeded;
-      nextLevel += 1;
-      xpNeeded = getMiningXpForLevel(nextLevel);
-    }
-
-    return { nextLevel, nextXp };
-  }, [miningLevel, miningXp]);
-
   const handleDeliverContract = (type) => {
     if (!MOCK_AUTH || !profile || !miningContracts?.[type]) {
       return;
@@ -784,6 +794,26 @@ export default function Mining() {
     toast.success(`${hireling.name} hired.`);
   };
 
+  const handleOpenDismiss = (hirelingId) => {
+    setDismissTarget(hirelingId);
+    setShowDismissModal(true);
+  };
+
+  const handleConfirmDismiss = () => {
+    if (!MOCK_AUTH || !profile || !dismissTarget) {
+      return;
+    }
+
+    handleDismissHireling(dismissTarget);
+    setShowDismissModal(false);
+    setDismissTarget(null);
+  };
+
+  const handleCancelDismiss = () => {
+    setShowDismissModal(false);
+    setDismissTarget(null);
+  };
+
   const handleDismissHireling = (hirelingId) => {
     if (!MOCK_AUTH || !profile) {
       return;
@@ -805,110 +835,14 @@ export default function Mining() {
     const updated = characterService.updateMockProfile({
       stats: {
         ...profile.stats,
-        gold: gold + refundAmount,
+        gold: (profile.stats?.gold ?? 0) + refundAmount,
       },
       miningHirelings: nextHirelings,
     });
 
     setProfile(updated);
-    toast.success(`${hireling.name} dismissed for ${refundAmount}g.`);
+    toast.success(`${hireling.name} dismissed.`);
   };
-
-  const handleOpenDismiss = (hirelingId) => {
-    setDismissTarget(hirelingId);
-    setShowDismissModal(true);
-  };
-
-  const handleCancelDismiss = () => {
-    setShowDismissModal(false);
-    setDismissTarget(null);
-  };
-
-  const handleConfirmDismiss = () => {
-    if (!dismissTarget) {
-      return;
-    }
-
-    handleDismissHireling(dismissTarget);
-    setShowDismissModal(false);
-    setDismissTarget(null);
-  };
-
-  useEffect(() => {
-    if (!MOCK_AUTH || !profile) {
-      return;
-    }
-
-    if (!miningSession || !miningSession.endAt) {
-      return;
-    }
-
-    if (miningSession.endAt <= now && hasAccrued) {
-      handleClaim();
-    }
-  }, [now, miningSession, hasAccrued, profile, handleClaim]);
-
-  useEffect(() => {
-    if (!MOCK_AUTH || !profile) {
-      return;
-    }
-
-    if (!isMining || !miningSession) {
-      if (nextAutoClaimAt) {
-        setNextAutoClaimAt(null);
-      }
-      return;
-    }
-
-    if (!nextAutoClaimAt) {
-      setNextAutoClaimAt(now + getRandomAutoClaimDelay());
-      return;
-    }
-
-    if (now < nextAutoClaimAt) {
-      return;
-    }
-
-    handleAutoClaimPartial();
-    setNextAutoClaimAt(now + getRandomAutoClaimDelay());
-  }, [now, isMining, miningSession, nextAutoClaimAt, profile, handleAutoClaimPartial]);
-
-  useEffect(() => {
-    if (!MOCK_AUTH || !profile || !miningClickState?.momentum) {
-      return;
-    }
-
-    const { value, updatedAt, max } = miningClickState.momentum;
-    if (!value || !updatedAt) {
-      return;
-    }
-
-    const elapsedSeconds = Math.floor((now - updatedAt) / 1000);
-    if (elapsedSeconds <= 0) {
-      return;
-    }
-
-    const decayRate = 3;
-    const nextValue = Math.max(0, value - elapsedSeconds * decayRate);
-    if (nextValue === value) {
-      return;
-    }
-
-    const nextClickState = {
-      ...miningClickState,
-      momentum: {
-        value: nextValue,
-        max: max || 100,
-        updatedAt: now,
-      },
-    };
-
-    const updated = characterService.updateMockProfile({
-      miningClickState: nextClickState,
-    });
-
-    setProfile(updated);
-  }, [now, profile, miningClickState]);
 
   const handleArmBooster = (boosterId) => {
     if (!MOCK_AUTH || !profile) {
@@ -959,24 +893,6 @@ export default function Mining() {
     });
   }, [boosterCooldowns, now]);
 
-  const renderBoosterIcon = (boosterId) => {
-    const icon = miningBoosterIcons[boosterId];
-    if (!icon) {
-      return null;
-    }
-
-    return (
-      <svg
-        viewBox={icon.viewBox}
-        className="h-4 w-4 text-yellow-200"
-        fill="currentColor"
-        aria-hidden="true"
-      >
-        <path d={icon.path} />
-      </svg>
-    );
-  };
-
   const lastResult = profile?.lastMiningResult;
   const lastResultList = useMemo(() => {
     if (!lastResult?.yieldMap) {
@@ -1006,20 +922,42 @@ export default function Mining() {
     });
   }, [miningSession]);
 
-  const hirelingContribution = miningSession?.hirelingTicks
-    ? Math.max(0, miningSession.hirelingTicks)
-    : 0;
+  const hirelingContribution = useMemo(() => {
+    if (!miningSession?.hirelingTicks) {
+      return 0;
+    }
+    return miningSession.hirelingTicks;
+  }, [miningSession]);
 
   const hirelingBreakdown = useMemo(() => {
-    const map = miningSession?.hirelingTickMap || {};
-    return Object.entries(map)
-      .map(([id, count]) => ({
-        id,
-        count,
-        name: miningHirelings.find((item) => item.id === id)?.name || id,
-      }))
-      .filter((entry) => entry.count > 0);
+    if (!miningSession?.hirelingTickMap) {
+      return [];
+    }
+    return Object.entries(miningSession.hirelingTickMap)
+      .map(([id, count]) => {
+        const hireling = miningHirelings.find((h) => h.id === id);
+        return {
+          id,
+          name: hireling?.name || 'Unknown',
+          count,
+        };
+      })
+      .sort((a, b) => b.count - a.count);
   }, [miningSession]);
+
+  useEffect(() => {
+    if (!isMining || !nextAutoClaimAt) {
+      if (isMining && !nextAutoClaimAt) {
+        setNextAutoClaimAt(now + getRandomAutoClaimDelay());
+      }
+      return;
+    }
+
+    if (now >= nextAutoClaimAt) {
+      handleAutoClaimPartial();
+      setNextAutoClaimAt(now + getRandomAutoClaimDelay());
+    }
+  }, [now, isMining, nextAutoClaimAt, handleAutoClaimPartial]);
 
   return (
     <section className="min-h-screen bg-center bg-cover bg-no-repeat bg-[url('./jbm.jpg')] bg-gray-900 bg-blend-multiply dashboard-shell lg:pl-64">
@@ -1062,85 +1000,25 @@ export default function Mining() {
           </div>
 
           <div className="mt-6 grid gap-4 sm:grid-cols-3">
-            <div className="court-card rounded-xl p-4">
-              <p className="text-xs uppercase tracking-[0.3em] text-gray-400">Mining Level</p>
-              <p className="mt-2 text-2xl font-semibold text-white">{miningLevel}</p>
-              <div className="mt-3">
-                <XpBar current={miningXp} target={xpToNext} label="Mining XP" tone="cyan" />
-              </div>
-              {hirelingBreakdown.length > 0 && (
-                <details
-                  className="mt-2 rounded-lg border border-yellow-700/20 bg-gray-950/70 px-3 py-2 text-xs text-gray-400"
-                  open={miningHirelingsOwned.length > 0}
-                >
-                  <summary className="flex cursor-pointer items-center justify-between text-yellow-200">
-                    <span>Hireling contributions</span>
-                    <span className="text-[10px] text-yellow-200">▾</span>
-                  </summary>
-                  <div className="mt-2 space-y-1">
-                    {hirelingBreakdown.map((entry) => (
-                      <div key={entry.id} className="flex items-center justify-between">
-                        <span>{entry.name}</span>
-                        <span className="text-yellow-200">{entry.count} ticks</span>
-                      </div>
-                    ))}
-                  </div>
-                </details>
-              )}
-            </div>
-            <div className="court-card rounded-xl p-4">
-              <p className="text-xs uppercase tracking-[0.3em] text-gray-400">Pickaxe Level</p>
-              <p className="mt-2 text-2xl font-semibold text-white">{pickaxeLevel}</p>
-              <p className="mt-2 text-xs text-gray-400">
-                {currentPickaxe?.name || 'Pickaxe'} | {currentPickaxe?.rarity || 'Common'}
-              </p>
-              {currentPickaxe?.visual && (
-                <p className="mt-1 text-xs text-gray-500">{currentPickaxe.visual}</p>
-              )}
-            </div>
-            <div className="image-panel image-panel-housing ornament-frame p-4">
-              <div className="image-panel-content">
-                <p className="text-xs uppercase tracking-[0.3em] text-gray-300">Session</p>
-                <p className="mt-2 text-2xl font-semibold text-white">
-                  {isMining ? 'In Progress' : 'Idle'}
-                </p>
-                <p className="mt-2 text-sm text-gray-300">
-                  {isMining
-                    ? `Time left: ${formatDuration(remainingMs)}`
-                    : isMiningCooldown
-                      ? `Cooldown: ${formatDuration(miningCooldownRemaining)}`
-                      : 'Start a new mining run.'}
-                </p>
-                <p className="mt-3 text-xs text-gray-400">Auto-claim active.</p>
-                <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-black/50">
-                  <div
-                    className="h-full rounded-full bg-yellow-500/70 transition-all"
-                    style={{ width: `${miningProgress}%` }}
-                  />
-                </div>
-                {boosterCooldownRows.some((row) => row.isActive) ? (
-                  <div className="mt-3 space-y-2 text-xs text-gray-300">
-                    {boosterCooldownRows
-                      .filter((row) => row.isActive)
-                      .map((row) => (
-                        <div key={row.booster.id}>
-                          <p>
-                            Booster cooldown: {row.booster.name} ({formatDuration(row.remaining)})
-                          </p>
-                          <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-black/50">
-                            <div
-                              className="h-full rounded-full bg-amber-400/70"
-                              style={{ width: `${row.progress}%` }}
-                            />
-                          </div>
-                        </div>
-                      ))}
-                  </div>
-                ) : (
-                  <p className="mt-3 text-xs text-gray-400">No booster cooldowns active.</p>
-                )}
-              </div>
-            </div>
+            <MiningLevelCard
+              miningLevel={miningLevel}
+              miningXp={miningXp}
+              xpToNext={xpToNext}
+              hirelingBreakdown={hirelingBreakdown}
+              miningHirelingsOwned={miningHirelingsOwned}
+            />
+            <MiningPickaxeCard
+              pickaxeLevel={pickaxeLevel}
+              currentPickaxe={currentPickaxe}
+            />
+            <MiningSessionStatus
+              isMining={isMining}
+              remainingMs={remainingMs}
+              isMiningCooldown={isMiningCooldown}
+              miningCooldownRemaining={miningCooldownRemaining}
+              miningProgress={miningProgress}
+              boosterCooldownRows={boosterCooldownRows}
+            />
           </div>
 
           <div className="mt-6 flex flex-wrap gap-3">
@@ -1170,6 +1048,7 @@ export default function Mining() {
             </Link>
           </div>
 
+          {/* Current Haul Panel (kept here as it's specific to the active session) */}
           <div className="mt-6 grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
             <div className="court-card rounded-2xl p-6" ref={haulRef}>
               <p className="text-xs uppercase tracking-[0.3em] text-gray-400">Current Haul</p>
@@ -1219,463 +1098,114 @@ export default function Mining() {
             </div>
           </div>
 
-          <div className="mt-8 grid gap-4 sm:grid-cols-2">
-            <div className="image-panel image-panel-market ornament-frame p-5">
-              <div className="image-panel-content">
-                <p className="text-xs uppercase tracking-[0.3em] text-gray-300">Pickaxe Portrait</p>
-                <p className="mt-3 text-lg font-semibold text-white">
-                  {currentPickaxe?.name || 'Pickaxe'}
-                </p>
-                <p className="mt-1 text-xs text-gray-400">
-                  {currentPickaxe?.rarity || 'Common'} tier
-                </p>
-                {currentPickaxe?.visual && (
-                  <p className="mt-2 text-xs text-gray-400">{currentPickaxe.visual}</p>
-                )}
-                <div className="mt-4 flex flex-wrap items-center gap-4">
-                  {currentPickaxe?.image && (
-                    <div className="rounded-xl border border-yellow-700/30 bg-gray-950/70 p-2">
-                      <img
-                        src={currentPickaxe.image}
-                        alt={currentPickaxe.name}
-                        className="h-20 w-20 object-contain"
-                      />
-                      <p className="mt-2 text-[10px] uppercase tracking-[0.3em] text-gray-400">Current</p>
-                    </div>
-                  )}
-                  {nextPickaxe?.image && (
-                    <div className="rounded-xl border border-yellow-700/30 bg-gray-950/70 p-2">
-                      <img
-                        src={nextPickaxe.image}
-                        alt={nextPickaxe.name}
-                        className="h-20 w-20 object-contain"
-                      />
-                      <p className="mt-2 text-[10px] uppercase tracking-[0.3em] text-gray-400">Next</p>
-                    </div>
-                  )}
-                </div>
-                <div className="mt-4 rounded-xl border border-yellow-700/30 bg-gray-950/70 p-4">
-                  <p className="text-xs uppercase tracking-[0.3em] text-gray-400">Pickaxe Upgrade</p>
-                  {nextPickaxe ? (
-                    <>
-                      <p className="mt-2 text-sm font-semibold text-white">{nextPickaxe.name}</p>
-                      <p className="mt-1 text-xs text-gray-400">
-                        Requires mining level {nextPickaxe.requiredMiningLevel} · {nextPickaxe.price}g
-                      </p>
-                      <button
-                        type="button"
-                        onClick={handleUpgradePickaxe}
-                        className={`mt-3 w-full rounded-lg px-3 py-2 text-xs font-semibold ${miningLevel >= nextPickaxe.requiredMiningLevel && gold >= nextPickaxe.price
-                          ? 'action-primary text-white'
-                          : 'bg-gray-700 text-gray-300'
-                          }`}
-                        disabled={miningLevel < nextPickaxe.requiredMiningLevel || gold < nextPickaxe.price}
-                      >
-                        Upgrade Pickaxe
-                      </button>
-                    </>
-                  ) : (
-                    <p className="mt-2 text-xs text-gray-400">Pickaxe fully upgraded.</p>
-                  )}
-                </div>
-              </div>
-            </div>
-            <div className="court-card rounded-xl p-5">
-              <p className="text-xs uppercase tracking-[0.3em] text-gray-400">Mining Notes</p>
-              <p className="mt-2 text-sm text-gray-300">
-                Rare nodes and critical strikes can spike your haul. Mishaps can reduce a tick.
-              </p>
-              <div className="mt-3 space-y-1 text-xs text-gray-400">
-                <p>
-                  Daily Vein: +25% {miningOres.find((ore) => ore.id === dailyVeinBonus.oreId)?.name || 'ore'} yield
-                </p>
-                <p>Weekly Surge: +{Math.round((weeklySurgeBonus.xpMultiplier - 1) * 100)}% XP</p>
-                <p>Prestige Rank: {miningPrestigeLevel} (boosts rare + crit rates)</p>
-              </div>
-            </div>
-          </div>
+          <MiningPickaxeDetail
+            currentPickaxe={currentPickaxe}
+            nextPickaxe={nextPickaxe}
+            miningLevel={miningLevel}
+            gold={gold}
+            handleUpgradePickaxe={handleUpgradePickaxe}
+            dailyVeinBonus={dailyVeinBonus}
+            weeklySurgeBonus={weeklySurgeBonus}
+            miningPrestigeLevel={miningPrestigeLevel}
+          />
 
-          <div className="mt-6 grid gap-4 sm:grid-cols-2">
-            <div className="court-card rounded-xl p-5">
-              <p className="text-xs uppercase tracking-[0.3em] text-gray-400">Forge Tier</p>
-              <p className="mt-2 text-lg font-semibold text-white">
-                {currentForge?.name || 'Forge'}
-              </p>
-              {currentForge?.description && (
-                <p className="mt-2 text-xs text-gray-400">{currentForge.description}</p>
-              )}
-              <p className="mt-3 text-xs text-gray-400">Level {miningForgeLevel}</p>
-              <div className="mt-4 rounded-xl border border-yellow-700/30 bg-gray-950/70 p-4">
-                <p className="text-xs uppercase tracking-[0.3em] text-gray-400">Forge Upgrade</p>
-                {nextForge ? (
-                  <>
-                    <p className="mt-2 text-sm font-semibold text-white">{nextForge.name}</p>
-                    <p className="mt-1 text-xs text-gray-400">
-                      Requires mining level {nextForge.requiredMiningLevel} · {nextForge.price}g
-                    </p>
-                    {nextForge.description && (
-                      <p className="mt-2 text-xs text-gray-400">{nextForge.description}</p>
-                    )}
-                    <button
-                      type="button"
-                      onClick={handleUpgradeForge}
-                      className={`mt-3 w-full rounded-lg px-3 py-2 text-xs font-semibold ${miningLevel >= nextForge.requiredMiningLevel && gold >= nextForge.price
-                        ? 'action-primary text-white'
-                        : 'bg-gray-700 text-gray-300'
-                        }`}
-                      disabled={miningLevel < nextForge.requiredMiningLevel || gold < nextForge.price}
-                    >
-                      Upgrade Forge
-                    </button>
-                  </>
-                ) : (
-                  <p className="mt-2 text-xs text-gray-400">Forge fully upgraded.</p>
-                )}
-              </div>
-            </div>
-          </div>
+          <MiningForgeDetail
+            currentForge={currentForge}
+            nextForge={nextForge}
+            miningForgeLevel={miningForgeLevel}
+            miningLevel={miningLevel}
+            gold={gold}
+            handleUpgradeForge={handleUpgradeForge}
+          />
 
-          <div className="mt-8 grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
-            <div className="court-card rounded-2xl p-6">
-              <p className="text-xs uppercase tracking-[0.3em] text-gray-400">Ore Inventory</p>
-              <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                {miningOres.map((ore) => (
-                  <div key={ore.id} className="rounded-xl border border-yellow-700/20 bg-gray-950/70 p-4">
-                    <div className="flex items-center gap-3">
-                      {ore.image && (
-                        <img
-                          src={ore.image}
-                          alt={ore.name}
-                          className="h-10 w-10 rounded-lg object-contain"
-                        />
-                      )}
-                      <p className="text-sm font-semibold text-white">{ore.name}</p>
-                    </div>
-                    <p className="mt-2 text-xs text-gray-400">Stored</p>
-                    <p className="mt-1 text-xl font-semibold text-yellow-300">
-                      {getItemCount(inventory, ore.id)}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            </div>
-            <div className="image-panel image-panel-inventory ornament-frame p-6">
-              <div className="image-panel-content">
-                <p className="text-xs uppercase tracking-[0.3em] text-gray-300">Last Haul</p>
-                {lastResultList.length === 0 ? (
-                  <p className="mt-3 text-sm text-gray-300">No mining rewards yet.</p>
-                ) : (
-                  <>
-                    <p className="mt-2 text-xs text-gray-400">Run tier: {lastResult?.tier || 1}</p>
-                    <ul className="mt-3 space-y-2 text-sm text-gray-300">
-                      {lastResultList.map((item) => (
-                        <li key={item.id} className="flex items-center justify-between">
-                          <span>{item.name}</span>
-                          <span className="text-yellow-200">+{item.amount}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </>
-                )}
-              </div>
-            </div>
-          </div>
+          <MiningInventory
+            inventory={inventory}
+            lastResultList={lastResultList}
+            lastResult={lastResult}
+          />
 
-          <div className="mt-8">
-            <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-              <p className="text-xs uppercase tracking-[0.3em] text-gray-400">Mining Contracts</p>
-              <span
-                className={`${miningContractTokens > 0 ? 'token-glow ' : ''
-                  }inline-flex items-center gap-2 rounded-full bg-yellow-500/10 px-3 py-1 text-[10px] font-semibold text-yellow-200`}
-              >
-                <span className="inline-flex h-4 w-4 items-center justify-center rounded-full bg-yellow-500/20 text-[10px] text-yellow-200">
-                  <svg viewBox="0 0 24 24" className="h-3 w-3" fill="currentColor" aria-hidden="true">
-                    <path d="M12 2l8 4v6c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V6l8-4zm0 4l-4 2v4c0 3.6 2.2 6.2 4 7 1.8-.8 4-3.4 4-7V8l-4-2z" />
-                  </svg>
-                </span>
-                Tokens: {miningContractTokens}
-              </span>
-            </div>
-            <div className="grid gap-6 lg:grid-cols-2">
-              {['daily', 'weekly'].map((type) => {
-                const contract = miningContracts?.[type];
-                const ore = miningOres.find((item) => item.id === contract?.oreId);
-                const owned = contract ? getItemCount(inventory, contract.oreId) : 0;
-                const isClaimed = contract?.claimed;
-                const canDeliver = contract && owned >= contract.amount && !isClaimed;
-                const timeLeft = contract?.expiresAt ? Math.max(0, contract.expiresAt - now) : 0;
-                return (
-                  <div key={type} className="court-card rounded-2xl p-6">
-                    <p className="text-xs uppercase tracking-[0.3em] text-gray-400">
-                      {type === 'weekly' ? 'Weekly Contract' : 'Daily Contract'}
-                    </p>
-                    {contract ? (
-                      <div className="mt-3 space-y-2 text-sm text-gray-300">
-                        <p className="text-white font-semibold">Deliver {contract.amount} {ore?.name || 'Ore'}</p>
-                        <p>Reward: {contract.rewardGold} gold + {contract.rewardXp} XP</p>
-                        <p>Progress: {owned}/{contract.amount}</p>
-                        <p>Time left: {formatDuration(timeLeft)}</p>
-                        {isClaimed ? (
-                          <span className="inline-flex rounded-full bg-yellow-500/10 px-3 py-1 text-xs text-yellow-200">
-                            Completed
-                          </span>
-                        ) : (
-                          <div className="flex flex-wrap items-center gap-2">
-                            <button
-                              type="button"
-                              onClick={() => handleDeliverContract(type)}
-                              className={`rounded-lg px-3 py-2 text-xs font-semibold ${canDeliver ? 'action-primary text-white' : 'bg-gray-700 text-gray-300'
-                                }`}
-                              disabled={!canDeliver}
-                            >
-                              Deliver Ore
-                            </button>
-                            <div className="relative group">
-                              <button
-                                type="button"
-                                onClick={() => handleRefreshContract(type)}
-                                className={`rounded-lg px-3 py-2 text-xs font-semibold ${miningContractTokens > 0 ? 'action-ghost text-yellow-200' : 'bg-gray-700 text-gray-300'
-                                  }`}
-                                disabled={miningContractTokens <= 0}
-                              >
-                                Refresh ({miningContractTokens})
-                              </button>
-                              <div className="pointer-events-none absolute left-1/2 top-full z-20 mt-2 w-44 -translate-x-1/2 rounded-lg border border-yellow-700/30 bg-gray-950/95 px-3 py-2 text-[10px] text-gray-200 opacity-0 transition duration-200 ease-out group-hover:opacity-100 group-hover:translate-y-0 translate-y-1 group-hover:shadow-[0_0_12px_rgba(250,204,21,0.35)]">
-                                <div className="flex items-start gap-2">
-                                  <span className="mt-0.5 inline-flex h-4 w-4 items-center justify-center rounded-full bg-yellow-500/20 text-[10px] text-yellow-200">
-                                    i
-                                  </span>
-                                  <span>Uses one token to reroll this contract.</span>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    ) : (
-                      <p className="mt-3 text-sm text-gray-300">Contract parchment is being prepared.</p>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          </div>
+          <MiningContracts
+            miningContracts={miningContracts}
+            inventory={inventory}
+            miningContractTokens={miningContractTokens}
+            now={now}
+            handleDeliverContract={handleDeliverContract}
+            handleRefreshContract={handleRefreshContract}
+          />
 
-          <div className="mt-8 grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
-            <div className="court-card rounded-2xl p-6">
-              <p className="text-xs uppercase tracking-[0.3em] text-gray-400">Worker Hirelings</p>
-              <p className="mt-2 text-sm text-gray-300">
-                Passive miners add extra ticks while you are away.
-              </p>
-              <p className="mt-2 text-xs text-gray-400">Total bonus: +{hirelingTicksPerHour} ticks/hour</p>
-              {hirelingBreakdown.length > 0 && (
-                <details
-                  className="mt-2 rounded-lg border border-yellow-700/20 bg-gray-950/70 px-3 py-2 text-xs text-gray-400"
-                  open={miningHirelingsOwned.length > 0}
-                >
-                  <summary className="flex cursor-pointer items-center justify-between text-yellow-200">
-                    <span>Hireling contributions</span>
-                    <span className="text-[10px] text-yellow-200">▾</span>
-                  </summary>
-                  <div className="mt-2 space-y-1">
-                    {hirelingBreakdown.map((entry) => (
-                      <div key={entry.id} className="flex items-center justify-between">
-                        <span>{entry.name}</span>
-                        <span className="text-yellow-200">{entry.count} ticks</span>
-                      </div>
-                    ))}
-                  </div>
-                </details>
-              )}
-              <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                {miningHirelings.map((hireling) => {
-                  const owned = miningHirelingsOwned.includes(hireling.id);
-                  const meetsLevel = miningLevel >= hireling.requiredMiningLevel;
-                  const canHire = !owned && meetsLevel && gold >= hireling.price;
-                  const refundRate = hireling.refundRate ?? 0.4;
-                  const refundAmount = Math.max(0, Math.round(hireling.price * refundRate));
-                  return (
-                    <div key={hireling.id} className="rounded-xl border border-yellow-700/20 bg-gray-950/70 p-4">
-                      <p className="text-sm font-semibold text-white">{hireling.name}</p>
-                      <p className="mt-1 text-xs text-gray-400">{hireling.description}</p>
-                      <p className="mt-2 text-xs text-gray-500">+{hireling.ticksPerHour} ticks/hour</p>
-                      <p className="mt-2 text-xs text-gray-500">
-                        Requires L{hireling.requiredMiningLevel} · {hireling.price}g
-                      </p>
-                      {owned && (
-                        <p className="mt-2 text-xs text-gray-500">Dismiss refund: {refundAmount}g</p>
-                      )}
-                      <span className={`mt-3 inline-flex rounded-full px-3 py-1 text-xs ${owned ? 'bg-yellow-500/10 text-yellow-200' : 'bg-gray-800 text-gray-400'
-                        }`}>
-                        {owned ? 'Hired' : 'Not hired'}
-                      </span>
-                      <div className="mt-3 grid gap-2 sm:grid-cols-2">
-                        <button
-                          type="button"
-                          onClick={() => handleHirelingPurchase(hireling.id)}
-                          className={`rounded-lg px-3 py-2 text-xs font-semibold ${canHire ? 'action-primary text-white' : 'bg-gray-700 text-gray-300'
-                            }`}
-                          disabled={!canHire}
-                        >
-                          Hire
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => handleOpenDismiss(hireling.id)}
-                          className={`rounded-lg px-3 py-2 text-xs font-semibold ${owned ? 'border border-yellow-700/40 text-yellow-200' : 'bg-gray-700 text-gray-300'
-                            }`}
-                          disabled={!owned}
-                        >
-                          Dismiss
-                        </button>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-            <div className="image-panel image-panel-market ornament-frame p-6">
-              <div className="image-panel-content">
-                <p className="text-xs uppercase tracking-[0.3em] text-gray-300">Passive Summary</p>
-                <p className="mt-3 text-sm text-gray-300">
-                  Hirelings add {hirelingTicksPerHour} extra ticks per hour while mining.
-                </p>
-                <p className="mt-2 text-xs text-gray-400">
-                  Bonuses stack with your pickaxe and boosters.
-                </p>
-              </div>
-            </div>
-          </div>
+          <MiningHirelings
+            miningHirelingsOwned={miningHirelingsOwned}
+            hirelingBreakdown={hirelingBreakdown}
+            miningLevel={miningLevel}
+            gold={gold}
+            hirelingTicksPerHour={hirelingTicksPerHour}
+            handleHirelingPurchase={handleHirelingPurchase}
+            handleOpenDismiss={handleOpenDismiss}
+          />
 
-          <div className="mt-8 grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
-            <div className="court-card rounded-2xl p-6">
-              <p className="text-xs uppercase tracking-[0.3em] text-gray-400">Mining Boosters</p>
-              <p className="mt-2 text-sm text-gray-300">
-                Arm a consumable to increase mining XP on your next claim.
-              </p>
-              <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                {miningConsumables.map((booster) => {
-                  const owned = getItemCount(inventory, booster.id);
-                  const isArmed = activeBoostId === booster.id;
-                  const cooldownUntil = boosterCooldowns[booster.id] || 0;
-                  const isOnCooldown = cooldownUntil > Date.now();
-                  const cooldownLabel = isOnCooldown ? formatDuration(cooldownUntil - Date.now()) : 'Ready';
-                  const meetsLevel = miningLevel >= booster.requiredMiningLevel;
-                  const canArm = owned > 0 && !isArmed && !isOnCooldown && meetsLevel;
-                  return (
-                    <div key={booster.id} className="rounded-xl border border-yellow-700/20 bg-gray-950/70 p-4">
-                      <div className="flex items-center gap-2">
-                        <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-yellow-500/10">
-                          {renderBoosterIcon(booster.id)}
-                        </span>
-                        <p className="text-sm font-semibold text-white">{booster.name}</p>
-                      </div>
-                      <p className="mt-1 text-xs text-gray-400">{booster.description}</p>
-                      <div className="mt-3 flex flex-wrap items-center justify-between gap-2 text-xs text-gray-300">
-                        <span>Owned: {owned}</span>
-                        <span>Req L{booster.requiredMiningLevel}</span>
-                        <span>Cooldown: {cooldownLabel}</span>
-                        {isArmed ? (
-                          <span className="rounded-full bg-yellow-500/10 px-3 py-1 text-xs text-yellow-200">
-                            Armed
-                          </span>
-                        ) : (
-                          <button
-                            type="button"
-                            onClick={() => handleArmBooster(booster.id)}
-                            className={`rounded-lg px-3 py-1 text-xs font-semibold ${canArm ? 'action-primary text-white' : 'bg-gray-700 text-gray-300'
-                              }`}
-                            disabled={!canArm}
-                          >
-                            Arm
-                          </button>
-                        )}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-            <div className="image-panel image-panel-market ornament-frame p-6">
-              <div className="image-panel-content">
-                <p className="text-xs uppercase tracking-[0.3em] text-gray-300">Active Booster</p>
-                {activeBoost ? (
-                  <div className="mt-3 text-sm text-gray-300">
-                    <p className="font-semibold text-white">{activeBoost.name}</p>
-                    <p className="mt-1 text-xs text-gray-400">{activeBoost.description}</p>
-                    <p className="mt-1 text-xs text-gray-400">Req level {activeBoost.requiredMiningLevel}</p>
-                  </div>
-                ) : (
-                  <p className="mt-3 text-sm text-gray-300">No booster armed.</p>
-                )}
-                {lastResult?.boosterId && (
-                  <p className="mt-3 text-xs text-gray-400">
-                    Last claim used: {getMiningConsumable(lastResult.boosterId)?.name || 'Booster'}
-                  </p>
-                )}
-              </div>
-            </div>
-          </div>
+          <MiningBoosters
+            inventory={inventory}
+            activeBoostId={activeBoostId}
+            boosterCooldowns={boosterCooldowns}
+            miningLevel={miningLevel}
+            handleArmBooster={handleArmBooster}
+          />
+
         </div>
       </div>
 
-      {showStopModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4">
-          <div className="w-full max-w-md rounded-2xl border border-yellow-700/30 bg-gray-950/95 p-6 shadow-xl">
-            <p className="text-sm uppercase tracking-[0.3em] text-yellow-400">Stop Mining</p>
-            <h2 className="mt-3 text-xl font-semibold text-white">End your mining run early?</h2>
+      {/* Dismiss Hireling Modal */}
+      {showDismissModal && dismissTarget && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+          <div className="w-full max-w-md rounded-2xl border border-yellow-700/30 bg-gray-950 p-6 shadow-2xl">
+            <h3 className="text-xl font-bold text-white">Dismiss Hireling</h3>
             <p className="mt-2 text-sm text-gray-300">
-              Stopping now will apply a 4-hour cooldown. Your current haul will be claimed.
+              Are you sure? You will get a partial refund of{' '}
+              {Math.max(0, Math.round((getMiningHireling(dismissTarget)?.price || 0) * (getMiningHireling(dismissTarget)?.refundRate || 0.4)))}g.
             </p>
-            <p className="mt-2 text-xs text-gray-400">
-              Cooldown ends at {new Date(Date.now() + 4 * 60 * 60 * 1000).toLocaleString()}.
+            <div className="mt-6 flex justify-end gap-3">
+              <button
+                type="button"
+                onClick={handleCancelDismiss}
+                className="rounded-lg px-4 py-2 text-sm font-semibold text-gray-300 hover:bg-white/5"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmDismiss}
+                className="rounded-lg bg-red-900/50 px-4 py-2 text-sm font-semibold text-red-200 border border-red-500/20 hover:bg-red-900/70"
+              >
+                Confirm Dismiss
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Stop Mining Modal */}
+      {showStopModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+          <div className="w-full max-w-md rounded-2xl border border-yellow-700/30 bg-gray-950 p-6 shadow-2xl">
+            <h3 className="text-xl font-bold text-white">Stop Mining?</h3>
+            <p className="mt-2 text-sm text-gray-300">
+              Stopping early will trigger the 4-hour cooldown immediately. You will
+              keep any ore mined so far.
             </p>
-            <div className="mt-6 flex items-center justify-end gap-3">
+            <div className="mt-6 flex justify-end gap-3">
               <button
                 type="button"
                 onClick={handleCancelStopMining}
-                className="rounded-lg border border-yellow-700/40 px-4 py-2 text-xs font-semibold text-yellow-200"
+                className="rounded-lg px-4 py-2 text-sm font-semibold text-gray-300 hover:bg-white/5"
               >
                 Keep Mining
               </button>
               <button
                 type="button"
                 onClick={handleConfirmStopMining}
-                className="rounded-lg px-4 py-2 text-xs font-semibold action-primary text-white"
+                className="rounded-lg bg-red-900/50 px-4 py-2 text-sm font-semibold text-red-200 border border-red-500/20 hover:bg-red-900/70"
               >
                 Stop & Claim
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-      {showDismissModal && dismissHireling && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4">
-          <div className="w-full max-w-md rounded-2xl border border-yellow-700/30 bg-gray-950/95 p-6 shadow-xl">
-            <p className="text-sm uppercase tracking-[0.3em] text-yellow-400">Dismiss Hireling</p>
-            <h2 className="mt-3 text-xl font-semibold text-white">
-              Dismiss {dismissHireling.name}?
-            </h2>
-            <p className="mt-2 text-sm text-gray-300">
-              This hireling will stop providing ticks. You will receive a refund.
-            </p>
-            <p className="mt-2 text-xs text-gray-400">
-              Refund: {Math.max(0, Math.round(dismissHireling.price * (dismissHireling.refundRate ?? 0.4)))}g
-            </p>
-            <div className="mt-6 flex items-center justify-end gap-3">
-              <button
-                type="button"
-                onClick={handleCancelDismiss}
-                className="rounded-lg border border-yellow-700/40 px-4 py-2 text-xs font-semibold text-yellow-200"
-              >
-                Keep Hireling
-              </button>
-              <button
-                type="button"
-                onClick={handleConfirmDismiss}
-                className="rounded-lg px-4 py-2 text-xs font-semibold action-primary text-white"
-              >
-                Dismiss
               </button>
             </div>
           </div>

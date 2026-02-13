@@ -2,11 +2,13 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import Sidebar from '../components/Sidebar';
-import XpBar from '../components/XpBar';
 import authService from '../services/AuthService';
 import characterService from '../services/CharacterService';
 import { ensureFarmTasks, farmGoods, getFarmXpForLevel } from '../data/farmData';
 import { getItemCount, removeItems } from '../services/inventoryService';
+
+import FarmStatCard from '../features/farm/FarmStatCard';
+import FarmTaskGroup from '../features/farm/FarmTaskGroup';
 
 const MOCK_AUTH = import.meta.env.VITE_MOCK_AUTH === 'true';
 
@@ -152,55 +154,6 @@ export default function FarmTasks() {
     setProfile(updated);
   };
 
-  const renderTaskGroup = (label, periodKey, list, summary) => (
-    <div className="rounded-2xl border border-yellow-700/20 bg-gray-950/70 p-5">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <p className="text-xs uppercase tracking-[0.3em] text-gray-400">{label}</p>
-          <p className="mt-2 text-sm text-gray-300">{summary.done}/{summary.total} complete</p>
-        </div>
-      </div>
-      <div className="mt-4 space-y-3">
-        {list.map((task) => {
-          const owned = getItemCount(inventory, task.goodId);
-          const remaining = Math.max(0, task.target - task.progress);
-          const canDeliver = owned > 0 && !task.claimed;
-          return (
-            <div
-              key={task.id}
-              className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-yellow-700/20 bg-gray-950/70 p-3"
-            >
-              <div>
-                <p className="text-sm font-semibold text-white">{task.label}</p>
-                <p className="mt-1 text-xs text-gray-400">
-                  Delivered {task.progress}/{task.target} · Owned {owned}
-                </p>
-                <p className="mt-1 text-xs text-gray-400">
-                  Rewards: +{task.rewardXp} XP · +{task.rewardGold}g
-                </p>
-              </div>
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => handleDeliver(periodKey, task.id)}
-                  className={`rounded-lg px-3 py-2 text-xs font-semibold ${task.claimed
-                    ? 'bg-gray-700 text-gray-300'
-                    : canDeliver
-                      ? 'action-primary text-white'
-                      : 'bg-gray-700 text-gray-300'
-                    }`}
-                  disabled={!canDeliver}
-                >
-                  {task.claimed ? 'Complete' : remaining === 0 ? 'Complete' : 'Deliver'}
-                </button>
-              </div>
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  );
-
   if (!MOCK_AUTH) {
     return (
       <div className="min-h-screen bg-gray-900 text-gray-200 flex items-center justify-center p-6">
@@ -234,32 +187,42 @@ export default function FarmTasks() {
             </Link>
           </div>
 
-          <div className="mt-6 grid gap-4 sm:grid-cols-3">
-            <div className="court-card rounded-xl p-4">
-              <p className="text-xs uppercase tracking-[0.3em] text-gray-400">Farm Level</p>
-              <p className="mt-2 text-2xl font-semibold text-white">{farmLevel}</p>
-              <div className="mt-3">
-                <XpBar current={farmXp} target={farmXpTarget} label="Farm XP" tone="emerald" />
-              </div>
-            </div>
-            <div className="court-card rounded-xl p-4">
-              <p className="text-xs uppercase tracking-[0.3em] text-gray-400">Gold</p>
-              <p className="mt-2 text-2xl font-semibold text-yellow-300">{gold}</p>
-            </div>
-            <div className="image-panel image-panel-housing ornament-frame p-4">
-              <div className="image-panel-content">
-                <p className="text-xs uppercase tracking-[0.3em] text-gray-300">Inventory</p>
-                <p className="mt-2 text-2xl font-semibold text-white">
-                  {farmGoods.reduce((sum, good) => sum + getItemCount(inventory, good.id), 0)} goods
-                </p>
-              </div>
-            </div>
-          </div>
+          <FarmStatCard
+            farmLevel={farmLevel}
+            farmXp={farmXp}
+            farmXpTarget={farmXpTarget}
+            gold={gold}
+            inventory={inventory}
+          />
 
           <div className="mt-8 space-y-6">
-            {renderTaskGroup('Daily Orders', 'daily', dailyTasks, totals.daily)}
-            {renderTaskGroup('Weekly Orders', 'weekly', weeklyTasks, totals.weekly)}
-            {renderTaskGroup('Monthly Orders', 'monthly', monthlyTasks, totals.monthly)}
+            <FarmTaskGroup
+              label="Daily Orders"
+              periodKey="daily"
+              tasks={dailyTasks}
+              doneCount={totals.daily.done}
+              totalCount={totals.daily.total}
+              inventory={inventory}
+              handleDeliver={handleDeliver}
+            />
+            <FarmTaskGroup
+              label="Weekly Orders"
+              periodKey="weekly"
+              tasks={weeklyTasks}
+              doneCount={totals.weekly.done}
+              totalCount={totals.weekly.total}
+              inventory={inventory}
+              handleDeliver={handleDeliver}
+            />
+            <FarmTaskGroup
+              label="Monthly Orders"
+              periodKey="monthly"
+              tasks={monthlyTasks}
+              doneCount={totals.monthly.done}
+              totalCount={totals.monthly.total}
+              inventory={inventory}
+              handleDeliver={handleDeliver}
+            />
           </div>
         </div>
       </div>

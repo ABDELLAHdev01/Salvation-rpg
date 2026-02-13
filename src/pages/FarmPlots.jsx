@@ -2,7 +2,6 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import Sidebar from '../components/Sidebar';
-import XpBar from '../components/XpBar';
 import { useRewardFloat } from '../components/RewardFloatProvider';
 import authService from '../services/AuthService';
 import characterService from '../services/CharacterService';
@@ -12,13 +11,14 @@ import {
   getFarmXpForLevel,
   ensureFarmWeather,
   getCropSeasonModifiers,
-  getCropSeasonBadges,
-  getSeedImageSrc,
 } from '../data/farmData';
 import { getSeedItemId } from '../data/itemsCatalog';
-import { formatDuration } from '../data/miningData';
 import { getZoneModifiers } from '../data/zonesData';
 import { addItems, getItemCount, removeItems } from '../services/inventoryService';
+
+import FarmUpgradePanel from '../features/farm/FarmUpgradePanel';
+import PlotCard from '../features/farm/PlotCard';
+import SeedSelector from '../features/farm/SeedSelector';
 
 const MOCK_AUTH = import.meta.env.VITE_MOCK_AUTH === 'true';
 const UI_TICK_MS = 3000;
@@ -393,40 +393,17 @@ export default function FarmPlots() {
             </Link>
           </div>
 
-          <div className="mt-6 grid gap-4 sm:grid-cols-3">
-            <div className="court-card rounded-xl p-4">
-              <p className="text-xs uppercase tracking-[0.3em] text-gray-400">Farm Level</p>
-              <p className="mt-2 text-2xl font-semibold text-white">{farmLevel}</p>
-              <div className="mt-3">
-                <XpBar current={farmXp} target={farmXpTarget} label="Farm XP" tone="emerald" />
-              </div>
-            </div>
-            <div className="court-card rounded-xl p-4">
-              <p className="text-xs uppercase tracking-[0.3em] text-gray-400">Gold</p>
-              <p className="mt-2 text-2xl font-semibold text-yellow-300">{gold}</p>
-            </div>
-            <div className="image-panel image-panel-housing ornament-frame p-4">
-              <div className="image-panel-content">
-                <p className="text-xs uppercase tracking-[0.3em] text-gray-300">Land Size</p>
-                <p className="mt-2 text-2xl font-semibold text-white">{landSize} plots</p>
-                <p className="mt-2 text-xs text-gray-400">
-                  Next expansion: {nextExpandCost}g · Requires farm level {nextExpandFarmLevel}
-                </p>
-                <button
-                  type="button"
-                  onClick={handleExpandLand}
-                  className={`mt-3 w-full rounded-lg px-3 py-2 text-xs font-semibold ${
-                    gold >= nextExpandCost && farmLevel >= nextExpandFarmLevel
-                      ? 'action-primary text-white'
-                      : 'bg-gray-700 text-gray-300'
-                  }`}
-                  disabled={gold < nextExpandCost || farmLevel < nextExpandFarmLevel}
-                >
-                  Expand Land (+{LAND_EXPAND_SIZE} plots)
-                </button>
-              </div>
-            </div>
-          </div>
+          <FarmUpgradePanel
+            farmLevel={farmLevel}
+            farmXp={farmXp}
+            farmXpTarget={farmXpTarget}
+            gold={gold}
+            landSize={landSize}
+            nextExpandCost={nextExpandCost}
+            nextExpandFarmLevel={nextExpandFarmLevel}
+            handleExpandLand={handleExpandLand}
+            LAND_EXPAND_SIZE={LAND_EXPAND_SIZE}
+          />
 
           {farmWeather && (
             <div className="mt-4 rounded-2xl border border-yellow-700/20 bg-gray-950/70 p-4">
@@ -452,11 +429,10 @@ export default function FarmPlots() {
                 <button
                   type="button"
                   onClick={() => openPlantModal(null, 'bulk')}
-                  className={`rounded-lg border px-3 py-2 text-xs font-semibold ${
-                    farmLevel >= 10
-                      ? 'border-yellow-700/40 text-yellow-200'
-                      : 'border-gray-700/60 text-gray-500'
-                  }`}
+                  className={`rounded-lg border px-3 py-2 text-xs font-semibold ${farmLevel >= 10
+                    ? 'border-yellow-700/40 text-yellow-200'
+                    : 'border-gray-700/60 text-gray-500'
+                    }`}
                   disabled={farmLevel < 10}
                   title={farmLevel < 10 ? 'Bulk plant unlocks at L10' : undefined}
                 >
@@ -466,11 +442,10 @@ export default function FarmPlots() {
                   type="button"
                   onClick={handleHarvestAll}
                   ref={harvestAllRef}
-                  className={`rounded-lg border px-3 py-2 text-xs font-semibold ${
-                    farmLevel >= 20
-                      ? 'border-emerald-500/40 text-emerald-200'
-                      : 'border-gray-700/60 text-gray-500'
-                  }`}
+                  className={`rounded-lg border px-3 py-2 text-xs font-semibold ${farmLevel >= 20
+                    ? 'border-emerald-500/40 text-emerald-200'
+                    : 'border-gray-700/60 text-gray-500'
+                    }`}
                   disabled={farmLevel < 20}
                   title={farmLevel < 20 ? 'Bulk harvest unlocks at L20' : undefined}
                 >
@@ -479,192 +454,30 @@ export default function FarmPlots() {
               </div>
             </div>
             <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {plots.map((plot) => {
-                const crop = plot.cropId ? farmCrops.find((entry) => entry.id === plot.cropId) : null;
-                const remaining = plot.harvestAt ? Math.max(0, plot.harvestAt - now) : 0;
-                const isReady = !!plot.harvestAt && remaining <= 0;
-                const plotState = crop ? (isReady ? 'ready' : 'planted') : 'empty';
-                const frameOffset = plotState === 'empty' ? 0 : plotState === 'planted' ? 33.333 : 66.666;
-                const frameOffsetY = 0;
-                const frameScaleY = 1;
-                const isActionable = plotState === 'empty' || plotState === 'ready';
-                const handlePlotClick = () => {
-                  if (plotState === 'empty') {
-                    openPlantModal(plot.id, 'single');
-                    return;
-                  }
-                  if (plotState === 'ready') {
-                    handleHarvest(plot.id);
-                  }
-                };
-
-                return (
-                  <div
-                    key={plot.id}
-                    ref={(node) => {
-                      if (node) {
-                        plotRefs.current.set(plot.id, node);
-                      } else {
-                        plotRefs.current.delete(plot.id);
-                      }
-                    }}
-                    className={`relative mx-auto w-full max-w-[320px] overflow-hidden rounded-xl transition-transform duration-200 ${
-                      isActionable ? 'cursor-pointer hover:-translate-y-1 hover:shadow-xl' : ''
-                    }`}
-                    onClick={isActionable ? handlePlotClick : undefined}
-                    role={isActionable ? 'button' : undefined}
-                    tabIndex={isActionable ? 0 : undefined}
-                    onKeyDown={
-                      isActionable
-                        ? (event) => {
-                            if (event.key === 'Enter' || event.key === ' ') {
-                              event.preventDefault();
-                              handlePlotClick();
-                            }
-                          }
-                        : undefined
-                    }
-                  >
-                    <div className="w-full overflow-hidden leading-none text-[0px]">
-                      <img
-                        src="/plot/plotcCasesV2.png"
-                        alt="Plot state"
-                        className="block w-[300%] max-w-none align-top"
-                        style={{
-                          transform: `translate(-${frameOffset}%, ${frameOffsetY}%) scale(1, ${frameScaleY})`,
-                          transformOrigin: 'center',
-                        }}
-                      />
-                    </div>
-                    <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-gray-950/90 via-gray-950/70 to-transparent p-4">
-                      <p className="text-xs uppercase tracking-[0.3em] text-gray-400">Plot {plot.id + 1}</p>
-                      {crop ? (
-                        <>
-                          <p className="mt-2 text-sm font-semibold text-white">{crop.name}</p>
-                          <p className="mt-1 text-xs text-gray-400">
-                            {isReady ? 'Ready to harvest' : `Ready in ${formatDuration(remaining)}`}
-                          </p>
-                          <button
-                            type="button"
-                            onClick={(event) => {
-                              event.stopPropagation();
-                              handleHarvest(plot.id);
-                            }}
-                            className={`mt-3 rounded-lg px-3 py-2 text-xs font-semibold ${
-                              isReady ? 'action-primary text-white' : 'bg-gray-700 text-gray-300'
-                            }`}
-                            disabled={!isReady}
-                          >
-                            Harvest
-                          </button>
-                        </>
-                      ) : (
-                        <>
-                          <p className="mt-2 text-sm text-gray-300">Empty plot</p>
-                          <button
-                            type="button"
-                            onClick={(event) => {
-                              event.stopPropagation();
-                              openPlantModal(plot.id, 'single');
-                            }}
-                            className="mt-3 rounded-lg px-3 py-2 text-xs font-semibold action-primary text-white"
-                          >
-                            Plant
-                          </button>
-                        </>
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
+              {plots.map((plot) => (
+                <PlotCard
+                  key={plot.id}
+                  plot={plot}
+                  now={now}
+                  openPlantModal={openPlantModal}
+                  handleHarvest={handleHarvest}
+                  plotRefs={plotRefs}
+                />
+              ))}
             </div>
           </div>
         </div>
       </div>
 
-      {showPlantModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4">
-          <div className="w-full max-w-2xl rounded-2xl border border-yellow-700/30 bg-gray-950/95 p-6 shadow-xl">
-            <p className="text-sm uppercase tracking-[0.3em] text-yellow-400">Choose Crop</p>
-            <h2 className="mt-3 text-xl font-semibold text-white">What do you want to plant?</h2>
-            {plantMode === 'bulk' && (
-              <p className="mt-2 text-xs text-gray-300">This will plant all empty plots with the selected seed.</p>
-            )}
-            <div className="mt-4 space-y-3">
-              {farmCrops.map((crop) => {
-                const seedItemId = getSeedItemId(crop.id);
-                const ownedSeeds = getItemCount(inventory, seedItemId);
-                const meetsLevel = farmLevel >= crop.levelRequired;
-                const disabled = !meetsLevel || ownedSeeds <= 0;
-                const badges = getCropSeasonBadges(crop.id);
-                return (
-                  <div
-                    key={crop.id}
-                    className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-yellow-700/20 bg-gray-950/70 p-3"
-                  >
-                    <div className="flex flex-wrap items-center gap-3">
-                      <img
-                        src={getSeedImageSrc(crop.id)}
-                        alt={crop.seedName}
-                        className="seed-thumb"
-                      />
-                      <div>
-                        <p className="text-sm font-semibold text-white">{crop.name}</p>
-                        <p className="mt-1 text-xs text-gray-400">
-                          Farm L{crop.levelRequired} · {crop.seedName} · {formatDuration(crop.growMs)}
-                        </p>
-                        {badges.length > 0 && (
-                          <div className="mt-2 flex flex-wrap gap-2">
-                            {badges.map((badge) => (
-                              <span
-                                key={`${crop.id}-${badge.season}`}
-                                className={`rounded-full px-2 py-1 text-[10px] uppercase tracking-[0.2em] ${
-                                  badge.tone === 'good'
-                                    ? badge.season === season
-                                      ? 'bg-emerald-400/20 text-emerald-100 ring-1 ring-emerald-400/50'
-                                      : 'bg-emerald-500/10 text-emerald-200'
-                                    : badge.season === season
-                                    ? 'bg-rose-400/20 text-rose-100 ring-1 ring-rose-400/50'
-                                    : 'bg-rose-500/10 text-rose-200'
-                                }`}
-                              >
-                                {badge.label}{badge.season === season ? ' · Today' : ''}
-                              </span>
-                            ))}
-                          </div>
-                        )}
-                        <p className="mt-1 text-xs text-gray-400">
-                          Yield: {crop.yieldAmount} {farmGoods.find((good) => good.id === crop.yieldId)?.name || 'Goods'}
-                        </p>
-                        <p className="mt-1 text-xs text-gray-500">Seeds owned: {ownedSeeds}</p>
-                      </div>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => handlePlant(crop.id)}
-                      className={`rounded-lg px-3 py-2 text-xs font-semibold ${
-                        disabled ? 'bg-gray-700 text-gray-300' : 'action-primary text-white'
-                      }`}
-                      disabled={disabled}
-                    >
-                      Plant
-                    </button>
-                  </div>
-                );
-              })}
-            </div>
-            <div className="mt-6 flex items-center justify-end">
-              <button
-                type="button"
-                onClick={closePlantModal}
-                className="rounded-lg border border-yellow-700/40 px-4 py-2 text-xs font-semibold text-yellow-200"
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <SeedSelector
+        isOpen={showPlantModal}
+        plantMode={plantMode}
+        farmLevel={farmLevel}
+        season={season}
+        inventory={inventory}
+        handlePlant={handlePlant}
+        onClose={closePlantModal}
+      />
     </section>
   );
 }

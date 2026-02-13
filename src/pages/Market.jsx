@@ -9,38 +9,16 @@ import { farmAnimals, farmCrops } from '../data/farmData';
 import { miningConsumables } from '../data/miningData';
 import { addItems, getItemCount, removeItems } from '../services/inventoryService';
 
+import { marketFilters, groupedFilters, rarityRank } from '../features/market/marketConstants';
+import MarketFilters from '../features/market/MarketFilters';
+import MarketList from '../features/market/MarketList';
+import MarketBulkSaleModal from '../features/market/MarketBulkSaleModal';
+
 const MOCK_AUTH = import.meta.env.VITE_MOCK_AUTH === 'true';
 
-const rarityRank = {
-  Common: 1,
-  Uncommon: 2,
-  Rare: 3,
-  Epic: 4,
-  Legendary: 5,
-  Mythic: 6,
-  Relic: 7,
-};
-
-const marketFilters = [
-  { id: 'all', label: 'All', predicate: () => true },
-  { id: 'seeds', label: 'Seeds', predicate: (item) => item.type === 'seed' },
-  { id: 'farm-goods', label: 'Farm Goods', predicate: (item) => item.type === 'farm-good' },
-  { id: 'farm-animals', label: 'Farm Animals', predicate: (item) => item.type === 'farm-animal' },
-  { id: 'ore', label: 'Ores', predicate: (item) => item.type === 'ore' },
-  { id: 'consumables', label: 'Consumables', predicate: (item) => item.type === 'consumable' },
-  { id: 'crafted', label: 'Crafted', predicate: (item) => item.type === 'crafted' },
-  { id: 'gear', label: 'Gear', predicate: (item) => item.type === 'gear' },
-  { id: 'tokens', label: 'Tokens', predicate: (item) => item.type === 'token' },
-  {
-    id: 'rare',
-    label: 'Rare+',
-    predicate: (item) => (rarityRank[item.rarity] || 0) >= 3,
-  },
-];
-
-const groupedFilters = marketFilters.filter((filter) => !['all', 'rare'].includes(filter.id));
 const COLLAPSED_SECTIONS_KEY = 'marketCollapsedSections';
 const BULK_SELL_CONFIRM_KEY = 'marketBulkSellConfirmDisabled';
+
 const seedLevelById = farmCrops.reduce((acc, crop) => {
   acc[crop.id] = crop.levelRequired || 1;
   return acc;
@@ -510,387 +488,48 @@ export default function Market() {
             </div>
           </div>
 
-          <div className="mt-8 rounded-2xl border border-yellow-700/30 bg-gray-900/80 p-6">
-            <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-              <div>
-                <p className="text-xs uppercase tracking-[0.3em] text-yellow-500">Market Controls</p>
-                <h2 className="mt-2 text-2xl font-semibold text-white">Trade Ledger</h2>
-              </div>
-              <div className="flex flex-wrap gap-3 text-xs text-gray-300">
-                <label className="flex items-center gap-2">
-                  <span className="uppercase tracking-[0.3em] text-gray-400">Search</span>
-                  <input
-                    type="text"
-                    value={searchTerm}
-                    onChange={(event) => setSearchTerm(event.target.value)}
-                    placeholder="Item name or category"
-                    className="min-w-[180px] rounded-full border border-yellow-700/40 bg-gray-950/70 px-3 py-1 text-xs text-gray-200 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-yellow-400"
-                  />
-                </label>
-                <label className="flex items-center gap-2">
-                  <span className="uppercase tracking-[0.3em] text-gray-400">Sort</span>
-                  <select
-                    value={sortBy}
-                    onChange={(event) => setSortBy(event.target.value)}
-                    className="rounded-full border border-yellow-700/40 bg-gray-950/70 px-3 py-1 text-xs text-gray-200"
-                  >
-                    <option value="name" className="text-gray-900">Name</option>
-                    <option value="buy" className="text-gray-900">Buy Price</option>
-                    <option value="sell" className="text-gray-900">Sell Price</option>
-                    <option value="category" className="text-gray-900">Category</option>
-                    <option value="rarity" className="text-gray-900">Rarity</option>
-                  </select>
-                </label>
-              </div>
-            </div>
+          <MarketFilters
+            searchTerm={searchTerm}
+            setSearchTerm={setSearchTerm}
+            sortBy={sortBy}
+            setSortBy={setSortBy}
+            filterId={filterId}
+            setFilterId={setFilterId}
+            filterCounts={filterCounts}
+            showOwnedOnly={showOwnedOnly}
+            setShowOwnedOnly={setShowOwnedOnly}
+            handleToggleAllSections={handleToggleAllSections}
+            allSectionsCollapsed={allSectionsCollapsed}
+            hasGroupedSections={groupedSections.length > 0}
+          />
 
-            <div className="mt-4 flex flex-wrap gap-2">
-              {marketFilters.map((filter) => (
-                <button
-                  key={filter.id}
-                  type="button"
-                  onClick={() => setFilterId(filter.id)}
-                  className={`rounded-full px-3 py-1 text-xs font-semibold ${filterId === filter.id
-                    ? 'action-primary text-white'
-                    : 'border border-yellow-700/40 text-yellow-200'
-                    }`}
-                >
-                  {filter.label} ({filterCounts[filter.id] || 0})
-                </button>
-              ))}
-            </div>
-            <div className="mt-4 flex flex-wrap items-center gap-2 text-xs text-gray-300">
-              <button
-                type="button"
-                onClick={() => setShowOwnedOnly((prev) => !prev)}
-                className={`rounded-full px-3 py-1 text-xs font-semibold ${showOwnedOnly ? 'action-primary text-white' : 'border border-yellow-700/40 text-yellow-200'
-                  }`}
-              >
-                Show owned only
-              </button>
-            </div>
-            {filterId === 'all' && groupedSections.length > 0 && (
-              <div className="mt-4 flex items-center justify-end">
-                <button
-                  type="button"
-                  onClick={handleToggleAllSections}
-                  className="rounded-full border border-yellow-700/40 px-3 py-1 text-xs font-semibold text-yellow-200"
-                >
-                  {allSectionsCollapsed ? 'Expand all' : 'Collapse all'}
-                </button>
-              </div>
-            )}
+          <MarketList
+            filterId={filterId}
+            groupedSections={groupedSections}
+            sortedItems={sortedItems}
+            collapsedSections={collapsedSections}
+            handleToggleSection={handleToggleSection}
+            quantities={quantities}
+            handleQuantityChange={handleQuantityChange}
+            handleBuy={handleBuy}
+            handleSell={handleSell}
+            sellAllGoods={sellAllGoods}
+            sellAllOres={sellAllOres}
+            handleSellAllGoods={handleSellAllGoods}
+            handleSellAllOres={handleSellAllOres}
+            formatGold={formatGold}
+          />
 
-            <div className="mt-6 grid gap-6">
-              {filterId === 'all' ? (
-                groupedSections.map((section) => (
-                  <div key={section.id} className="space-y-4">
-                    <div className="flex flex-wrap items-center justify-between gap-2">
-                      <h3 className="text-sm uppercase tracking-[0.3em] text-yellow-200">
-                        {section.label}
-                      </h3>
-                      <div className="flex items-center gap-3">
-                        <span className="text-xs text-gray-400">{section.items.length} items</span>
-                        {section.id === 'farm-goods' && (
-                          <button
-                            type="button"
-                            onClick={handleSellAllGoods}
-                            className={`rounded-full border border-yellow-700/40 px-2 py-0.5 text-[10px] font-semibold ${sellAllGoods.totalCount > 0
-                              ? 'text-yellow-200'
-                              : 'text-gray-400'
-                              }`}
-                            disabled={sellAllGoods.totalCount <= 0}
-                          >
-                            Sell all ({sellAllGoods.totalCount}) · {formatGold(sellAllGoods.totalValue)}g
-                          </button>
-                        )}
-                        {section.id === 'ore' && (
-                          <button
-                            type="button"
-                            onClick={handleSellAllOres}
-                            className={`rounded-full border border-yellow-700/40 px-2 py-0.5 text-[10px] font-semibold ${sellAllOres.totalCount > 0
-                              ? 'text-yellow-200'
-                              : 'text-gray-400'
-                              }`}
-                            disabled={sellAllOres.totalCount <= 0}
-                          >
-                            Sell all ({sellAllOres.totalCount}) · {formatGold(sellAllOres.totalValue)}g
-                          </button>
-                        )}
-                        <button
-                          type="button"
-                          onClick={() => handleToggleSection(section.id)}
-                          className="rounded-full border border-yellow-700/40 px-2 py-0.5 text-[10px] font-semibold text-yellow-200"
-                        >
-                          {collapsedSections[section.id] ? 'Show' : 'Hide'}
-                        </button>
-                      </div>
-                    </div>
-                    {!collapsedSections[section.id] && (
-                      <div className="grid gap-4 sm:grid-cols-2">
-                        {section.items.map((item) => {
-                          const quantity = Math.max(1, quantities[item.id] || 1);
-                          const owned = item.owned || 0;
-                          return (
-                            <div
-                              key={item.id}
-                              className="rounded-xl border border-yellow-700/30 bg-gray-950/70 p-4 hover-lift"
-                            >
-                              <div className="flex items-start gap-4">
-                                <div className="h-16 w-16 overflow-hidden rounded-xl border border-yellow-700/30 bg-gray-900/70">
-                                  <img
-                                    src={item.image || '/raceicon/noimage.jpg'}
-                                    alt={item.name}
-                                    className="h-full w-full object-cover"
-                                    onError={(event) => {
-                                      event.target.onerror = null;
-                                      event.target.src = '/raceicon/noimage.jpg';
-                                    }}
-                                  />
-                                </div>
-                                <div className="flex-1">
-                                  <div className="flex flex-wrap items-center justify-between gap-2">
-                                    <div>
-                                      <p className="text-sm uppercase tracking-[0.3em] text-gray-400">{item.category || 'Misc'}</p>
-                                      <p className="mt-1 text-xl font-semibold text-white">{item.name}</p>
-                                    </div>
-                                    <span className="rounded-full bg-yellow-500/10 px-3 py-1 text-xs text-yellow-200">
-                                      Owned: {owned}
-                                    </span>
-                                  </div>
-                                  {item.description && (
-                                    <p className="mt-2 text-sm text-gray-300">{item.description}</p>
-                                  )}
-                                  <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-gray-300">
-                                    <span className="rounded-full border border-yellow-700/30 bg-gray-900/60 px-3 py-1">
-                                      Buy: {item.buyable ? `${formatGold(item.buyPrice)}g` : 'N/A'}
-                                    </span>
-                                    <span className="rounded-full border border-yellow-700/30 bg-gray-900/60 px-3 py-1">
-                                      Sell: {item.sellable ? `${formatGold(item.sellPrice)}g` : 'N/A'}
-                                    </span>
-                                    {item.rarity && (
-                                      <span className="rounded-full border border-yellow-700/30 bg-gray-900/60 px-3 py-1">
-                                        {item.rarity}
-                                      </span>
-                                    )}
-                                  </div>
-                                  <div className="mt-4 flex flex-wrap items-center gap-3 text-xs text-gray-300">
-                                    <label className="flex items-center gap-2">
-                                      Qty
-                                      <input
-                                        type="number"
-                                        min="1"
-                                        value={quantity}
-                                        onChange={(event) => handleQuantityChange(item.id, event.target.value)}
-                                        className="w-16 rounded-lg border border-yellow-700/30 bg-gray-900/70 px-2 py-1 text-xs text-white"
-                                      />
-                                    </label>
-                                    {[1, 5, 10].map((pick) => (
-                                      <button
-                                        key={pick}
-                                        type="button"
-                                        onClick={() => handleQuantityChange(item.id, pick)}
-                                        className="rounded-lg border border-yellow-700/30 px-2 py-1 text-[0.65rem] font-semibold text-yellow-200"
-                                      >
-                                        x{pick}
-                                      </button>
-                                    ))}
-                                    <button
-                                      type="button"
-                                      onClick={() => handleBuy(item)}
-                                      disabled={!item.buyable}
-                                      className={`rounded-lg px-3 py-2 text-xs font-semibold ${item.buyable ? 'action-primary text-white' : 'bg-gray-700 text-gray-300'
-                                        }`}
-                                    >
-                                      Buy
-                                    </button>
-                                    <button
-                                      type="button"
-                                      onClick={() => handleSell(item)}
-                                      disabled={!item.sellable || owned <= 0}
-                                      className={`rounded-lg px-3 py-2 text-xs font-semibold ${item.sellable && owned > 0
-                                        ? 'border border-yellow-700/40 text-yellow-200'
-                                        : 'bg-gray-700 text-gray-300'
-                                        }`}
-                                    >
-                                      Sell
-                                    </button>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    )}
-                  </div>
-                ))
-              ) : (
-                <div className="space-y-4">
-                  {(filterId === 'farm-goods' || filterId === 'ore') && (
-                    <div className="flex items-center justify-end">
-                      <button
-                        type="button"
-                        onClick={filterId === 'farm-goods' ? handleSellAllGoods : handleSellAllOres}
-                        className={`rounded-full border border-yellow-700/40 px-3 py-1 text-xs font-semibold ${filterId === 'farm-goods'
-                          ? (sellAllGoods.totalCount > 0 ? 'text-yellow-200' : 'text-gray-400')
-                          : (sellAllOres.totalCount > 0 ? 'text-yellow-200' : 'text-gray-400')
-                          }`}
-                        disabled={filterId === 'farm-goods'
-                          ? sellAllGoods.totalCount <= 0
-                          : sellAllOres.totalCount <= 0}
-                      >
-                        Sell all ({filterId === 'farm-goods' ? sellAllGoods.totalCount : sellAllOres.totalCount}) · {formatGold(filterId === 'farm-goods' ? sellAllGoods.totalValue : sellAllOres.totalValue)}g
-                      </button>
-                    </div>
-                  )}
-                  <div className="grid gap-4 sm:grid-cols-2">
-                    {sortedItems.map((item) => {
-                      const quantity = Math.max(1, quantities[item.id] || 1);
-                      const owned = item.owned || 0;
-                      return (
-                        <div
-                          key={item.id}
-                          className="rounded-xl border border-yellow-700/30 bg-gray-950/70 p-4 hover-lift"
-                        >
-                          <div className="flex items-start gap-4">
-                            <div className="h-16 w-16 overflow-hidden rounded-xl border border-yellow-700/30 bg-gray-900/70">
-                              <img
-                                src={item.image || '/raceicon/noimage.jpg'}
-                                alt={item.name}
-                                className="h-full w-full object-cover"
-                                onError={(event) => {
-                                  event.target.onerror = null;
-                                  event.target.src = '/raceicon/noimage.jpg';
-                                }}
-                              />
-                            </div>
-                            <div className="flex-1">
-                              <div className="flex flex-wrap items-center justify-between gap-2">
-                                <div>
-                                  <p className="text-sm uppercase tracking-[0.3em] text-gray-400">{item.category || 'Misc'}</p>
-                                  <p className="mt-1 text-xl font-semibold text-white">{item.name}</p>
-                                </div>
-                                <span className="rounded-full bg-yellow-500/10 px-3 py-1 text-xs text-yellow-200">
-                                  Owned: {owned}
-                                </span>
-                              </div>
-                              {item.description && (
-                                <p className="mt-2 text-sm text-gray-300">{item.description}</p>
-                              )}
-                              <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-gray-300">
-                                <span className="rounded-full border border-yellow-700/30 bg-gray-900/60 px-3 py-1">
-                                  Buy: {item.buyable ? `${formatGold(item.buyPrice)}g` : 'N/A'}
-                                </span>
-                                <span className="rounded-full border border-yellow-700/30 bg-gray-900/60 px-3 py-1">
-                                  Sell: {item.sellable ? `${formatGold(item.sellPrice)}g` : 'N/A'}
-                                </span>
-                                {item.rarity && (
-                                  <span className="rounded-full border border-yellow-700/30 bg-gray-900/60 px-3 py-1">
-                                    {item.rarity}
-                                  </span>
-                                )}
-                              </div>
-                              <div className="mt-4 flex flex-wrap items-center gap-3 text-xs text-gray-300">
-                                <label className="flex items-center gap-2">
-                                  Qty
-                                  <input
-                                    type="number"
-                                    min="1"
-                                    value={quantity}
-                                    onChange={(event) => handleQuantityChange(item.id, event.target.value)}
-                                    className="w-16 rounded-lg border border-yellow-700/30 bg-gray-900/70 px-2 py-1 text-xs text-white"
-                                  />
-                                </label>
-                                {[1, 5, 10].map((pick) => (
-                                  <button
-                                    key={pick}
-                                    type="button"
-                                    onClick={() => handleQuantityChange(item.id, pick)}
-                                    className="rounded-lg border border-yellow-700/30 px-2 py-1 text-[0.65rem] font-semibold text-yellow-200"
-                                  >
-                                    x{pick}
-                                  </button>
-                                ))}
-                                <button
-                                  type="button"
-                                  onClick={() => handleBuy(item)}
-                                  disabled={!item.buyable}
-                                  className={`rounded-lg px-3 py-2 text-xs font-semibold ${item.buyable ? 'action-primary text-white' : 'bg-gray-700 text-gray-300'
-                                    }`}
-                                >
-                                  Buy
-                                </button>
-                                <button
-                                  type="button"
-                                  onClick={() => handleSell(item)}
-                                  disabled={!item.sellable || owned <= 0}
-                                  className={`rounded-lg px-3 py-2 text-xs font-semibold ${item.sellable && owned > 0
-                                    ? 'border border-yellow-700/40 text-yellow-200'
-                                    : 'bg-gray-700 text-gray-300'
-                                    }`}
-                                >
-                                  Sell
-                                </button>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-
-          <Link
-            to="/dashboard"
-            className="mt-8 inline-flex items-center rounded-lg px-4 py-2 text-sm font-semibold text-yellow-200 action-ghost"
-          >
-            Back to Dashboard
-          </Link>
+          <MarketBulkSaleModal
+            pendingBulkSale={pendingBulkSale}
+            formatGold={formatGold}
+            handleCancelBulkSale={handleCancelBulkSale}
+            handleConfirmBulkSale={handleConfirmBulkSale}
+            skipBulkConfirm={skipBulkConfirm}
+            setSkipBulkConfirm={setSkipBulkConfirm}
+          />
         </div>
       </div>
-
-      {pendingBulkSale && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4">
-          <div className="w-full max-w-md rounded-2xl border border-yellow-700/30 bg-gray-950/95 p-6 shadow-xl">
-            <p className="text-sm uppercase tracking-[0.3em] text-yellow-400">Confirm Sale</p>
-            <h2 className="mt-3 text-xl font-semibold text-white">Sell all {pendingBulkSale.label}?</h2>
-            <p className="mt-2 text-sm text-gray-300">
-              This will sell {pendingBulkSale.totalCount} items for {formatGold(pendingBulkSale.totalValue)}g.
-            </p>
-            <div className="mt-4 flex items-center gap-2 text-xs text-gray-300">
-              <label className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  checked={skipBulkConfirm}
-                  onChange={(event) => setSkipBulkConfirm(event.target.checked)}
-                  className="h-4 w-4 rounded border-yellow-700/40 bg-gray-900/70 text-yellow-400"
-                />
-                Don't ask again
-              </label>
-            </div>
-            <div className="mt-6 flex items-center justify-end gap-3">
-              <button
-                type="button"
-                onClick={handleCancelBulkSale}
-                className="rounded-lg border border-yellow-700/40 px-4 py-2 text-xs font-semibold text-yellow-200"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                onClick={handleConfirmBulkSale}
-                className="rounded-lg px-4 py-2 text-xs font-semibold action-primary text-white"
-              >
-                Confirm Sale
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </section>
   );
 }
