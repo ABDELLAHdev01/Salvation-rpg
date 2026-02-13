@@ -26,13 +26,13 @@ export const workshopStations = [
 ];
 
 export const workshopItems = [
-  { id: 'iron-bar', name: 'Iron Bar', sellValue: 70 },
-  { id: 'copper-bar', name: 'Copper Bar', sellValue: 76 },
-  { id: 'silver-ingot', name: 'Silver Ingot', sellValue: 125 },
-  { id: 'gold-ingot', name: 'Gold Ingot', sellValue: 175 },
-  { id: 'turnip-stew', name: 'Turnip Stew', sellValue: 90 },
-  { id: 'herb-tea', name: 'Herb Tea', sellValue: 65 },
-  { id: 'hearty-stew', name: 'Hearty Stew', sellValue: 140 },
+  { id: 'iron-bar', name: 'Iron Bar', sellValue: 125 },
+  { id: 'copper-bar', name: 'Copper Bar', sellValue: 135 },
+  { id: 'silver-ingot', name: 'Silver Ingot', sellValue: 225 },
+  { id: 'gold-ingot', name: 'Gold Ingot', sellValue: 345 },
+  { id: 'turnip-stew', name: 'Turnip Stew', sellValue: 175 },
+  { id: 'herb-tea', name: 'Herb Tea', sellValue: 170 },
+  { id: 'hearty-stew', name: 'Hearty Stew', sellValue: 180 },
   { id: 'wool-cloth', name: 'Wool Cloth', sellValue: 95 },
   { id: 'moonweave', name: 'Moonweave', sellValue: 165 },
   { id: 'healing-tonic', name: 'Healing Tonic', sellValue: 120 },

@@ -174,7 +174,6 @@ export default function Sidebar() {
           </div>
 
           <div className="flex-1 overflow-y-auto custom-scrollbar pr-2 py-4">
-
             <NavLinks />
           </div>
 

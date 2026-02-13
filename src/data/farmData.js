@@ -90,7 +90,7 @@ export const farmAnimals = [
     sellPrice: 1320,
     produceEveryMs: 11 * 60 * 60 * 1000,
     produceId: 'cheese',
-    produceAmount: 1,
+    produceAmount: 2,
   },
   {
     id: 'pig',
@@ -100,7 +100,7 @@ export const farmAnimals = [
     sellPrice: 1560,
     produceEveryMs: 14 * 60 * 60 * 1000,
     produceId: 'truffle',
-    produceAmount: 1,
+    produceAmount: 2,
   },
   {
     id: 'bee',
@@ -152,7 +152,7 @@ export const getFarmXpForLevel = (level) => {
   }
 
   const lateLevels = safeLevel - 10;
-  return earlyTarget + lateLevels * 80;
+  return earlyTarget + lateLevels * 120;
 };
 
 export const getFarmXpProgress = (farmLevel, farmXp) => {

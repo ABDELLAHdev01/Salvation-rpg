@@ -366,7 +366,7 @@ export const getMiningXpForLevel = (level) => {
   }
 
   const lateLevels = safeLevel - 10;
-  return Math.floor(earlyTarget + Math.pow(lateLevels, 1.85) * 220);
+  return Math.floor(earlyTarget + Math.pow(lateLevels, 1.65) * 220);
 };
 
 export const getPickaxeUpgrade = (level) => pickaxeUpgrades.find((upgrade) => upgrade.level === level) || null;
