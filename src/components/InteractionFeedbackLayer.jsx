@@ -3,7 +3,7 @@ import { useEffect } from 'react';
 const INTERACTIVE_SELECTOR = 'button, a[class], [role="button"], .ui-interactive';
 const RELEASE_CLASS = 'ui-released';
 const PRESSED_CLASS = 'ui-pressed';
-const RELEASE_DURATION_MS = 220;
+const RELEASE_DURATION_MS = 150;
 
 const getInteractiveTarget = (target) => {
   if (!(target instanceof Element)) {

@@ -19,6 +19,12 @@ import { miningOres, formatDuration } from '../data/miningData';
 import { farmGoods } from '../data/farmData';
 import { getItemCount, removeItems } from '../services/inventoryService';
 
+// Standard UI Components
+import Panel from '../components/ui/Panel';
+import Button from '../components/ui/Button';
+import Badge from '../components/ui/Badge';
+import SectionHeader from '../components/ui/SectionHeader';
+
 const MOCK_AUTH = import.meta.env.VITE_MOCK_AUTH === 'true';
 const FILTER_STORAGE_KEY = 'workshopFilters';
 
@@ -183,15 +189,15 @@ export default function Workshop() {
     return recipe.inputs.every((input) => getOwnedForInput(input) >= input.amount * scaled);
   }, [profile, getOwnedForInput]);
 
-  const normalizedSearch = searchTerm.trim().toLowerCase();
   const matchesSearch = React.useCallback((recipe) => {
-    if (!normalizedSearch) {
+    if (!searchTerm.trim()) {
       return true;
     }
+    const normalizedSearch = searchTerm.trim().toLowerCase();
     const outputName = getOutputName(recipe).toLowerCase();
     const recipeId = recipe.id.toLowerCase();
     return outputName.includes(normalizedSearch) || recipeId.includes(normalizedSearch);
-  }, [normalizedSearch]);
+  }, [searchTerm]);
 
   const getOutputName = (recipe) => {
     const output = recipe.outputs?.[0];
@@ -376,7 +382,12 @@ export default function Workshop() {
     return (
       <section className="min-h-screen bg-center bg-cover bg-no-repeat bg-[url('./jbm.jpg')] bg-gray-900 bg-blend-multiply dashboard-shell lg:pl-64">
         <Sidebar />
-        <div className="relative z-10 mx-auto max-w-5xl px-6 py-16 pt-24 text-gray-200">Loading Workshop...</div>
+        <div className="relative z-10 mx-auto max-w-6xl px-6 py-16 pt-24 text-gray-200">
+          <Panel variant="glass" className="text-center py-20">
+            <h2 className="text-2xl font-bold">Initializing Workshop...</h2>
+            <p className="mt-2 text-gray-400">Consulting the artisans.</p>
+          </Panel>
+        </div>
       </section>
     );
   }
@@ -384,74 +395,37 @@ export default function Workshop() {
   return (
     <section className="min-h-screen bg-center bg-cover bg-no-repeat bg-[url('./jbm.jpg')] bg-gray-900 bg-blend-multiply dashboard-shell lg:pl-64">
       <Sidebar />
-      <div className="dashboard-orb orb-1" />
-      <div className="dashboard-orb orb-2" />
-      <div className="dashboard-orb orb-3" />
       <div className="relative z-10 mx-auto max-w-6xl px-6 py-16 pt-24">
-        <div className="rounded-2xl p-6 shadow-xl backdrop-blur glass-panel">
-          <div className="flex flex-wrap items-center justify-between gap-4">
-            <div>
-              <p className="section-kicker text-xs uppercase tracking-[0.4em] text-yellow-500">Crafting Hub</p>
-              <h1 className="mt-3 text-4xl font-extrabold text-white hero-title">Workshop</h1>
-              <p className="mt-3 text-base text-gray-300">
-                Convert mined ore and farm goods into crafted wares over time.
-              </p>
-            </div>
-            <div className="rounded-xl border border-yellow-700/30 bg-gray-950/70 px-4 py-3 text-center">
-              <p className="text-xs uppercase tracking-[0.3em] text-gray-400">Level</p>
-              <p className="mt-1 text-3xl font-semibold text-yellow-300">{workshopLevel}</p>
-            </div>
-          </div>
+        <div className="mb-10 flex flex-wrap items-center justify-between gap-6">
+          <SectionHeader
+            kicker="Crafting Hub"
+            title="The Grand Workshop"
+            description="Refine raw resources into legendary artifacts. Precision is the path to power."
+          />
+          <Panel variant="subtle" className="text-center min-w-[120px]">
+            <p className="text-[10px] uppercase tracking-[0.3em] text-gray-500 font-bold">Forge Mastery</p>
+            <p className="mt-1 text-3xl font-black text-amber-500 drop-shadow-sm">Lvl {workshopLevel}</p>
+          </Panel>
+        </div>
 
-          <div className="mt-6 grid gap-4 lg:grid-cols-[1.1fr_0.9fr]">
-            <div className="rounded-2xl border border-yellow-700/30 bg-gray-950/70 p-5">
-              <p className="text-xs uppercase tracking-[0.3em] text-gray-400">Workshop XP</p>
-              <div className="mt-3">
-                <XpBar current={workshopXp} target={workshopXpTarget || 1} label="Workshop XP" tone="emerald" />
+        <div className="mb-8 grid gap-8 lg:grid-cols-[1.3fr_0.7fr]">
+          <div className="space-y-8">
+            <Panel variant="glass">
+              <XpBar current={workshopXp} target={workshopXpTarget || 1} label="Workshop Progression" tone="gold" />
+              <div className="mt-4 flex flex-wrap gap-3">
+                <Badge variant="gold">Active Jobs: {uiState.jobs.length}</Badge>
+                <Badge variant="cyan">Gold: {gold}</Badge>
+                <Badge variant="info">Tools: {upgrade?.name || 'Basic'}</Badge>
               </div>
-              <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-gray-400">
-                <span>Upgrade: {upgrade?.name || 'Basic Tools'}</span>
-                <span>·</span>
-                <span>Queue: {uiState.jobs.length} jobs</span>
-              </div>
-            </div>
+            </Panel>
 
-            <div className="rounded-2xl border border-yellow-700/30 bg-gray-950/70 p-5">
-              <p className="text-xs uppercase tracking-[0.3em] text-gray-400">Upgrade Tools</p>
-              <p className="mt-2 text-xl font-semibold text-white">
-                {nextUpgrade ? nextUpgrade.name : 'Maxed Workshop'}
-              </p>
-              <p className="mt-1 text-sm text-gray-300">
-                {nextUpgrade
-                  ? `Reduce crafting time to ${(nextUpgrade.durationMultiplier * 100).toFixed(0)}%.`
-                  : 'All upgrades unlocked.'}
-              </p>
-              <div className="mt-3 flex flex-wrap items-center gap-3 text-xs text-gray-400">
-                <span>Gold: {gold}</span>
-                {nextUpgrade ? <span>Cost: {nextUpgrade.cost}</span> : null}
-              </div>
-              <button
-                type="button"
-                onClick={handleUpgrade}
-                disabled={!nextUpgrade || gold < nextUpgrade.cost}
-                className={`mt-4 inline-flex items-center rounded-lg px-4 py-2 text-xs font-semibold ${nextUpgrade && gold >= nextUpgrade.cost
-                  ? 'action-primary text-white'
-                  : 'bg-gray-700 text-gray-300'
-                  }`}
-              >
-                Upgrade Workshop
-              </button>
-            </div>
-          </div>
-
-          <div className="mt-8 grid gap-6 lg:grid-cols-[1.15fr_0.85fr]">
-            <div className="space-y-6">
-              <div className="rounded-2xl border border-yellow-700/30 bg-gray-950/70 p-4">
+            <Panel variant="card">
+              <div className="mb-6 space-y-4">
                 <div className="flex flex-wrap items-center gap-3">
                   <select
                     value={stationFilter}
                     onChange={(event) => setStationFilter(event.target.value)}
-                    className="rounded-lg border border-yellow-700/30 bg-gray-950/70 px-3 py-2 text-xs text-gray-100"
+                    className="h-10 rounded-xl border border-yellow-700/20 bg-gray-950/70 px-4 text-xs text-gray-100 focus:border-yellow-500/50 outline-none transition-all"
                   >
                     <option value="all">All Stations</option>
                     {uiState.stations.map((station) => (
@@ -460,256 +434,257 @@ export default function Workshop() {
                       </option>
                     ))}
                   </select>
-                  <select
-                    value={tagFilter}
-                    onChange={(event) => setTagFilter(event.target.value)}
-                    className="rounded-lg border border-yellow-700/30 bg-gray-950/70 px-3 py-2 text-xs text-gray-100"
-                  >
-                    <option value="all">All Tags</option>
-                    <option value="ore">Ore</option>
-                    <option value="crop">Crop</option>
-                  </select>
                   <input
                     type="search"
                     value={searchTerm}
                     onChange={(event) => setSearchTerm(event.target.value)}
-                    placeholder="Search recipe or output"
-                    className="min-w-[180px] flex-1 rounded-lg border border-yellow-700/30 bg-gray-950/70 px-3 py-2 text-xs text-gray-100"
+                    placeholder="Search blueprints..."
+                    className="h-10 min-w-[200px] flex-1 rounded-xl border border-yellow-700/20 bg-gray-950/70 px-4 text-xs text-gray-100 focus:border-yellow-500/50 outline-none transition-all"
                   />
-                  <label className="flex items-center gap-2 text-xs text-gray-300">
-                    <input
-                      type="checkbox"
-                      checked={showCraftableOnly}
-                      onChange={(event) => setShowCraftableOnly(event.target.checked)}
-                      className="h-4 w-4 rounded border border-yellow-700/30 bg-gray-950/70"
-                    />
-                    Craftable only
-                  </label>
-                  <button
-                    type="button"
-                    onClick={handleClearFilters}
-                    className="rounded-lg border border-yellow-700/30 px-3 py-2 text-xs font-semibold text-yellow-200"
-                  >
-                    Clear filters
-                  </button>
+                  <Button variant="ghost" size="sm" onClick={handleClearFilters}>
+                    Reset
+                  </Button>
                 </div>
-                <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
-                  <button
-                    type="button"
+
+                <div className="flex flex-wrap items-center gap-3">
+                  <Button
+                    variant={tagFilter === 'all' ? 'primary' : 'secondary'}
+                    size="sm"
                     onClick={() => setTagFilter('all')}
-                    className={`rounded-full border px-3 py-1 uppercase tracking-[0.3em] ${tagFilter === 'all'
-                      ? 'border-yellow-500/60 bg-yellow-500/10 text-yellow-200'
-                      : 'border-yellow-700/30 text-gray-300'
-                      }`}
                   >
                     All
-                  </button>
-                  <button
-                    type="button"
+                  </Button>
+                  <Button
+                    variant={tagFilter === 'ore' ? 'primary' : 'secondary'}
+                    size="sm"
                     onClick={() => setTagFilter('ore')}
-                    className={`rounded-full border px-3 py-1 uppercase tracking-[0.3em] ${tagFilter === 'ore'
-                      ? 'border-yellow-500/60 bg-yellow-500/10 text-yellow-200'
-                      : 'border-yellow-700/30 text-gray-300'
-                      }`}
                   >
                     Ore ({tagCounts.ore})
-                  </button>
-                  <button
-                    type="button"
+                  </Button>
+                  <Button
+                    variant={tagFilter === 'crop' ? 'primary' : 'secondary'}
+                    size="sm"
                     onClick={() => setTagFilter('crop')}
-                    className={`rounded-full border px-3 py-1 uppercase tracking-[0.3em] ${tagFilter === 'crop'
-                      ? 'border-yellow-500/60 bg-yellow-500/10 text-yellow-200'
-                      : 'border-yellow-700/30 text-gray-300'
-                      }`}
                   >
                     Crop ({tagCounts.crop})
-                  </button>
-                  <span className="rounded-full border border-yellow-700/30 px-3 py-1 uppercase tracking-[0.3em] text-gray-300">
-                    {filteredRecipeCount} shown
-                  </span>
+                  </Button>
+                  <div className="ml-auto flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      id="craftableOnly"
+                      checked={showCraftableOnly}
+                      onChange={(event) => setShowCraftableOnly(event.target.checked)}
+                      className="h-4 w-4 rounded border-yellow-700/30 bg-gray-950/70 text-yellow-500"
+                    />
+                    <label htmlFor="craftableOnly" className="text-[10px] uppercase tracking-widest text-gray-500 font-bold">
+                      Craftable Only
+                    </label>
+                  </div>
                 </div>
               </div>
-              {unlockedStations.map((station) => (
-                stationFilter !== 'all' && stationFilter !== station.id ? null : (
-                  <div key={station.id} className="rounded-2xl border border-yellow-700/30 bg-gray-950/70 p-5">
-                    <div className="flex flex-wrap items-center justify-between gap-3">
-                      <div>
-                        <p className="text-xs uppercase tracking-[0.3em] text-gray-400">{station.name}</p>
-                        <p className="mt-2 text-lg font-semibold text-white">{station.description}</p>
-                      </div>
-                      {!station.unlocked ? (
-                        <span className="rounded-full border border-yellow-700/40 bg-gray-900/80 px-3 py-1 text-xs text-yellow-200">
-                          Unlocks at level {station.unlockLevel}
-                        </span>
-                      ) : null}
-                    </div>
 
-                    {station.unlocked ? (
-                      <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                        {(uiState.recipes[station.id] || []).map((recipe) => {
-                          const quantity = quantities[recipe.id] || 1;
-                          if (!shouldShowRecipe(recipe, quantity)) {
-                            return null;
-                          }
-                          const craftable = canCraft(recipe, quantity);
-                          const tags = getRecipeTags(recipe);
-                          return (
-                            <div key={recipe.id} className="rounded-xl border border-yellow-700/20 bg-gray-900/80 p-4">
-                              <p className="text-sm font-semibold text-white">{getOutputName(recipe)}</p>
-                              <p className="mt-1 text-xs text-gray-400">Requires level {recipe.levelRequired}</p>
-                              {tags.length ? (
-                                <div className="mt-2 flex flex-wrap gap-2 text-[10px] uppercase tracking-[0.3em] text-yellow-200">
-                                  {tags.map((tag) => (
-                                    <span key={tag} className="rounded-full border border-yellow-700/30 px-2 py-1">
-                                      {tag}
-                                    </span>
-                                  ))}
-                                </div>
-                              ) : null}
-                              <div className="mt-3 space-y-1 text-xs text-gray-300">
-                                {recipe.inputs.map((input) => (
-                                  <div key={input.id} className="flex items-center justify-between">
-                                    <span>
-                                      {input.amount} {getInputName(input)}
-                                    </span>
-                                    <span className="text-gray-400">Owned: {getOwnedForInput(input)}</span>
-                                  </div>
-                                ))}
-                              </div>
-                              <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-gray-400">
-                                <span>
-                                  Duration:{' '}
-                                  {formatDuration(
-                                    recipe.durationMs * quantity * (upgrade?.durationMultiplier || 1)
-                                  )}
-                                </span>
-                                <span>·</span>
-                                <span>XP: {recipe.xp * quantity}</span>
-                              </div>
-                              <div className="mt-3 flex flex-wrap items-center gap-2">
-                                <input
-                                  type="number"
-                                  min="1"
-                                  value={quantity}
-                                  onChange={(event) =>
-                                    setQuantities((prev) => ({
-                                      ...prev,
-                                      [recipe.id]: clampQuantity(event.target.value, 1),
-                                    }))
-                                  }
-                                  className="w-20 rounded-lg border border-yellow-700/30 bg-gray-950/70 px-2 py-1 text-xs text-gray-100"
-                                />
-                                <button
-                                  type="button"
-                                  onClick={() => handleQueue(recipe.id, quantity)}
-                                  disabled={!craftable}
-                                  className={`rounded-lg px-3 py-2 text-xs font-semibold ${craftable ? 'action-primary text-white' : 'bg-gray-700 text-gray-300'
-                                    }`}
-                                >
-                                  Craft
-                                </button>
-                                <button
-                                  type="button"
-                                  onClick={() => handleQueue(recipe.id, 5)}
-                                  disabled={!canCraft(recipe, 5)}
-                                  className={`rounded-lg px-3 py-2 text-xs font-semibold ${canCraft(recipe, 5) ? 'action-ghost text-yellow-200' : 'bg-gray-700 text-gray-300'
-                                    }`}
-                                >
-                                  Craft 5
-                                </button>
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    ) : (
-                      <p className="mt-4 text-sm text-gray-400">Reach workshop level {station.unlockLevel} to unlock.</p>
-                    )}
-                  </div>
-                )
-              ))}
-            </div>
-
-            <div className="space-y-6">
-              <div className="rounded-2xl border border-yellow-700/30 bg-gray-950/70 p-5">
-                <p className="text-xs uppercase tracking-[0.3em] text-gray-400">Active Queue</p>
-                {uiState.jobs.length === 0 ? (
-                  <p className="mt-3 text-sm text-gray-300">No crafting jobs queued.</p>
-                ) : (
-                  <div className="mt-3 space-y-3 text-sm text-gray-300">
-                    {uiState.jobs.map((job) => (
-                      <div key={job.id} className="rounded-lg border border-yellow-700/20 bg-gray-900/80 p-3">
-                        <p className="text-white font-semibold">{getRecipeOutputName(job.recipeId)}</p>
-                        <p className="mt-1 text-xs text-gray-400">Quantity: {job.quantity}</p>
-                        <p className="mt-2 text-xs text-yellow-200">
-                          Ready in {formatDuration(job.remainingMs)}
-                        </p>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              <div className="rounded-2xl border border-yellow-700/30 bg-gray-950/70 p-5">
-                <p className="text-xs uppercase tracking-[0.3em] text-gray-400">Crafted Inventory</p>
-                <div className="mt-3 flex flex-wrap items-center justify-between gap-2 text-xs text-gray-400">
-                  <span>Total items: {workshopInventoryTotal}</span>
-                  <button
-                    type="button"
-                    onClick={handleSellAllCrafted}
-                    disabled={workshopInventoryTotal <= 0}
-                    className={`rounded-lg px-3 py-2 text-xs font-semibold ${workshopInventoryTotal > 0
-                      ? 'action-ghost text-yellow-200'
-                      : 'bg-gray-700 text-gray-300'
-                      }`}
-                  >
-                    Sell All
-                  </button>
-                </div>
-                {Object.keys(workshopInventory).length === 0 ? (
-                  <p className="mt-3 text-sm text-gray-300">No crafted items yet.</p>
-                ) : (
-                  <div className="mt-3 space-y-3 text-sm text-gray-300">
-                    {Object.entries(workshopInventory).map(([itemId, amount]) => {
-                      const item = getWorkshopItem(itemId);
-                      return (
-                        <div key={itemId} className="rounded-lg border border-yellow-700/20 bg-gray-900/80 p-3">
-                          <div className="flex items-center justify-between">
-                            <p className="text-white font-semibold">{item?.name || itemId}</p>
-                            <span className="text-yellow-200">x{amount}</span>
-                          </div>
-                          <p className="mt-1 text-xs text-gray-400">Sell value: {item?.sellValue || 0} gold</p>
-                          <div className="mt-3 flex flex-wrap items-center gap-2">
-                            <button
-                              type="button"
-                              onClick={() => handleSell(itemId, 1)}
-                              className="rounded-lg px-3 py-2 text-xs font-semibold text-white action-primary"
-                            >
-                              Sell 1
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => handleSell(itemId, amount)}
-                              className="rounded-lg px-3 py-2 text-xs font-semibold text-yellow-200 action-ghost"
-                            >
-                              Sell All
-                            </button>
-                          </div>
+              <div className="space-y-12">
+                {unlockedStations.map((station) => (
+                  stationFilter !== 'all' && stationFilter !== station.id ? null : (
+                    <div key={station.id} className="space-y-4">
+                      <div className="flex items-center justify-between border-b border-yellow-700/10 pb-4">
+                        <div>
+                          <h3 className="text-xl font-bold text-white uppercase tracking-wider">{station.name}</h3>
+                          <p className="mt-1 text-sm text-gray-400">{station.description}</p>
                         </div>
-                      );
-                    })}
-                  </div>
-                )}
+                        {!station.unlocked && (
+                          <Badge variant="danger">Locked (Lvl {station.unlockLevel})</Badge>
+                        )}
+                      </div>
+
+                      {station.unlocked ? (
+                        <div className="grid gap-4 sm:grid-cols-2">
+                          {(uiState.recipes[station.id] || []).map((recipe) => {
+                            const q = quantities[recipe.id] || 1;
+                            if (!shouldShowRecipe(recipe, q)) return null;
+                            const craftable = canCraft(recipe, q);
+                            const tags = getRecipeTags(recipe);
+                            return (
+                              <Panel key={recipe.id} variant="subtle" className="hover:border-yellow-500/30 transition-all p-5">
+                                <div className="flex justify-between items-start mb-3">
+                                  <h4 className="font-bold text-white">{getOutputName(recipe)}</h4>
+                                  <Badge variant="ghost">Lvl {recipe.levelRequired}</Badge>
+                                </div>
+
+                                {tags.length > 0 && (
+                                  <div className="flex gap-2 mb-4">
+                                    {tags.map(t => <Badge key={t} variant="info" className="lowercase">{t}</Badge>)}
+                                  </div>
+                                )}
+
+                                <div className="space-y-2 mb-4">
+                                  {recipe.inputs.map((input) => {
+                                    const owned = getOwnedForInput(input);
+                                    const req = input.amount * q;
+                                    return (
+                                      <div key={input.id} className="flex items-center justify-between text-xs">
+                                        <span className="text-gray-400">{getInputName(input)}</span>
+                                        <span className={owned >= req ? 'text-emerald-400 font-bold' : 'text-rose-400 font-bold'}>
+                                          {owned}/{req}
+                                        </span>
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+
+                                <div className="flex items-center justify-between text-[10px] uppercase tracking-widest text-gray-500 mb-4 font-bold border-t border-yellow-700/5 pt-3">
+                                  <span>{formatDuration(recipe.durationMs * q * (upgrade?.durationMultiplier || 1))}</span>
+                                  <span className="text-yellow-500">+{recipe.xp * q} XP</span>
+                                </div>
+
+                                <div className="flex gap-2">
+                                  <input
+                                    type="number"
+                                    min="1"
+                                    value={q}
+                                    onChange={(e) =>
+                                      setQuantities((prev) => ({
+                                        ...prev,
+                                        [recipe.id]: clampQuantity(e.target.value, 1),
+                                      }))
+                                    }
+                                    className="w-16 rounded-xl border border-yellow-700/20 bg-gray-950/70 px-3 py-2 text-xs text-white focus:border-yellow-500/50 outline-none"
+                                  />
+                                  <Button
+                                    variant="primary"
+                                    size="sm"
+                                    className="flex-1"
+                                    onClick={() => handleQueue(recipe.id, q)}
+                                    disabled={!craftable}
+                                  >
+                                    Craft {q > 1 ? `x${q}` : ''}
+                                  </Button>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => handleQueue(recipe.id, 5)}
+                                    disabled={!canCraft(recipe, 5)}
+                                  >
+                                    5
+                                  </Button>
+                                </div>
+                              </Panel>
+                            );
+                          })}
+                        </div>
+                      ) : (
+                        <Panel variant="subtle" className="py-10 text-center text-gray-500 italic">
+                          Master the workshop to unlock this station at Level {station.unlockLevel}.
+                        </Panel>
+                      )}
+                    </div>
+                  )
+                ))}
               </div>
-            </div>
+            </Panel>
           </div>
 
-          <Link
-            to="/dashboard"
-            className="mt-8 inline-flex items-center rounded-lg px-4 py-2 text-sm font-semibold text-yellow-200 action-ghost"
-          >
-            Back to Dashboard
-          </Link>
+          <div className="space-y-8">
+            <Panel variant="ornament">
+              <p className="text-[10px] uppercase tracking-[0.3em] text-gray-300 font-bold mb-4">Artisan Gear</p>
+              <h4 className="text-xl font-bold text-white">{nextUpgrade ? nextUpgrade.name : 'Masterwork Forge'}</h4>
+              <p className="mt-2 text-sm text-gray-400">
+                {nextUpgrade
+                  ? `Reduces crafting duration to ${(nextUpgrade.durationMultiplier * 100).toFixed(0)}%.`
+                  : 'Your tools are the pinnacle of mortal craftsmanship.'}
+              </p>
+              <div className="mt-4 p-4 rounded-xl bg-gray-950/50 border border-yellow-700/10">
+                <div className="flex justify-between items-center text-xs mb-1">
+                  <span className="text-gray-500">Current Efficiency</span>
+                  <span className="text-yellow-500 font-bold">{(upgrade?.durationMultiplier * 100 || 100).toFixed(0)}%</span>
+                </div>
+                {nextUpgrade && (
+                  <div className="flex justify-between items-center text-xs">
+                    <span className="text-gray-500">Upgrade Cost</span>
+                    <span className={`font-bold ${gold >= nextUpgrade.cost ? 'text-emerald-400' : 'text-rose-400'}`}>
+                      {nextUpgrade.cost} Gold
+                    </span>
+                  </div>
+                )}
+              </div>
+              <Button
+                variant="ornate"
+                className="mt-6 w-full"
+                onClick={handleUpgrade}
+                disabled={!nextUpgrade || gold < nextUpgrade.cost}
+              >
+                Reforge Tools
+              </Button>
+            </Panel>
+
+            <Panel variant="card">
+              <p className="text-[10px] uppercase tracking-[0.3em] text-gray-500 font-bold mb-4">Production Queue</p>
+              {uiState.jobs.length === 0 ? (
+                <p className="text-sm text-gray-500 italic py-4">No active commissions.</p>
+              ) : (
+                <div className="space-y-4">
+                  {uiState.jobs.map((job) => (
+                    <div key={job.id} className="group rounded-xl border border-yellow-700/10 bg-gray-950/40 p-4 transition-all hover:bg-gray-950/60">
+                      <div className="flex justify-between items-start">
+                        <p className="text-sm font-bold text-white">{getRecipeOutputName(job.recipeId)}</p>
+                        <Badge variant="cyan">x{job.quantity}</Badge>
+                      </div>
+                      <div className="mt-3">
+                        <div className="flex justify-between text-[10px] text-gray-500 font-bold uppercase tracking-widest mb-1">
+                          <span>Progress</span>
+                          <span className="text-cyan-400">{formatDuration(job.remainingMs)}</span>
+                        </div>
+                        <div className="h-1.5 w-full bg-black/40 rounded-full overflow-hidden">
+                          <div
+                            className="h-full bg-gradient-to-r from-cyan-600 to-cyan-400 transition-all duration-1000"
+                            style={{ width: `${Math.max(5, 100 - (job.remainingMs / (getWorkshopRecipe(job.recipeId)?.durationMs * job.quantity * (upgrade?.durationMultiplier || 1))) * 100)}%` }}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </Panel>
+
+            <Panel variant="card">
+              <div className="flex items-center justify-between mb-4">
+                <p className="text-[10px] uppercase tracking-[0.3em] text-gray-500 font-bold">Finished Wares</p>
+                <Button variant="ghost" size="sm" onClick={handleSellAllCrafted} disabled={workshopInventoryTotal <= 0}>
+                  Sell All
+                </Button>
+              </div>
+              {Object.keys(workshopInventory).length === 0 ? (
+                <p className="text-sm text-gray-500 italic py-4">Vault is empty.</p>
+              ) : (
+                <div className="space-y-4">
+                  {Object.entries(workshopInventory).map(([itemId, amount]) => {
+                    const item = getWorkshopItem(itemId);
+                    return (
+                      <div key={itemId} className="flex items-center justify-between gap-4 p-3 rounded-xl bg-gray-950/40 border border-yellow-700/5 hover:bg-gray-950/60 transition-all">
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-bold text-white truncate">{item?.name || itemId}</p>
+                          <p className="text-[10px] text-yellow-500 font-bold uppercase tracking-widest mt-0.5">{item?.sellValue || 0} Gold</p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Badge variant="gold">x{amount}</Badge>
+                          <Button variant="secondary" size="sm" className="h-7 w-7 !p-0" onClick={() => handleSell(itemId, 1)}>
+                            $
+                          </Button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </Panel>
+          </div>
+        </div>
+
+        <div className="mt-12 flex justify-center">
+          <Button variant="ornate" to="/dashboard">
+            Return to Command Deck
+          </Button>
         </div>
       </div>
     </section>

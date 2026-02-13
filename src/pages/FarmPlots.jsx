@@ -20,10 +20,18 @@ import FarmUpgradePanel from '../features/farm/FarmUpgradePanel';
 import PlotCard from '../features/farm/PlotCard';
 import SeedSelector from '../features/farm/SeedSelector';
 
+// Standard UI Components
+import Panel from '../components/ui/Panel';
+import Button from '../components/ui/Button';
+import Badge from '../components/ui/Badge';
+import SectionHeader from '../components/ui/SectionHeader';
+import XpBar from '../components/XpBar';
+
 const MOCK_AUTH = import.meta.env.VITE_MOCK_AUTH === 'true';
 const UI_TICK_MS = 3000;
 const BASE_LAND_SIZE = 3;
 const LAND_EXPAND_SIZE = 2;
+
 const seasonBannerMap = {
   spring: '/farm/seasons/Spring.png',
   summer: '/farm/seasons/Summer.png',
@@ -86,13 +94,13 @@ export default function FarmPlots() {
       return;
     }
 
-    const landSize = profile.farmLandSize ?? BASE_LAND_SIZE;
-    const plots = normalizePlots(profile.farmPlots, landSize);
+    const currentLandSize = profile.farmLandSize ?? BASE_LAND_SIZE;
+    const currentPlots = normalizePlots(profile.farmPlots, currentLandSize);
 
-    if (plots.length !== (profile.farmPlots || []).length) {
+    if (currentPlots.length !== (profile.farmPlots || []).length) {
       const updated = characterService.updateMockProfile({
-        farmLandSize: landSize,
-        farmPlots: plots,
+        farmLandSize: currentLandSize,
+        farmPlots: currentPlots,
       });
       setProfile(updated);
     }
@@ -108,9 +116,16 @@ export default function FarmPlots() {
   const growMultiplier = farmWeather?.growMultiplier ?? 1;
   const yieldMultiplier = farmWeather?.yieldMultiplier ?? 1;
   const season = farmWeather?.season;
-  const zoneModifiers = getZoneModifiers(profile);
-  const zoneGrowMultiplier = zoneModifiers.farmGrowMultiplier ?? 1;
-  const zoneYieldMultiplier = zoneModifiers.farmYieldMultiplier ?? 1;
+
+  const zoneModifiers = useMemo(() => {
+    const activeZoneId = profile?.activeZoneId;
+    if (!activeZoneId) return { grow: 1, yield: 1 };
+    const mods = getZoneModifiers(activeZoneId);
+    return {
+      grow: mods.farmGrowMultiplier ?? 1,
+      yield: mods.farmYieldMultiplier ?? 1,
+    };
+  }, [profile?.activeZoneId]);
 
   const expansionLevel = Math.max(0, Math.floor((landSize - BASE_LAND_SIZE) / LAND_EXPAND_SIZE));
   const nextExpandCost = 350 + expansionLevel * 250;
@@ -199,7 +214,8 @@ export default function FarmPlots() {
     const seedItemId = getSeedItemId(crop.id);
     const ownedSeeds = getItemCount(inventory, seedItemId);
     const seasonModifiers = getCropSeasonModifiers(crop.id, season);
-    const totalGrowMultiplier = growMultiplier * seasonModifiers.growMultiplier * zoneGrowMultiplier;
+    const totalGrowMultiplier = growMultiplier * seasonModifiers.growMultiplier * zoneModifiers.grow;
+
     if (ownedSeeds <= 0) {
       toast.error('You need seeds for this crop.');
       return;
@@ -236,7 +252,8 @@ export default function FarmPlots() {
       };
     });
 
-    const nextInventory = removeItems(inventory, { [seedItemId]: plantCount });
+    const nextInventoryItems = { [seedItemId]: plantCount };
+    const nextInventory = removeItems(inventory, nextInventoryItems);
 
     const updated = characterService.updateMockProfile({
       farmPlots: nextPlots,
@@ -277,7 +294,7 @@ export default function FarmPlots() {
     );
 
     const seasonModifiers = getCropSeasonModifiers(crop.id, season);
-    const totalYieldMultiplier = yieldMultiplier * seasonModifiers.yieldMultiplier * zoneYieldMultiplier;
+    const totalYieldMultiplier = yieldMultiplier * seasonModifiers.yieldMultiplier * zoneModifiers.yield;
     const adjustedYield = Math.max(1, Math.round(crop.yieldAmount * totalYieldMultiplier));
     const nextInventory = addItems(inventory, { [crop.yieldId]: adjustedYield });
 
@@ -332,21 +349,21 @@ export default function FarmPlots() {
         return;
       }
       const seasonModifiers = getCropSeasonModifiers(crop.id, season);
-      const totalYieldMultiplier = yieldMultiplier * seasonModifiers.yieldMultiplier * zoneYieldMultiplier;
+      const totalYieldMultiplier = yieldMultiplier * seasonModifiers.yieldMultiplier * zoneModifiers.yield;
       const adjustedYield = Math.max(1, Math.round(crop.yieldAmount * totalYieldMultiplier));
       nextInventory = addItems(nextInventory, { [crop.yieldId]: adjustedYield });
       totalXp += Math.max(5, adjustedYield * 8);
       yieldTotals[crop.yieldId] = (yieldTotals[crop.yieldId] || 0) + adjustedYield;
     });
 
-    const nextPlots = plots.map((plot) =>
+    const nextPlotsArr = plots.map((plot) =>
       readyIds.has(plot.id) ? buildEmptyPlot(plot.id) : plot
     );
 
     const { nextLevel, nextXp, leveledUp } = applyFarmXp(totalXp);
 
     const updated = characterService.updateMockProfile({
-      farmPlots: nextPlots,
+      farmPlots: nextPlotsArr,
       inventory: nextInventory,
       farmLevel: nextLevel,
       farmXp: nextXp,
@@ -370,101 +387,111 @@ export default function FarmPlots() {
   };
 
   return (
-    <section className="min-h-screen bg-center bg-cover bg-no-repeat bg-[url('./jbm2.jpg')] bg-gray-900 bg-blend-multiply dashboard-shell lg:pl-64">
+    <section className="min-h-screen bg-center bg-cover bg-no-repeat bg-[url('./jbm2.jpg')] bg-gray-900 bg-blend-multiply lg:pl-64 dashboard-shell">
       <Sidebar />
-      <div className="dashboard-orb orb-1" />
-      <div className="dashboard-orb orb-2" />
-      <div className="dashboard-orb orb-3" />
-      <div className="relative z-10 mx-auto max-w-5xl px-6 py-16 pt-24">
-        <div className="rounded-2xl p-8 shadow-xl backdrop-blur court-reveal glass-panel">
-          <div className="flex flex-wrap items-center justify-between gap-4">
-            <div>
-              <p className="section-kicker text-xs uppercase tracking-[0.4em] text-yellow-500">Harvestlands</p>
-              <h1 className="mt-3 text-4xl font-extrabold text-white hero-title">Farm Plots</h1>
-              <p className="mt-3 text-base text-gray-300">
-                Expand your land and plant crops. Harvests become farm goods you can sell.
-              </p>
-            </div>
-            <Link
-              to="/farm"
-              className="inline-flex items-center rounded-full px-4 py-2 text-xs font-semibold text-yellow-200 action-ghost"
-            >
-              Back to Farm
-            </Link>
+      <div className="relative z-10 mx-auto max-w-6xl px-6 py-16 pt-24">
+        <div className="mb-10 flex flex-wrap items-center justify-between gap-6">
+          <SectionHeader
+            kicker="Harvestlands"
+            title="Farm Plots"
+            description="Cultivate the soil and expand your botanical empire. Nature provides for the patient."
+          />
+          <Panel variant="subtle" className="text-center min-w-[120px]">
+            <p className="text-[10px] uppercase tracking-[0.3em] text-gray-500 font-bold">Botany Mastery</p>
+            <p className="mt-1 text-3xl font-black text-emerald-400 drop-shadow-sm">Lvl {farmLevel}</p>
+          </Panel>
+        </div>
+
+        <div className="mb-8 grid gap-8 lg:grid-cols-[1.3fr_0.7fr]">
+          <div className="space-y-8">
+            <Panel variant="glass">
+              <XpBar current={farmXp} target={farmXpTarget} label="Farming Progression" tone="emerald" />
+              <div className="mt-4 flex flex-wrap gap-3">
+                <Badge variant="success">Land Size: {landSize}</Badge>
+                <Badge variant="gold">Gold: {gold}</Badge>
+                {farmWeather && (
+                  <Badge variant="info">{farmWeather.label} ({farmWeather.season})</Badge>
+                )}
+              </div>
+            </Panel>
+
+            <Panel variant="card">
+              <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
+                <p className="text-xs uppercase tracking-[0.3em] text-gray-500 font-bold">Active Soil</p>
+                <div className="flex flex-wrap items-center gap-3">
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => openPlantModal(null, 'bulk')}
+                    disabled={farmLevel < 10}
+                  >
+                    Bulk Plant {farmLevel < 10 && '(L10)'}
+                  </Button>
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    onClick={handleHarvestAll}
+                    ref={harvestAllRef}
+                    disabled={farmLevel < 20}
+                  >
+                    Harvest All {farmLevel < 20 && '(L20)'}
+                  </Button>
+                </div>
+              </div>
+              <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                {plots.map((plot) => (
+                  <PlotCard
+                    key={plot.id}
+                    plot={plot}
+                    now={now}
+                    openPlantModal={openPlantModal}
+                    handleHarvest={handleHarvest}
+                    plotRefs={plotRefs}
+                  />
+                ))}
+              </div>
+            </Panel>
           </div>
 
-          <FarmUpgradePanel
-            farmLevel={farmLevel}
-            farmXp={farmXp}
-            farmXpTarget={farmXpTarget}
-            gold={gold}
-            landSize={landSize}
-            nextExpandCost={nextExpandCost}
-            nextExpandFarmLevel={nextExpandFarmLevel}
-            handleExpandLand={handleExpandLand}
-            LAND_EXPAND_SIZE={LAND_EXPAND_SIZE}
-          />
+          <div className="space-y-8">
+            <FarmUpgradePanel
+              farmLevel={farmLevel}
+              farmXp={farmXp}
+              farmXpTarget={farmXpTarget}
+              gold={gold}
+              landSize={landSize}
+              nextExpandCost={nextExpandCost}
+              nextExpandFarmLevel={nextExpandFarmLevel}
+              handleExpandLand={handleExpandLand}
+              LAND_EXPAND_SIZE={LAND_EXPAND_SIZE}
+            />
 
-          {farmWeather && (
-            <div className="mt-4 rounded-2xl border border-yellow-700/20 bg-gray-950/70 p-4">
-              <p className="text-xs uppercase tracking-[0.3em] text-gray-400">Today</p>
-              <img
-                src={getSeasonBanner(farmWeather.season)}
-                alt={`${farmWeather.season} banner`}
-                className="mt-3 h-32 w-full rounded-lg object-contain bg-gray-950/70"
-              />
-              <p className="mt-2 text-sm font-semibold text-white">
-                {farmWeather.label} · {farmWeather.season}
-              </p>
-              <p className="mt-1 text-xs text-gray-400">
-                Grow time x{farmWeather.growMultiplier} · Yield x{farmWeather.yieldMultiplier}
-              </p>
-            </div>
-          )}
-
-          <div className="mt-8 rounded-2xl border border-yellow-700/20 bg-gray-950/70 p-5">
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <p className="text-xs uppercase tracking-[0.3em] text-gray-400">Plots</p>
-              <div className="flex flex-wrap items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => openPlantModal(null, 'bulk')}
-                  className={`rounded-lg border px-3 py-2 text-xs font-semibold ${farmLevel >= 10
-                    ? 'border-yellow-700/40 text-yellow-200'
-                    : 'border-gray-700/60 text-gray-500'
-                    }`}
-                  disabled={farmLevel < 10}
-                  title={farmLevel < 10 ? 'Bulk plant unlocks at L10' : undefined}
-                >
-                  Plant All (L10)
-                </button>
-                <button
-                  type="button"
-                  onClick={handleHarvestAll}
-                  ref={harvestAllRef}
-                  className={`rounded-lg border px-3 py-2 text-xs font-semibold ${farmLevel >= 20
-                    ? 'border-emerald-500/40 text-emerald-200'
-                    : 'border-gray-700/60 text-gray-500'
-                    }`}
-                  disabled={farmLevel < 20}
-                  title={farmLevel < 20 ? 'Bulk harvest unlocks at L20' : undefined}
-                >
-                  Harvest All (L20)
-                </button>
-              </div>
-            </div>
-            <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {plots.map((plot) => (
-                <PlotCard
-                  key={plot.id}
-                  plot={plot}
-                  now={now}
-                  openPlantModal={openPlantModal}
-                  handleHarvest={handleHarvest}
-                  plotRefs={plotRefs}
-                />
-              ))}
-            </div>
+            {farmWeather && (
+              <Panel variant="ornament">
+                <p className="text-[10px] uppercase tracking-[0.3em] text-gray-300 font-bold mb-4">Seasonal Climate</p>
+                <div className="aspect-video overflow-hidden rounded-xl bg-gray-900/80 mb-4">
+                  <img
+                    src={getSeasonBanner(farmWeather.season)}
+                    alt={`${farmWeather.season} banner`}
+                    className="h-full w-full object-cover mix-blend-lighten opacity-80"
+                  />
+                </div>
+                <h4 className="text-xl font-bold text-white">{farmWeather.label}</h4>
+                <p className="mt-2 text-sm text-gray-400">
+                  Current Season: <span className="text-yellow-500 font-bold uppercase">{farmWeather.season}</span>
+                </p>
+                <div className="mt-4 space-y-2">
+                  <div className="flex justify-between text-xs">
+                    <span className="text-gray-500">Growth Rate</span>
+                    <span className="text-emerald-400 font-bold">x{farmWeather.growMultiplier}</span>
+                  </div>
+                  <div className="flex justify-between text-xs">
+                    <span className="text-gray-500">Yield Multiplier</span>
+                    <span className="text-yellow-400 font-bold">x{farmWeather.yieldMultiplier}</span>
+                  </div>
+                </div>
+              </Panel>
+            )}
           </div>
         </div>
       </div>

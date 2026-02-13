@@ -8,7 +8,7 @@ export default function MiningClickNode({
     handleClickMine,
     lastClickReward,
 }) {
-    const nodeDurability = node?.durability ?? 0;
+    const nodeDurability = node?.currentDurability ?? node?.durability ?? 0;
     const nodeMaxDurability = node?.maxDurability ?? 0;
     const nodeTier = node?.tier ?? 1;
 
@@ -16,8 +16,9 @@ export default function MiningClickNode({
         ? Math.max(0, Math.min(100, Math.round((nodeDurability / nodeMaxDurability) * 100)))
         : 0;
 
-    const momentumValue = momentum?.value || 0;
-    const momentumMax = momentum?.max || 100;
+    const momentumPct = typeof momentum === 'number'
+        ? Math.round(momentum * 100)
+        : Math.round(((momentum?.value || 0) / (momentum?.max || 100)) * 100);
 
     const lastRewardItems = lastClickReward
         ? Object.entries(lastClickReward.yieldMap || {}).map(([oreId, amount]) => ({
@@ -53,7 +54,7 @@ export default function MiningClickNode({
                 </div>
                 <div className="mt-3 flex flex-wrap items-center gap-3 text-xs text-gray-400">
                     <span>Node tier: {nodeTier}</span>
-                    <span>Momentum: {momentumValue}/{momentumMax}</span>
+                    <span>Momentum: {momentumPct}%</span>
                 </div>
             </div>
 

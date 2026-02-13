@@ -81,14 +81,13 @@ export default function Sidebar() {
   const items = [...navItems, ...offlineNavItems];
 
   const NavLinks = () => (
-    <nav className="fantasy-nav space-y-1">
+    <nav className="space-y-2">
       {items.map((item) => {
         const isActive = location.pathname === item.href;
-        const linkClassName = `fantasy-navlink sidebar-link flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-semibold transition ${
-          isActive
-            ? 'fantasy-navlink-active sidebar-link-active bg-yellow-500/10 text-yellow-200'
-            : 'text-gray-300 hover:bg-white/5 hover:text-yellow-200'
-        }`;
+        const linkClassName = `fantasy-navlink group flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-bold transition-all ${isActive
+          ? 'fantasy-navlink-active pl-8 text-yellow-200'
+          : 'text-gray-400 hover:text-yellow-100'
+          }`;
 
         if (item.external) {
           return (
@@ -100,7 +99,7 @@ export default function Sidebar() {
               onClick={() => setIsOpen(false)}
               className={linkClassName}
             >
-              <item.icon className="fantasy-nav-icon h-5 w-5" />
+              <item.icon className={`h-5 w-5 transition-transform group-hover:scale-110 ${isActive ? 'text-yellow-400' : 'text-gray-500'}`} />
               <span>{item.name}</span>
             </a>
           );
@@ -113,7 +112,7 @@ export default function Sidebar() {
             onClick={() => setIsOpen(false)}
             className={linkClassName}
           >
-            <item.icon className="fantasy-nav-icon h-5 w-5" />
+            <item.icon className={`h-5 w-5 transition-transform group-hover:scale-110 ${isActive ? 'text-yellow-400' : 'text-gray-500'}`} />
             <span>{item.name}</span>
           </Link>
         );
@@ -123,20 +122,20 @@ export default function Sidebar() {
 
   return (
     <>
-      <div className="fantasy-topbar sidebar-topbar lg:hidden fixed inset-x-0 top-0 z-50 flex items-center justify-between px-4 py-3 backdrop-blur">
+      <div className="lg:hidden fixed inset-x-0 top-0 z-50 flex items-center justify-between px-4 py-3 bg-gray-950/90 backdrop-blur border-b border-yellow-700/20">
         <div className="flex flex-1 justify-center">
-          <Link to="/dashboard" className="fantasy-logo flex items-center">
+          <Link to="/dashboard" className="flex items-center">
             <img
               src="/logo.webp"
               alt="Salvation"
-              className="h-24 w-auto drop-shadow-[0_14px_32px_rgba(234,179,8,0.5)]"
+              className="h-16 w-auto"
             />
           </Link>
         </div>
         <button
           type="button"
           onClick={handleToggle}
-          className="rounded-lg border border-yellow-700/40 p-2 text-yellow-200"
+          className="rounded-lg border border-yellow-700/40 p-2 text-yellow-200 bg-gray-900"
         >
           {isOpen ? <XMarkIcon className="h-5 w-5" /> : <Bars3Icon className="h-5 w-5" />}
         </button>
@@ -144,59 +143,57 @@ export default function Sidebar() {
 
       {isOpen && (
         <div
-          className="lg:hidden fixed inset-0 z-40 bg-black/50"
+          className="lg:hidden fixed inset-0 z-40 bg-black/80 backdrop-blur-sm"
           onClick={() => setIsOpen(false)}
           aria-hidden="true"
         />
       )}
 
       <aside
-        className={`fantasy-sidebar sidebar-shell fixed inset-y-0 left-0 z-50 w-64 p-6 backdrop-blur transition-transform lg:translate-x-0 ${
-          isOpen ? 'translate-x-0' : '-translate-x-full'
-        }`}
+        className={`fantasy-sidebar-frame fixed inset-y-0 left-0 z-50 w-64 p-6 transition-transform lg:translate-x-0 ${isOpen ? 'translate-x-0' : '-translate-x-full'
+          }`}
       >
-        <div className="flex items-center justify-center">
-          <Link to="/dashboard" className="fantasy-logo flex items-center">
-            <img
-              src="/logo.webp"
-              alt="Salvation"
-              className="h-36 w-auto drop-shadow-[0_16px_40px_rgba(234,179,8,0.55)]"
-            />
-          </Link>
-          <button
-            type="button"
-            onClick={handleToggle}
-            className="lg:hidden rounded-lg border border-yellow-700/40 p-2 text-yellow-200"
-          >
-            <XMarkIcon className="h-5 w-5" />
-          </button>
-        </div>
+        {/* Decorative Corners */}
+        <div className="fantasy-corner fantasy-corner-tl" />
+        <div className="fantasy-corner fantasy-corner-tr" />
+        <div className="fantasy-corner fantasy-corner-bl" />
+        <div className="fantasy-corner fantasy-corner-br" />
 
-        <div className="fantasy-divider" aria-hidden="true">
-          <span className="fantasy-divider-line" />
-          <span className="fantasy-divider-rune">✶</span>
-          <span className="fantasy-divider-line" />
-        </div>
-
-        <div className="mt-8">
-          <NavLinks />
-        </div>
-
-        <div className="mt-6">
-          <div className="fantasy-divider" aria-hidden="true">
-            <span className="fantasy-divider-line" />
-            <span className="fantasy-divider-rune">✶</span>
-            <span className="fantasy-divider-line" />
+        <div className="relative z-20 flex flex-col h-full">
+          <div className="sidebar-brand-frame flex flex-col items-center justify-center">
+            <Link to="/dashboard" className="group">
+              <img
+                src="/logo.webp"
+                alt="Salvation"
+                className="h-32 w-auto drop-shadow-[0_0_25px_rgba(234,179,8,0.3)] transition-all group-hover:drop-shadow-[0_0_35px_rgba(234,179,8,0.5)] group-hover:scale-105"
+              />
+            </Link>
+            <div className="mt-2 text-[10px] uppercase tracking-[0.5em] text-yellow-600 font-black">Official Oracle</div>
           </div>
-        </div>
 
-        <div className="mt-6 pt-2">
-          <Link
-            to="/load-save"
-            className="block w-full rounded-xl border border-yellow-700/40 px-3 py-2 text-center text-sm font-semibold text-yellow-200"
-          >
-            Manage Save
-          </Link>
+          <div className="fantasy-divider-v2" aria-hidden="true">
+            <span className="fantasy-divider-rune-v2">✥</span>
+          </div>
+
+          <div className="flex-1 overflow-y-auto custom-scrollbar pr-2 py-4">
+            <p className="px-4 text-[10px] uppercase tracking-[0.4em] text-gray-500 font-black mb-4 flex items-center gap-2">
+              <span className="h-1 w-1 bg-yellow-700 rounded-full"></span>
+              Lexicon of Realm
+            </p>
+            <NavLinks />
+          </div>
+
+          <div className="mt-auto pt-6 border-t border-yellow-700/10">
+            <p className="px-4 text-[10px] uppercase tracking-[0.4em] text-gray-500 font-black mb-4">The Archive</p>
+            <Link
+              to="/load-save"
+              className="group relative flex items-center justify-center gap-3 rounded-xl border border-yellow-700/30 bg-yellow-950/20 py-4 text-xs font-black text-yellow-200 hover:bg-yellow-900/30 transition-all overflow-hidden"
+            >
+              <div className="absolute inset-0 bg-gradient-to-r from-yellow-500/0 via-yellow-500/10 to-yellow-500/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
+              <ArrowDownTrayIcon className="h-5 w-5 text-yellow-500" />
+              <span className="uppercase tracking-widest">Invoke Save State</span>
+            </Link>
+          </div>
         </div>
       </aside>
     </>

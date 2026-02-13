@@ -1,10 +1,10 @@
 import React from 'react';
-import XpBar from '../../components/XpBar';
+import Panel from '../../components/ui/Panel';
+import Button from '../../components/ui/Button';
+import Badge from '../../components/ui/Badge';
 
 const FarmUpgradePanel = React.memo(function FarmUpgradePanel({
     farmLevel,
-    farmXp,
-    farmXpTarget,
     gold,
     landSize,
     nextExpandCost,
@@ -12,40 +12,43 @@ const FarmUpgradePanel = React.memo(function FarmUpgradePanel({
     handleExpandLand,
     LAND_EXPAND_SIZE,
 }) {
+    const canExpand = gold >= nextExpandCost && farmLevel >= nextExpandFarmLevel;
+
     return (
-        <div className="mt-6 grid gap-4 sm:grid-cols-3">
-            <div className="court-card rounded-xl p-4">
-                <p className="text-xs uppercase tracking-[0.3em] text-gray-400">Farm Level</p>
-                <p className="mt-2 text-2xl font-semibold text-white">{farmLevel}</p>
-                <div className="mt-3">
-                    <XpBar current={farmXp} target={farmXpTarget} label="Farm XP" tone="emerald" />
+        <Panel variant="card">
+            <p className="text-[10px] uppercase tracking-[0.3em] text-gray-500 font-bold mb-4">Real Estate</p>
+            <div className="flex items-center justify-between">
+                <div>
+                    <h4 className="text-xl font-bold text-white">{landSize} Plots</h4>
+                    <p className="text-xs text-gray-400 mt-1">Current Estate Size</p>
                 </div>
+                <Badge variant="gold">+{LAND_EXPAND_SIZE} Plots Available</Badge>
             </div>
-            <div className="court-card rounded-xl p-4">
-                <p className="text-xs uppercase tracking-[0.3em] text-gray-400">Gold</p>
-                <p className="mt-2 text-2xl font-semibold text-yellow-300">{gold}</p>
-            </div>
-            <div className="image-panel image-panel-housing ornament-frame p-4">
-                <div className="image-panel-content">
-                    <p className="text-xs uppercase tracking-[0.3em] text-gray-300">Land Size</p>
-                    <p className="mt-2 text-2xl font-semibold text-white">{landSize} plots</p>
-                    <p className="mt-2 text-xs text-gray-400">
-                        Next expansion: {nextExpandCost}g · Requires farm level {nextExpandFarmLevel}
-                    </p>
-                    <button
-                        type="button"
-                        onClick={handleExpandLand}
-                        className={`mt-3 w-full rounded-lg px-3 py-2 text-xs font-semibold ${gold >= nextExpandCost && farmLevel >= nextExpandFarmLevel
-                            ? 'action-primary text-white'
-                            : 'bg-gray-700 text-gray-300'
-                            }`}
-                        disabled={gold < nextExpandCost || farmLevel < nextExpandFarmLevel}
-                    >
-                        Expand Land (+{LAND_EXPAND_SIZE} plots)
-                    </button>
+
+            <Panel variant="subtle" className="mt-6">
+                <div className="flex justify-between items-center text-xs mb-2">
+                    <span className="text-gray-500">Upgrade Cost</span>
+                    <span className={`font-bold ${gold >= nextExpandCost ? 'text-yellow-400' : 'text-red-400'}`}>
+                        {nextExpandCost} Gold
+                    </span>
                 </div>
-            </div>
-        </div>
+                <div className="flex justify-between items-center text-xs">
+                    <span className="text-gray-500">Required Level</span>
+                    <span className={`font-bold ${farmLevel >= nextExpandFarmLevel ? 'text-emerald-400' : 'text-red-400'}`}>
+                        Lvl {nextExpandFarmLevel}
+                    </span>
+                </div>
+            </Panel>
+
+            <Button
+                variant="ornate"
+                onClick={handleExpandLand}
+                className="mt-6 w-full"
+                disabled={!canExpand}
+            >
+                Expand Frontier
+            </Button>
+        </Panel>
     );
 });
 

@@ -1,26 +1,44 @@
 import React from 'react';
 
+/**
+ * StandardIZED Badge component for Salvation RPG.
+ * Supports Semantic (Success, Warning, Danger, Info) and Theme (Gold, Cyan) variants.
+ */
 export default function Badge({
     children,
-    variant = 'default',
+    variant = 'gold',
     className = '',
     ...rest
 }) {
-    let variantClass = 'bg-yellow-500/10 text-yellow-200 border border-yellow-500/20';
+    let variantClass = '';
 
-    if (variant === 'warning') {
-        variantClass = 'bg-orange-500/10 text-orange-200 border border-orange-500/20';
-    } else if (variant === 'success') {
-        variantClass = 'bg-emerald-500/10 text-emerald-200 border border-emerald-500/20';
-    } else if (variant === 'danger') {
-        variantClass = 'bg-red-500/10 text-red-200 border border-red-500/20';
-    } else if (variant === 'cyan') {
-        variantClass = 'bg-cyan-500/10 text-cyan-200 border border-cyan-500/20';
-    } else if (variant === 'ghost') {
-        variantClass = 'bg-gray-800/50 text-gray-400 border border-gray-700/50';
+    switch (variant) {
+        case 'success':
+            variantClass = 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20';
+            break;
+        case 'warning':
+            variantClass = 'bg-amber-500/10 text-amber-400 border-amber-500/20';
+            break;
+        case 'danger':
+            variantClass = 'bg-red-500/10 text-red-400 border-red-500/20';
+            break;
+        case 'info':
+            variantClass = 'bg-sky-500/10 text-sky-400 border-sky-500/20';
+            break;
+        case 'gold':
+            variantClass = 'bg-yellow-500/10 text-yellow-300 border-yellow-500/20';
+            break;
+        case 'cyan':
+            variantClass = 'bg-cyan-500/10 text-cyan-400 border-cyan-500/20';
+            break;
+        case 'ghost':
+            variantClass = 'bg-gray-800/40 text-gray-400 border-gray-700/40';
+            break;
+        default:
+            variantClass = 'bg-yellow-500/10 text-yellow-300 border-yellow-500/20';
     }
 
-    const baseClass = `inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-medium backdrop-blur-sm ${variantClass}`;
+    const baseClass = `inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wider backdrop-blur-sm ${variantClass}`;
 
     return (
         <span className={`${baseClass} ${className}`.trim()} {...rest}>

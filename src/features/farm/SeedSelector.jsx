@@ -3,6 +3,9 @@ import { farmCrops, farmGoods, getSeedImageSrc, getCropSeasonBadges } from '../.
 import { getSeedItemId } from '../../data/itemsCatalog';
 import { formatDuration } from '../../data/miningData';
 import { getItemCount } from '../../services/inventoryService';
+import Panel from '../../components/ui/Panel';
+import Button from '../../components/ui/Button';
+import Badge from '../../components/ui/Badge';
 
 export default function SeedSelector({
     isOpen,
@@ -16,86 +19,99 @@ export default function SeedSelector({
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4">
-            <div className="w-full max-w-2xl rounded-2xl border border-yellow-700/30 bg-gray-950/95 p-6 shadow-xl">
-                <p className="text-sm uppercase tracking-[0.3em] text-yellow-400">Choose Crop</p>
-                <h2 className="mt-3 text-xl font-semibold text-white">What do you want to plant?</h2>
-                {plantMode === 'bulk' && (
-                    <p className="mt-2 text-xs text-gray-300">
-                        This will plant all empty plots with the selected seed.
-                    </p>
-                )}
-                <div className="mt-4 space-y-3 max-h-[60vh] overflow-y-auto pr-2">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 px-4 backdrop-blur-sm">
+            <Panel variant="glass" className="w-full max-w-2xl max-h-[90vh] flex flex-col p-8">
+                <div className="mb-6">
+                    <p className="text-[10px] uppercase tracking-[0.4em] text-yellow-500 font-bold">Botanical Archives</p>
+                    <h2 className="mt-2 text-3xl font-bold text-white">Select Your Crop</h2>
+                    {plantMode === 'bulk' && (
+                        <p className="mt-2 text-sm text-emerald-400 font-medium italic">
+                            Bulk action enabled: All fallow soil will be sown.
+                        </p>
+                    )}
+                </div>
+
+                <div className="flex-1 overflow-y-auto pr-2 space-y-4 custom-scrollbar">
                     {farmCrops.map((crop) => {
                         const seedItemId = getSeedItemId(crop.id);
                         const ownedSeeds = getItemCount(inventory, seedItemId);
                         const meetsLevel = farmLevel >= crop.levelRequired;
-                        const disabled = !meetsLevel || ownedSeeds <= 0;
+                        const canPlant = meetsLevel && ownedSeeds > 0;
                         const badges = getCropSeasonBadges(crop.id);
+                        const cropGood = farmGoods.find((good) => good.id === crop.yieldId);
+
                         return (
-                            <div
+                            <Panel
                                 key={crop.id}
-                                className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-yellow-700/20 bg-gray-950/70 p-3"
+                                variant="subtle"
+                                className={`flex flex-wrap items-center justify-between gap-4 p-4 transition-all ${!meetsLevel ? 'opacity-40 grayscale' : 'hover:bg-gray-900/60'
+                                    }`}
                             >
-                                <div className="flex flex-wrap items-center gap-3">
-                                    <img
-                                        src={getSeedImageSrc(crop.id)}
-                                        alt={crop.seedName}
-                                        className="seed-thumb h-12 w-12 object-contain"
-                                    />
-                                    <div>
-                                        <p className="text-sm font-semibold text-white">{crop.name}</p>
-                                        <p className="mt-1 text-xs text-gray-400">
-                                            Farm L{crop.levelRequired} · {crop.seedName} · {formatDuration(crop.growMs)}
+                                <div className="flex items-center gap-4 flex-1 min-w-[240px]">
+                                    <div className="h-16 w-16 rounded-xl bg-gray-900/80 border border-yellow-700/20 p-2 shadow-inner">
+                                        <img
+                                            src={getSeedImageSrc(crop.id)}
+                                            alt={crop.seedName}
+                                            className="h-full w-full object-contain"
+                                        />
+                                    </div>
+                                    <div className="flex-1">
+                                        <div className="flex items-center gap-2">
+                                            <h4 className="text-base font-bold text-white">{crop.name}</h4>
+                                            {!meetsLevel && <Badge variant="danger">Lvl {crop.levelRequired} req</Badge>}
+                                            {ownedSeeds > 0 && <Badge variant="cyan">{ownedSeeds} owned</Badge>}
+                                        </div>
+                                        <p className="mt-1 text-xs text-gray-400 font-medium">
+                                            {crop.seedName} · {formatDuration(crop.growMs)} growth
                                         </p>
+
                                         {badges.length > 0 && (
-                                            <div className="mt-2 flex flex-wrap gap-2">
-                                                {badges.map((badge) => (
-                                                    <span
-                                                        key={`${crop.id}-${badge.season}`}
-                                                        className={`rounded-full px-2 py-1 text-[10px] uppercase tracking-[0.2em] ${badge.tone === 'good'
-                                                            ? badge.season === season
-                                                                ? 'bg-emerald-400/20 text-emerald-100 ring-1 ring-emerald-400/50'
-                                                                : 'bg-emerald-500/10 text-emerald-200'
-                                                            : badge.season === season
-                                                                ? 'bg-rose-400/20 text-rose-100 ring-1 ring-rose-400/50'
-                                                                : 'bg-rose-500/10 text-rose-200'
-                                                            }`}
-                                                    >
-                                                        {badge.label}{badge.season === season ? ' · Today' : ''}
-                                                    </span>
-                                                ))}
+                                            <div className="mt-3 flex flex-wrap gap-2">
+                                                {badges.map((badge) => {
+                                                    const isCurrentSeason = badge.season === season;
+                                                    let badgeVariant = 'ghost';
+                                                    if (isCurrentSeason) {
+                                                        badgeVariant = badge.tone === 'good' ? 'success' : 'danger';
+                                                    }
+                                                    return (
+                                                        <Badge
+                                                            key={`${crop.id}-${badge.season}`}
+                                                            variant={badgeVariant}
+                                                            className={isCurrentSeason ? 'scale-110 origin-left border-current' : 'opacity-60'}
+                                                        >
+                                                            {badge.label}{isCurrentSeason ? ' (Today)' : ''}
+                                                        </Badge>
+                                                    );
+                                                })}
                                             </div>
                                         )}
-                                        <p className="mt-1 text-xs text-gray-400">
-                                            Yield: {crop.yieldAmount} {farmGoods.find((good) => good.id === crop.yieldId)?.name || 'Goods'}
+
+                                        <p className="mt-2 text-[10px] text-gray-500 uppercase tracking-widest font-bold">
+                                            Expected Yield: <span className="text-yellow-500">{crop.yieldAmount} {cropGood?.name || 'Goods'}</span>
                                         </p>
-                                        <p className="mt-1 text-xs text-gray-500">Seeds owned: {ownedSeeds}</p>
                                     </div>
                                 </div>
-                                <button
-                                    type="button"
+
+                                <Button
+                                    variant={canPlant ? 'ornate' : 'secondary'}
+                                    size="sm"
                                     onClick={() => handlePlant(crop.id)}
-                                    className={`rounded-lg px-3 py-2 text-xs font-semibold ${disabled ? 'bg-gray-700 text-gray-300' : 'action-primary text-white'
-                                        }`}
-                                    disabled={disabled}
+                                    disabled={!canPlant}
+                                    className="min-w-[100px]"
                                 >
-                                    Plant
-                                </button>
-                            </div>
+                                    {meetsLevel ? (ownedSeeds > 0 ? 'Plant' : 'No Seeds') : `Level ${crop.levelRequired}`}
+                                </Button>
+                            </Panel>
                         );
                     })}
                 </div>
-                <div className="mt-6 flex items-center justify-end">
-                    <button
-                        type="button"
-                        onClick={onClose}
-                        className="rounded-lg border border-yellow-700/40 px-4 py-2 text-xs font-semibold text-yellow-200"
-                    >
-                        Cancel
-                    </button>
+
+                <div className="mt-8 flex items-center justify-end gap-4 border-t border-yellow-700/10 pt-6">
+                    <Button variant="ghost" onClick={onClose}>
+                        Return to Fields
+                    </Button>
                 </div>
-            </div>
+            </Panel>
         </div>
     );
 }

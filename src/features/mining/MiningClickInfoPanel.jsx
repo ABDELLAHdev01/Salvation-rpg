@@ -14,12 +14,11 @@ export default function MiningClickInfoPanel({
     weeklySurgeBonus,
     activeBoost,
 }) {
-    const momentumValue = momentum?.value || 0;
-    const momentumMax = momentum?.max || 100;
-    const momentumPct = momentumMax > 0
-        ? Math.max(0, Math.min(100, Math.round((momentumValue / momentumMax) * 100)))
-        : 0;
-    const momentumMultiplier = 1 + Math.min(0.1, momentumValue * 0.001);
+    const momentumPct = typeof momentum === 'number'
+        ? Math.round(momentum * 100)
+        : Math.round(((momentum?.value || 0) / (momentum?.max || 100)) * 100);
+    const momentumValueForCalc = typeof momentum === 'number' ? momentum * 100 : (momentum?.value || 0);
+    const momentumMultiplier = 1 + Math.min(0.1, momentumValueForCalc * 0.001);
 
     return (
         <div className="image-panel image-panel-market ornament-frame p-6">

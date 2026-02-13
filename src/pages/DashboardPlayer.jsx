@@ -17,6 +17,12 @@ import { getWorkshopXpForLevel } from '../data/workshopData';
 import { getZoneById, getUnlockedZoneIdsByLevel, zones } from '../data/zonesData';
 import { itemsById } from '../data/itemsCatalog';
 
+// Standard UI Components
+import Panel from '../components/ui/Panel';
+import Button from '../components/ui/Button';
+import Badge from '../components/ui/Badge';
+import SectionHeader from '../components/ui/SectionHeader';
+
 const MOCK_AUTH = import.meta.env.VITE_MOCK_AUTH === 'true';
 
 export default function DashboardPlayer() {
@@ -172,10 +178,10 @@ export default function DashboardPlayer() {
       <div className="dashboard-orb orb-3" />
       <div className="relative z-10 mx-auto max-w-6xl px-6 py-16 pt-24">
         <div className="mb-10 grid gap-6 lg:grid-cols-[1.35fr_0.65fr]">
-          <div className="rounded-2xl p-8 shadow-2xl backdrop-blur court-reveal glass-panel">
-            <div className="flex flex-wrap items-center justify-between gap-4">
-              <div className="flex flex-wrap items-center gap-4">
-                <div className="h-20 w-20 overflow-hidden rounded-2xl border border-yellow-700/40 bg-gray-900/70">
+          <Panel variant="glass" className="court-reveal">
+            <div className="flex flex-wrap items-center justify-between gap-6">
+              <div className="flex flex-wrap items-center gap-6">
+                <div className="h-24 w-24 overflow-hidden rounded-2xl border-2 border-yellow-700/40 bg-gray-900/90 shadow-2xl">
                   <img
                     src={character?.avatarUrl || '/raceicon/noimage.jpg'}
                     alt={character?.name || 'Unknown adventurer'}
@@ -183,264 +189,68 @@ export default function DashboardPlayer() {
                   />
                 </div>
                 <div>
-                  <p className="section-kicker text-sm uppercase tracking-[0.3em] text-yellow-500">
-                    Command Deck
-                  </p>
-                  <h1 className="mt-3 text-4xl font-extrabold text-white sm:text-5xl hero-title">
-                    {character?.name || 'Unbound Wanderer'}
-                  </h1>
-                  <p className="mt-2 text-sm text-gray-300">
-                    {character?.race || 'Unknown'} · {character?.className || 'Adventurer'}
-                  </p>
+                  <SectionHeader
+                    kicker="Command Deck"
+                    title={character?.name || 'Unbound Wanderer'}
+                    description={`${character?.race || 'Unknown'} · ${character?.className || 'Adventurer'}`}
+                  />
                 </div>
               </div>
-              <div className="rounded-xl border border-yellow-700/30 bg-gray-950/70 px-4 py-3 text-center">
-                <p className="text-xs uppercase tracking-[0.3em] text-gray-400">Level</p>
-                <p className="mt-1 text-3xl font-semibold text-yellow-300">{playerLevel}</p>
-              </div>
+              <Panel variant="subtle" className="text-center min-w-[100px]">
+                <p className="text-[10px] uppercase tracking-[0.3em] text-gray-500 font-bold">Level</p>
+                <p className="mt-1 text-4xl font-black text-yellow-400 drop-shadow-sm">{playerLevel}</p>
+              </Panel>
             </div>
-            <div className="mt-6 overflow-hidden rounded-2xl border border-yellow-700/30 bg-gray-950/70">
-              <img
-                src="/banner.jpg"
-                alt="Dashboard banner"
-                className="h-44 w-full object-cover sm:h-56"
-              />
-            </div>
-            <div className="mt-6 grid gap-4 lg:grid-cols-[1.1fr_0.9fr]">
-              <div className="rounded-2xl border border-yellow-700/30 bg-gray-950/70 p-5">
-                <p className="text-xs uppercase tracking-[0.3em] text-gray-400">Character XP</p>
-                <div className="mt-3">
-                  <XpBar current={playerXp} target={playerXpTarget} label="Character XP" tone="gold" />
-                </div>
-                <div className="mt-4 flex flex-wrap items-center gap-3 text-xs text-gray-400">
-                  <span className="inline-flex items-center gap-1 rounded-full border border-yellow-700/40 bg-yellow-500/10 px-3 py-1 text-yellow-200">
-                    <svg
-                      viewBox="0 0 24 24"
-                      className="h-4 w-4"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="1.6"
-                      aria-hidden="true"
-                    >
-                      <ellipse cx="12" cy="7" rx="7" ry="3" />
-                      <path d="M5 7v4c0 1.7 3.1 3 7 3s7-1.3 7-3V7" />
-                      <path d="M5 11v4c0 1.7 3.1 3 7 3s7-1.3 7-3v-4" />
-                    </svg>
-                    <span>Gold: {profile?.stats?.gold ?? 0}</span>
-                  </span>
-                  <span className="rounded-full border border-yellow-700/40 bg-gray-900/80 px-3 py-1">
-                    Residence: {activeHouse?.name || 'Starter Cottage'}
-                  </span>
-                  <span className="rounded-full border border-yellow-700/40 bg-gray-900/80 px-3 py-1">
-                    Buff: {activeHouse?.effect?.name || 'Rested Comfort'}
-                  </span>
-                </div>
+
+            <Panel variant="subtle" className="mt-8">
+              <XpBar current={playerXp} target={playerXpTarget} label="Character XP" tone="gold" />
+              <div className="mt-4 flex flex-wrap items-center gap-3">
+                <Badge variant="gold">
+                  <span className="text-yellow-500 font-black">●</span>
+                  Gold: {profile?.stats?.gold ?? 0}
+                </Badge>
+                <Badge variant="ghost">
+                  Residence: {activeHouse?.name || 'Starter Cottage'}
+                </Badge>
+                <Badge variant="info">
+                  Buff: {activeHouse?.effect?.name || 'Rested Comfort'}
+                </Badge>
               </div>
-              <div className="rounded-2xl border border-yellow-700/30 bg-gradient-to-br from-yellow-500/10 via-gray-950/80 to-gray-950/40 p-5">
-                <p className="text-xs uppercase tracking-[0.3em] text-gray-400">Expedition Status</p>
-                <p className="mt-2 text-xl font-semibold text-white">
-                  {expeditionLocation ? expeditionLocation.name : 'No expedition'}
+            </Panel>
+
+            <div className="mt-6 grid gap-6 lg:grid-cols-2">
+              <Panel variant="ornament" className="group">
+                <SectionHeader kicker="Expedition" />
+                <p className="mt-2 text-xl font-bold text-white transition-colors group-hover:text-yellow-400">
+                  {expeditionLocation ? expeditionLocation.name : 'No active mission'}
                 </p>
-                <p className="mt-1 text-sm text-gray-300">
-                  {expeditionLocation?.summary || 'Deploy a crew to start earning rewards.'}
+                <p className="mt-2 text-xs text-gray-400 leading-relaxed line-clamp-2">
+                  {expeditionLocation?.summary || 'Deploy a crew to start earning rewards and uncovering secrets.'}
                 </p>
-                <div className="mt-4 flex flex-wrap items-center gap-2 text-xs text-gray-400">
-                  <span>{expeditionLocation?.region || '—'}</span>
-                  <span>·</span>
-                  <span>{expeditionLocation?.biome || '—'}</span>
-                </div>
-                <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
-                  <p className="text-xs text-gray-400">
+                <div className="mt-5 flex items-center justify-between">
+                  <div className="text-[11px] font-bold text-gray-500 uppercase tracking-widest">
                     {expeditionLocation
                       ? expeditionReady
-                        ? 'Ready to claim rewards.'
-                        : `Time left: ${formatDuration(expeditionRemaining)}`
-                      : 'No active expedition.'}
-                  </p>
-                  <Link
-                    to={expeditionLocation ? '/expedition-active' : '/adventure'}
-                    className="rounded-lg px-3 py-2 text-xs font-semibold text-white action-primary"
-                  >
-                    {expeditionLocation ? 'View Expedition' : 'Start Expedition'}
-                  </Link>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div className="rounded-2xl p-6 shadow-xl backdrop-blur court-reveal court-reveal-delay-1 court-card">
-            <p className="text-xs uppercase tracking-[0.3em] text-yellow-500">Missions Spotlight</p>
-            <h2 className="mt-3 text-2xl font-semibold text-white">Your General Missions</h2>
-            <p className="mt-2 text-sm text-gray-300">
-              Track progression goals and claim rewards as you level up.
-            </p>
-            <div className="mt-4 space-y-3">
-              {missionSpotlight.length === 0 ? (
-                <div className="rounded-xl border border-yellow-700/30 bg-gray-900/80 p-3 text-sm text-gray-300">
-                  Missions will appear once you start leveling up.
-                </div>
-              ) : (
-                missionSpotlight.map((mission) => (
-                  <div
-                    key={mission.id}
-                    className="rounded-xl border border-yellow-700/30 bg-gray-900/80 p-3"
-                  >
-                    <div className="flex items-center justify-between text-sm text-gray-200">
-                      <span>{mission.label}</span>
-                      <span className="text-yellow-300">{mission.percent}%</span>
-                    </div>
-                    <div className="mt-2 h-2 rounded-full bg-gray-800">
-                      <div
-                        className="h-full rounded-full bg-yellow-500 shimmer-bar"
-                        style={{ width: `${mission.percent}%` }}
-                      />
-                    </div>
-                    <p className="mt-2 text-xs uppercase tracking-[0.3em] text-gray-400">
-                      {mission.complete ? 'Complete' : 'In Progress'}
-                    </p>
+                        ? <span className="text-emerald-400 animate-pulse">Ready to claim</span>
+                        : `Returns in: ${formatDuration(expeditionRemaining)}`
+                      : 'Crews idle'}
                   </div>
-                ))
-              )}
-            </div>
-            <Link
-              to="/missions"
-              className="mt-5 inline-flex w-full items-center justify-center rounded-lg px-4 py-2 text-sm font-semibold text-white action-primary"
-            >
-              Open Missions
-            </Link>
-          </div>
-        </div>
-
-        <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
-          <div className="space-y-6">
-            {!character && MOCK_AUTH && (
-              <div className="rounded-2xl border border-dashed border-yellow-600/60 bg-yellow-900/20 p-6">
-                <p className="text-sm text-yellow-200">
-                  You have not forged a character yet. Begin your creation to enter the realm.
-                </p>
-                <Link
-                  to="/character"
-                  className="mt-3 inline-flex items-center rounded-lg bg-yellow-600 px-4 py-2 text-sm font-semibold text-white hover:bg-yellow-500"
-                >
-                  Create Character
-                </Link>
-              </div>
-            )}
-
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              <div className="rounded-2xl border border-yellow-700/30 bg-gray-950/70 p-5">
-                <p className="text-xs uppercase tracking-[0.3em] text-gray-400">Mining Outpost</p>
-                <p className="mt-2 text-xl font-semibold text-white">Level {miningLevel}</p>
-                <div className="mt-3">
-                  <XpBar current={miningXp} target={miningXpTarget} label="Mining XP" tone="cyan" />
+                  <Button
+                    variant={expeditionLocation ? 'primary' : 'secondary'}
+                    size="sm"
+                    to={expeditionLocation ? '/expedition-active' : '/adventure'}
+                  >
+                    {expeditionLocation ? 'Monitor' : 'Deploy'}
+                  </Button>
                 </div>
-                <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-gray-400">
-                  <span>Inventory: {miningInventoryCount}</span>
-                  <span>·</span>
-                  <span>{miningInProgress ? `Run ends in ${formatDuration(miningRemaining)}` : 'Idle'}</span>
-                </div>
-                <Link
-                  to="/mining"
-                  className="mt-4 inline-flex items-center text-xs font-semibold text-yellow-200"
-                >
-                  Go to Mining
-                </Link>
-              </div>
+              </Panel>
 
-              <div className="rounded-2xl border border-yellow-700/30 bg-gray-950/70 p-5">
-                <p className="text-xs uppercase tracking-[0.3em] text-gray-400">Farmstead</p>
-                <p className="mt-2 text-xl font-semibold text-white">Level {farmLevel}</p>
-                <div className="mt-3">
-                  <XpBar current={farmXp} target={farmXpTarget} label="Farm XP" tone="emerald" />
-                </div>
-                <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-gray-400">
-                  <span>Goods: {farmInventoryTotal}</span>
-                  <span>·</span>
-                  <span>Land: {profile?.farmLandSize ?? 0} plots</span>
-                </div>
-                <Link
-                  to="/farm"
-                  className="mt-4 inline-flex items-center text-xs font-semibold text-yellow-200"
-                >
-                  Go to Farm
-                </Link>
-              </div>
-
-              <div className="rounded-2xl border border-yellow-700/30 bg-gray-950/70 p-5">
-                <p className="text-xs uppercase tracking-[0.3em] text-gray-400">Workshop</p>
-                <p className="mt-2 text-xl font-semibold text-white">Level {workshopLevel}</p>
-                <div className="mt-3">
-                  <XpBar current={workshopXp} target={workshopXpTarget} label="Workshop XP" tone="emerald" />
-                </div>
-                <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-gray-400">
-                  <span>Jobs: {workshopQueue.length}</span>
-                  <span>·</span>
-                  <span>
-                    {nextWorkshopJob ? `Next ready in ${formatDuration(workshopRemaining)}` : 'Idle'}
-                  </span>
-                </div>
-                <Link
-                  to="/workshop"
-                  className="mt-4 inline-flex items-center text-xs font-semibold text-yellow-200"
-                >
-                  Go to Workshop
-                </Link>
-              </div>
-            </div>
-
-            <div className="rounded-2xl p-6 shadow-xl backdrop-blur court-reveal court-reveal-delay-2 hover-lift glass-panel">
-              <h3 className="text-xl font-semibold text-white">Quick Actions</h3>
-              <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                <Link
-                  to="/adventure"
-                  className="rounded-lg px-4 py-3 text-center text-sm font-semibold text-white action-primary"
-                >
-                  Expeditions Hub
-                </Link>
-                <Link
-                  to="/missions"
-                  className="rounded-lg px-4 py-3 text-center text-sm font-semibold text-yellow-200 action-ghost"
-                >
-                  Missions
-                </Link>
-                <Link
-                  to="/housing"
-                  className="rounded-lg px-4 py-3 text-center text-sm font-semibold text-yellow-200 action-ghost"
-                >
-                  Housing
-                </Link>
-                <Link
-                  to="/inventory"
-                  className="rounded-lg px-4 py-3 text-center text-sm font-semibold text-yellow-200 action-ghost"
-                >
-                  Inventory
-                </Link>
-                <Link
-                  to="/market"
-                  className="rounded-lg px-4 py-3 text-center text-sm font-semibold text-yellow-200 action-ghost"
-                >
-                  Market
-                </Link>
-                <Link
-                  to="/workshop"
-                  className="rounded-lg px-4 py-3 text-center text-sm font-semibold text-yellow-200 action-ghost"
-                >
-                  Workshop
-                </Link>
-              </div>
-            </div>
-          </div>
-
-          <div className="space-y-6">
-            <div className="rounded-2xl p-6 shadow-xl backdrop-blur court-reveal court-reveal-delay-2 hover-lift glass-panel">
-              <h3 className="text-xl font-semibold text-white">Active Zone</h3>
-              <p className="mt-2 text-sm text-gray-300">
-                Choose where your crews focus. Each zone shifts idle rewards.
-              </p>
-              <div className="mt-4">
+              <Panel variant="subtle" className="flex flex-col justify-center">
+                <p className="text-[10px] uppercase tracking-[0.3em] text-gray-500 font-bold mb-3">Zone Control</p>
                 <select
                   value={activeZone?.id || ''}
                   onChange={handleZoneChange}
-                  className="w-full rounded-lg border border-yellow-700/40 bg-gray-950/70 px-3 py-2 text-sm text-yellow-100"
+                  className="w-full rounded-xl border border-yellow-700/20 bg-gray-950/90 px-4 py-2.5 text-sm text-yellow-100 focus:border-yellow-500/50 outline-none transition-all"
                 >
                   {unlockedZones.map((zone) => (
                     <option key={zone.id} value={zone.id} className="bg-gray-950">
@@ -448,61 +258,130 @@ export default function DashboardPlayer() {
                     </option>
                   ))}
                 </select>
-              </div>
-              <div className="mt-4 rounded-xl border border-yellow-700/30 bg-gray-950/70 p-4 text-sm text-gray-300">
-                <p className="text-xs uppercase tracking-[0.3em] text-gray-400">Now Active</p>
-                <p className="mt-2 text-base font-semibold text-white">{activeZone?.name || 'Unknown zone'}</p>
-                <p className="mt-2 text-xs text-gray-400">{activeZone?.description || '—'}</p>
-                <div className="mt-3 grid gap-2 text-xs text-gray-400">
-                  <div className="flex items-center justify-between">
-                    <span>Mining</span>
-                    <span>
-                      x{activeZone?.modifiers?.miningYieldMultiplier ?? 1} yield · x{activeZone?.modifiers?.miningXpMultiplier ?? 1} XP
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span>Farm</span>
-                    <span>
-                      x{activeZone?.modifiers?.farmYieldMultiplier ?? 1} yield · x{activeZone?.modifiers?.farmGrowMultiplier ?? 1} grow
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span>Expeditions</span>
-                    <span>
-                      x{activeZone?.modifiers?.expeditionGoldMultiplier ?? 1} gold · x{activeZone?.modifiers?.expeditionXpMultiplier ?? 1} XP
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span>Workshop</span>
-                    <span>
-                      x{activeZone?.modifiers?.workshopXpMultiplier ?? 1} XP · x{activeZone?.modifiers?.workshopDurationMultiplier ?? 1} time
-                    </span>
-                  </div>
+                <div className="mt-3 flex items-center gap-2 text-xs text-gray-500">
+                  <span className="font-bold text-yellow-500/70">Current:</span>
+                  <span>{activeZone?.name}</span>
                 </div>
-              </div>
+              </Panel>
             </div>
-            <div className="rounded-2xl p-6 shadow-xl backdrop-blur court-reveal court-reveal-delay-2 hover-lift glass-panel">
-              <h3 className="text-xl font-semibold text-white">Residence</h3>
-              <div className="mt-4 overflow-hidden rounded-2xl border border-yellow-700/30 bg-gray-950/70">
+          </Panel>
+
+          <Panel variant="card" className="court-reveal-delay-1 flex flex-col">
+            <SectionHeader
+              kicker="Missions"
+              title="Spotlight"
+              description="Active progression goals."
+            />
+            <div className="mt-6 flex-1 space-y-4">
+              {missionSpotlight.length === 0 ? (
+                <Panel variant="subtle" className="text-center py-10">
+                  <p className="text-sm text-gray-400 italic">Missions will appear as you progress.</p>
+                </Panel>
+              ) : (
+                missionSpotlight.map((mission) => (
+                  <div key={mission.id} className="group">
+                    <div className="flex items-center justify-between text-[11px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 px-1">
+                      <span>{mission.label}</span>
+                      <span className={mission.complete ? 'text-emerald-400' : 'text-yellow-400'}>
+                        {mission.percent}%
+                      </span>
+                    </div>
+                    <div className="relative h-2 rounded-full bg-gray-900 border border-white/5 overflow-hidden">
+                      <div
+                        className={`h-full rounded-full transition-all duration-700 shimmer-bar ${mission.complete ? 'bg-emerald-500/80 shadow-[0_0_8px_rgba(16,185,129,0.3)]' : 'bg-yellow-500/80 shadow-[0_0_8px_rgba(234,179,8,0.3)]'}`}
+                        style={{ width: `${mission.percent}%` }}
+                      />
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+            <Button variant="ornate" to="/missions" className="mt-8">
+              Open Log
+            </Button>
+          </Panel>
+        </div>
+
+        <div className="grid gap-8 lg:grid-cols-[1fr_0.8fr]">
+          <div className="space-y-8">
+            <div className="grid gap-4 sm:grid-cols-3">
+              <Panel variant="subtle" className="group hover:border-cyan-500/30 transition-colors">
+                <p className="text-[10px] uppercase tracking-[0.3em] text-gray-500 font-bold">Mining</p>
+                <p className="mt-1 text-lg font-bold text-white group-hover:text-cyan-400 transition-colors">Level {miningLevel}</p>
+                <div className="mt-3">
+                  <XpBar current={miningXp} target={miningXpTarget} label="Mining" tone="cyan" />
+                </div>
+                <div className="mt-3 flex items-center justify-between text-[10px] text-gray-500 font-bold uppercase tracking-widest">
+                  <span>{miningInProgress ? 'MAPPING...' : 'IDLE'}</span>
+                  <Link to="/mining" className="text-yellow-500 uppercase tracking-widest hover:underline decoration-1 underline-offset-4">Jump</Link>
+                </div>
+              </Panel>
+
+              <Panel variant="subtle" className="group hover:border-emerald-500/30 transition-colors">
+                <p className="text-[10px] uppercase tracking-[0.3em] text-gray-500 font-bold">Farmstead</p>
+                <p className="mt-1 text-lg font-bold text-white group-hover:text-emerald-400 transition-colors">Level {farmLevel}</p>
+                <div className="mt-3">
+                  <XpBar current={farmXp} target={farmXpTarget} label="Farming" tone="emerald" />
+                </div>
+                <div className="mt-3 flex items-center justify-between text-[10px] text-gray-500 font-bold uppercase tracking-widest">
+                  <span>{profile?.farmLandSize ?? 0} PLOTS</span>
+                  <Link to="/farm" className="text-yellow-500 uppercase tracking-widest hover:underline decoration-1 underline-offset-4">Jump</Link>
+                </div>
+              </Panel>
+
+              <Panel variant="subtle" className="group hover:border-amber-500/30 transition-colors">
+                <p className="text-[10px] uppercase tracking-[0.3em] text-gray-500 font-bold">Workshop</p>
+                <p className="mt-1 text-lg font-bold text-white group-hover:text-amber-400 transition-colors">Level {workshopLevel}</p>
+                <div className="mt-3">
+                  <XpBar current={workshopXp} target={workshopXpTarget} label="Craft" tone="emerald" />
+                </div>
+                <div className="mt-3 flex items-center justify-between text-[10px] text-gray-500 font-bold uppercase tracking-widest">
+                  <span>{workshopQueue.length} JOBS</span>
+                  <Link to="/workshop" className="text-yellow-500 uppercase tracking-widest hover:underline decoration-1 underline-offset-4">Jump</Link>
+                </div>
+              </Panel>
+            </div>
+
+            <Panel variant="glass" className="hover-lift">
+              <SectionHeader
+                title="Quick Access"
+                description="Central hub for all major systems."
+              />
+              <div className="mt-6 grid gap-4 sm:grid-cols-3">
+                <Button variant="secondary" to="/adventure">Expeditions</Button>
+                <Button variant="secondary" to="/missions">Missions</Button>
+                <Button variant="secondary" to="/housing">Housing</Button>
+                <Button variant="secondary" to="/inventory">Inventory</Button>
+                <Button variant="secondary" to="/market">Market</Button>
+                <Button variant="secondary" to="/workshop">Workshop</Button>
+              </div>
+            </Panel>
+          </div>
+
+          <div className="space-y-8">
+            <Panel variant="ornament" className="hover-lift">
+              <SectionHeader kicker="Real Estate" title="Residence" />
+              <div className="mt-4 aspect-video overflow-hidden rounded-xl border border-yellow-700/30 bg-gray-950/80 shadow-inner group">
                 <img
                   src={activeHouse?.image || '/houses/house_1.png'}
                   alt={activeHouse?.name || 'Residence'}
-                  className="h-40 w-full object-cover"
+                  className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
                 />
               </div>
-              <p className="mt-2 text-sm text-gray-300">
-                {activeHouse?.name || 'Starter Cottage'} · {activeHouse?.tier || 'Tier 1'}
-              </p>
-              <p className="mt-2 text-sm text-gray-400">
-                Buff: {activeHouse?.effect?.name || 'Rested Comfort'}
-              </p>
-              <Link
-                to="/housing"
-                className="mt-4 inline-flex items-center text-xs font-semibold text-yellow-200"
-              >
-                Manage Housing
-              </Link>
-            </div>
+              <div className="mt-5 space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-bold text-gray-500 uppercase tracking-widest">Vibe</span>
+                  <Badge variant="gold">{activeHouse?.tier || 'Tier 1'}</Badge>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-bold text-gray-500 uppercase tracking-widest">Comfort</span>
+                  <Badge variant="info">{activeHouse?.effect?.name || 'Rested Comfort'}</Badge>
+                </div>
+              </div>
+              <Button variant="ghost" to="/housing" className="mt-6 w-full text-[11px] uppercase tracking-widest">
+                Manage Property
+              </Button>
+            </Panel>
           </div>
         </div>
       </div>
