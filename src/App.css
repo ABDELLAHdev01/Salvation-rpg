@@ -1085,3 +1085,21 @@ a[class]:focus-visible::after,
   background: radial-gradient(circle at center, rgba(247, 198, 106, 0.08), transparent);
   border-radius: 12px;
 }
+
+/* Responsive Helpers & Global Spacing */
+.responsive-container {
+  width: 100%;
+  max-width: 72rem;
+  /* max-w-6xl */
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 1.5rem;
+  padding-right: 1.5rem;
+}
+
+@media (max-width: 1023px) {
+  .dashboard-shell {
+    padding-top: 5rem !important;
+    /* Ensure clearance for fixed mobile toggle */
+  }
+}

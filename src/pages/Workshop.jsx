@@ -264,9 +264,6 @@ export default function Workshop() {
     return true;
   }, [matchesSearch, matchesTag, showCraftableOnly, canCraft]);
 
-  const filteredRecipeCount = useMemo(() => {
-    return filteredRecipePool.filter((recipe) => shouldShowRecipe(recipe, quantities[recipe.id] || 1)).length;
-  }, [filteredRecipePool, quantities, shouldShowRecipe]);
 
   const handleQueue = (recipeId, quantity) => {
     if (!MOCK_AUTH || !profile) {
@@ -396,13 +393,13 @@ export default function Workshop() {
     <section className="min-h-screen bg-center bg-cover bg-no-repeat bg-[url('./jbm.jpg')] bg-gray-900 bg-blend-multiply dashboard-shell lg:pl-64">
       <Sidebar />
       <div className="relative z-10 mx-auto max-w-6xl px-6 py-16 pt-24">
-        <div className="mb-10 flex flex-wrap items-center justify-between gap-6">
+        <div className="mb-10 flex flex-col sm:flex-row sm:items-center justify-between gap-6">
           <SectionHeader
             kicker="Crafting Hub"
             title="The Grand Workshop"
             description="Refine raw resources into legendary artifacts. Precision is the path to power."
           />
-          <Panel variant="subtle" className="text-center min-w-[120px]">
+          <Panel variant="subtle" className="text-center w-full sm:w-auto sm:min-w-[120px]">
             <p className="text-[10px] uppercase tracking-[0.3em] text-gray-500 font-bold">Forge Mastery</p>
             <p className="mt-1 text-3xl font-black text-amber-500 drop-shadow-sm">Lvl {workshopLevel}</p>
           </Panel>
@@ -421,11 +418,11 @@ export default function Workshop() {
 
             <Panel variant="card">
               <div className="mb-6 space-y-4">
-                <div className="flex flex-wrap items-center gap-3">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-3">
                   <select
                     value={stationFilter}
                     onChange={(event) => setStationFilter(event.target.value)}
-                    className="h-10 rounded-xl border border-yellow-700/20 bg-gray-950/70 px-4 text-xs text-gray-100 focus:border-yellow-500/50 outline-none transition-all"
+                    className="h-10 w-full sm:w-auto rounded-xl border border-yellow-700/20 bg-gray-950/70 px-4 text-xs text-gray-100 focus:border-yellow-500/50 outline-none transition-all"
                   >
                     <option value="all">All Stations</option>
                     {uiState.stations.map((station) => (
@@ -439,9 +436,9 @@ export default function Workshop() {
                     value={searchTerm}
                     onChange={(event) => setSearchTerm(event.target.value)}
                     placeholder="Search blueprints..."
-                    className="h-10 min-w-[200px] flex-1 rounded-xl border border-yellow-700/20 bg-gray-950/70 px-4 text-xs text-gray-100 focus:border-yellow-500/50 outline-none transition-all"
+                    className="h-10 w-full sm:flex-1 rounded-xl border border-yellow-700/20 bg-gray-950/70 px-4 text-xs text-gray-100 focus:border-yellow-500/50 outline-none transition-all"
                   />
-                  <Button variant="ghost" size="sm" onClick={handleClearFilters}>
+                  <Button variant="ghost" size="sm" onClick={handleClearFilters} className="w-full sm:w-auto">
                     Reset
                   </Button>
                 </div>

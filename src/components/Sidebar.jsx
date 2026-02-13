@@ -174,10 +174,7 @@ export default function Sidebar() {
           </div>
 
           <div className="flex-1 overflow-y-auto custom-scrollbar pr-2 py-4">
-            <p className="px-4 text-[10px] uppercase tracking-[0.4em] text-gray-500 font-black mb-4 flex items-center gap-2">
-              <span className="h-1 w-1 bg-yellow-700 rounded-full"></span>
-              Lexicon of Realm
-            </p>
+
             <NavLinks />
           </div>
 

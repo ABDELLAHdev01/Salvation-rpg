@@ -15,7 +15,6 @@ import { getExpeditionLocation } from '../data/expeditionData';
 import WorkshopService from '../services/WorkshopService';
 import { getWorkshopXpForLevel } from '../data/workshopData';
 import { getZoneById, getUnlockedZoneIdsByLevel, zones } from '../data/zonesData';
-import { itemsById } from '../data/itemsCatalog';
 
 // Standard UI Components
 import Panel from '../components/ui/Panel';
@@ -123,25 +122,6 @@ export default function DashboardPlayer() {
     () => profile?.workshopQueue || [],
     [profile?.workshopQueue]
   );
-  const nextWorkshopJob = useMemo(() => {
-    if (!workshopQueue.length) {
-      return null;
-    }
-    return [...workshopQueue].sort((a, b) => a.finishAt - b.finishAt)[0] || null;
-  }, [workshopQueue]);
-  const workshopRemaining = nextWorkshopJob ? Math.max(0, nextWorkshopJob.finishAt - now) : 0;
-  const inventory = useMemo(() => profile?.inventory || {}, [profile?.inventory]);
-  const inventoryTotals = useMemo(() => {
-    const totals = {};
-    Object.entries(inventory).forEach(([itemId, amount]) => {
-      const item = itemsById[itemId];
-      const type = item?.type || 'misc';
-      totals[type] = (totals[type] || 0) + (amount || 0);
-    });
-    return totals;
-  }, [inventory]);
-  const miningInventoryCount = inventoryTotals.ore || 0;
-  const farmInventoryTotal = inventoryTotals['farm-good'] || 0;
   const miningSession = profile?.miningSession || null;
   const miningEndsAt = miningSession?.endAt || 0;
   const miningRemaining = Math.max(0, miningEndsAt - now);
@@ -181,16 +161,16 @@ export default function DashboardPlayer() {
       <div className="relative z-10 mx-auto max-w-6xl px-6 py-16 pt-24">
         <div className="mb-10 grid gap-6 lg:grid-cols-[1.35fr_0.65fr]">
           <Panel variant="glass" className="court-reveal">
-            <div className="flex flex-wrap items-center justify-between gap-6">
-              <div className="flex flex-wrap items-center gap-6">
-                <div className="h-24 w-24 overflow-hidden rounded-2xl border-2 border-yellow-700/40 bg-gray-900/90 shadow-2xl">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
+              <div className="flex flex-col sm:flex-row sm:items-center gap-6">
+                <div className="h-24 w-24 shrink-0 overflow-hidden rounded-2xl border-2 border-yellow-700/40 bg-gray-900/90 shadow-2xl mx-auto sm:mx-0">
                   <img
                     src={character?.avatarUrl || '/raceicon/noimage.jpg'}
                     alt={character?.name || 'Unknown adventurer'}
                     className="h-full w-full object-cover"
                   />
                 </div>
-                <div>
+                <div className="text-center sm:text-left">
                   <SectionHeader
                     kicker="Command Deck"
                     title={character?.name || 'Unbound Wanderer'}
@@ -198,7 +178,7 @@ export default function DashboardPlayer() {
                   />
                 </div>
               </div>
-              <Panel variant="subtle" className="text-center min-w-[100px]">
+              <Panel variant="subtle" className="text-center w-full sm:w-auto sm:min-w-[100px]">
                 <p className="text-[10px] uppercase tracking-[0.3em] text-gray-500 font-bold">Level</p>
                 <p className="mt-1 text-4xl font-black text-yellow-400 drop-shadow-sm">{playerLevel}</p>
               </Panel>

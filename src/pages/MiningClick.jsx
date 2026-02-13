@@ -237,13 +237,13 @@ export default function MiningClick() {
     <section className="min-h-screen bg-page-primary lg:pl-64 dashboard-shell">
       <Sidebar />
       <div className="relative z-10 mx-auto max-w-6xl px-6 py-16 pt-24">
-        <div className="mb-10 flex flex-wrap items-center justify-between gap-6">
+        <div className="mb-10 flex flex-col sm:flex-row sm:items-center justify-between gap-6">
           <SectionHeader
             kicker="Click Mining"
             title="Shatter the Veins"
             description="Active extraction yields high-density rewards. Every strike matters."
           />
-          <Panel variant="subtle" className="text-center min-w-[120px]">
+          <Panel variant="subtle" className="text-center w-full sm:w-auto sm:min-w-[120px]">
             <p className="text-[10px] uppercase tracking-[0.3em] text-gray-500 font-bold">Mining Mastery</p>
             <p className="mt-1 text-3xl font-black text-cyan-400 drop-shadow-sm">Lvl {miningLevel}</p>
           </Panel>

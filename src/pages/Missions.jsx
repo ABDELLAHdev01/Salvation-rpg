@@ -133,13 +133,13 @@ export default function Missions() {
       <Sidebar />
       <div className="relative z-10 mx-auto max-w-5xl px-6 py-16 pt-24">
 
-        <div className="mb-10 flex flex-wrap items-center justify-between gap-6">
+        <div className="mb-10 flex flex-col sm:flex-row sm:items-center justify-between gap-6">
           <SectionHeader
             kicker="Progression"
             title="General Missions"
             description="Complete long-term goals to boost your character level and wealth."
           />
-          <Panel variant="subtle" className="text-center min-w-[140px]">
+          <Panel variant="subtle" className="text-center w-full sm:w-auto sm:min-w-[140px]">
             <p className="text-[10px] uppercase tracking-[0.3em] text-gray-500 font-bold">Player Level</p>
             <p className="mt-1 text-4xl font-black text-white">{playerLevel}</p>
           </Panel>
@@ -178,8 +178,8 @@ export default function Missions() {
                 variant={isComplete && !mission.claimed ? 'ornament' : 'card'}
                 className={`transition-all duration-300 ${mission.claimed ? 'opacity-60 grayscale-[0.5]' : ''}`}
               >
-                <div className="flex flex-wrap items-center justify-between gap-6">
-                  <div className="flex-1 min-w-[240px]">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
+                  <div className="flex-1 w-full">
                     <div className="flex items-center gap-2">
                       <h3 className="text-lg font-bold text-white">{mission.label}</h3>
                       {mission.claimed && <Badge variant="success">Claimed</Badge>}
