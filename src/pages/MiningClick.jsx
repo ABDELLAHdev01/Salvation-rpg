@@ -20,6 +20,11 @@ import {
 import { getZoneModifiers } from '../data/zonesData';
 import { addItems } from '../services/inventoryService';
 
+// Extracted Features
+import MiningClickNode from '../features/mining/MiningClickNode';
+import MiningNodeLoot from '../features/mining/MiningNodeLoot';
+import MiningClickInfoPanel from '../features/mining/MiningClickInfoPanel';
+
 const MOCK_AUTH = import.meta.env.VITE_MOCK_AUTH === 'true';
 
 export default function MiningClick() {
@@ -66,11 +71,7 @@ export default function MiningClick() {
   const lastClickReward = miningClickState?.lastClickReward || null;
   const pendingYield = miningClickState?.pendingYield || {};
   const nodeTier = clickNode?.tier || getTierByMiningLevel(miningLevel);
-  const nodeDurability = clickNode?.durability ?? 0;
-  const nodeMaxDurability = clickNode?.maxDurability ?? 0;
-  const nodeDurabilityPct = nodeMaxDurability > 0
-    ? Math.max(0, Math.min(100, Math.round((nodeDurability / nodeMaxDurability) * 100)))
-    : 0;
+
   const momentumValue = miningClickState?.momentum?.value || 0;
   const momentumMax = miningClickState?.momentum?.max || 100;
   const momentumPct = momentumMax > 0
@@ -363,20 +364,6 @@ export default function MiningClick() {
   }, [now, profile, miningClickState]);
 
   const canClick = isMining;
-  const lastRewardItems = lastClickReward
-    ? Object.entries(lastClickReward.yieldMap || {}).map(([oreId, amount]) => ({
-      id: oreId,
-      amount,
-      name: (miningOres.find((ore) => ore.id === oreId) || {}).name || oreId,
-    }))
-    : [];
-  const lastBurstItems = lastClickReward
-    ? Object.entries(lastClickReward.burstYield || {}).map(([oreId, amount]) => ({
-      id: oreId,
-      amount,
-      name: (miningOres.find((ore) => ore.id === oreId) || {}).name || oreId,
-    }))
-    : [];
   const pendingItems = Object.entries(pendingYield).map(([oreId, amount]) => ({
     id: oreId,
     amount,
@@ -434,146 +421,34 @@ export default function MiningClick() {
           </div>
 
           <div className="mt-6 grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
-            <div className="court-card rounded-2xl p-6">
-              <p className="text-xs uppercase tracking-[0.3em] text-gray-400">Node</p>
-              <div className="mt-4 rounded-xl border border-yellow-700/20 bg-gray-950/70 p-4">
-                <div className="flex items-center justify-between text-xs text-gray-300">
-                  <span>Durability</span>
-                  <span className="text-yellow-200">{nodeDurability}/{nodeMaxDurability}</span>
-                </div>
-                <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-black/50">
-                  <div
-                    className="h-full rounded-full bg-emerald-400/70 transition-all"
-                    style={{ width: `${nodeDurabilityPct}%` }}
-                  />
-                </div>
-                <div className="mt-3 flex flex-wrap items-center gap-3 text-xs text-gray-400">
-                  <span>Node tier: {nodeTier}</span>
-                  <span>Momentum: {momentumValue}/{momentumMax}</span>
-                </div>
-              </div>
-              <div className="mt-4 rounded-xl border border-yellow-700/20 bg-gray-950/70 p-4">
-                <p className="text-xs uppercase tracking-[0.3em] text-gray-400">Node Stash</p>
-                {pendingItems.length === 0 ? (
-                  <p className="mt-2 text-xs text-gray-400">No ores stored yet.</p>
-                ) : (
-                  <div className="mt-3 space-y-1 text-xs text-gray-400">
-                    {pendingItems.map((item) => (
-                      <div key={item.id} className="flex items-center justify-between">
-                        <span>{item.name}</span>
-                        <span className="text-yellow-200">{item.amount}</span>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-              <div className="mt-4 rounded-xl border border-yellow-700/20 bg-gray-950/70 p-4">
-                <p className="text-xs uppercase tracking-[0.3em] text-gray-400">Node Break Loot</p>
-                <p className="mt-2 text-xs text-gray-400">
-                  Breaks grant one bonus roll at +{Math.round((nodeBreakMultiplier - 1) * 100)}% yield.
-                </p>
-                <div className="mt-3 flex flex-wrap gap-2">
-                  {breakPool.map((ore) => (
-                    <span
-                      key={ore.id}
-                      className="rounded-full border border-yellow-700/30 bg-yellow-500/10 px-3 py-1 text-[10px] uppercase tracking-[0.2em] text-yellow-200"
-                    >
-                      {ore.name}
-                    </span>
-                  ))}
-                </div>
-              </div>
-              <div className="mt-4 flex flex-wrap items-center gap-4">
-                <button
-                  type="button"
-                  onClick={handleClickMine}
-                  disabled={!canClick}
-                  className={`inline-flex items-center rounded-lg px-4 py-2 text-sm font-semibold ${canClick ? 'action-primary text-white' : 'bg-gray-700 text-gray-300'
-                    }`}
-                >
-                  Mine Node
-                </button>
-                <span className="text-xs text-gray-400">
-                  {canClick ? 'Keep clicking to build momentum.' : 'Start a run to enable clicks.'}
-                </span>
-              </div>
-              {lastClickReward && (
-                <div className="mt-4 rounded-xl border border-yellow-700/20 bg-gray-950/70 p-4">
-                  <p className="text-xs uppercase tracking-[0.3em] text-gray-400">Last Click</p>
-                  <div className="mt-2 flex flex-wrap items-center gap-3 text-xs text-gray-300">
-                    <span className="rounded-full bg-yellow-500/10 px-3 py-1 text-yellow-200">
-                      {lastClickReward.event || 'normal'}
-                    </span>
-                    <span className="text-gray-400">+{lastClickReward.xpGained} XP</span>
-                    {lastClickReward.brokeNode && (
-                      <span className="rounded-full bg-emerald-500/10 px-3 py-1 text-emerald-200">
-                        Node broke!
-                      </span>
-                    )}
-                  </div>
-                  {lastRewardItems.length > 0 && (
-                    <div className="mt-3 space-y-1 text-xs text-gray-400">
-                      {lastRewardItems.map((item) => (
-                        <div key={item.id} className="flex items-center justify-between">
-                          <span>{item.name}</span>
-                          <span className="text-yellow-200">+{item.amount}</span>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                  {lastBurstItems.length > 0 && (
-                    <div className="mt-3 space-y-1 text-xs text-gray-400">
-                      <p className="text-xs uppercase tracking-[0.3em] text-gray-500">Break bonus</p>
-                      {lastBurstItems.map((item) => (
-                        <div key={item.id} className="flex items-center justify-between">
-                          <span>{item.name}</span>
-                          <span className="text-yellow-200">+{item.amount}</span>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              )}
+            <div className="space-y-6">
+              <MiningClickNode
+                node={clickNode}
+                momentum={miningClickState?.momentum}
+                canClick={canClick}
+                handleClickMine={handleClickMine}
+                lastClickReward={lastClickReward}
+              />
+              <MiningNodeLoot
+                pendingItems={pendingItems}
+                breakPool={breakPool}
+                nodeBreakMultiplier={nodeBreakMultiplier}
+              />
             </div>
 
-            <div className="image-panel image-panel-market ornament-frame p-6">
-              <div className="image-panel-content">
-                <p className="text-xs uppercase tracking-[0.3em] text-gray-300">Click Preview</p>
-                <p className="mt-3 text-sm text-gray-300">
-                  {clickPreview
-                    ? `Ore range: ${clickPreview.minAmount}-${clickPreview.maxAmount}`
-                    : 'Click data loading...'}
-                </p>
-                {clickPreview && (
-                  <div className="mt-3 space-y-1 text-xs text-gray-400">
-                    <p>Crit chance: {Math.round(clickPreview.critChance * 100)}%</p>
-                    <p>Rare chance: {Math.round(clickPreview.rareChance * 100)}%</p>
-                  </div>
-                )}
-                <div className="mt-4">
-                  <p className="text-xs uppercase tracking-[0.3em] text-gray-400">Momentum</p>
-                  <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-black/50">
-                    <div
-                      className="h-full rounded-full bg-cyan-400/70 transition-all"
-                      style={{ width: `${momentumPct}%` }}
-                    />
-                  </div>
-                  <p className="mt-2 text-xs text-gray-400">
-                    Passive bonus: +{Math.round((momentumMultiplier - 1) * 100)}%
-                  </p>
-                </div>
-                <div className="mt-4 rounded-xl border border-yellow-700/20 bg-gray-950/70 p-4">
-                  <p className="text-xs uppercase tracking-[0.3em] text-gray-400">Economy Math</p>
-                  <div className="mt-3 space-y-1 text-xs text-gray-400">
-                    <p>Click efficiency: x{clickEfficiency.toFixed(2)} (cap 1.60)</p>
-                    <p>Base click XP: {clickBaseXp} · Zone XP x{zoneMiningXpMultiplier.toFixed(2)}</p>
-                    <p>Node damage per click: {clickDamage}</p>
-                    <p>Click cooldown: {clickCooldownMs}ms</p>
-                    <p>Break bonus: +{Math.round((nodeBreakMultiplier - 1) * 100)}% yield</p>
-                  </div>
-                </div>
-              </div>
-            </div>
+            <MiningClickInfoPanel
+              clickPreview={clickPreview}
+              momentum={miningClickState?.momentum}
+              clickEfficiency={clickEfficiency}
+              clickBaseXp={clickBaseXp}
+              zoneMiningXpMultiplier={zoneMiningXpMultiplier}
+              clickDamage={clickDamage}
+              clickCooldownMs={clickCooldownMs}
+              nodeBreakMultiplier={nodeBreakMultiplier}
+              dailyVeinBonus={dailyVeinBonus}
+              weeklySurgeBonus={weeklySurgeBonus}
+              activeBoost={activeBoost}
+            />
           </div>
 
           <div className="mt-8 grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
@@ -606,7 +481,7 @@ export default function MiningClick() {
                 <p className="mt-3 text-sm text-gray-300">
                   Momentum boosts passive mining while you actively click.
                 </p>
-                <div className="mt-4 rounded-xl border border-yellow-700/20 bg-gray-950/70 p-4">
+                <div className="mt-4 rounded-xl border border-yellow-700/30 bg-gray-950/70 p-4">
                   <div className="flex items-center justify-between text-xs text-gray-300">
                     <span>Momentum</span>
                     <span className="text-yellow-200">{momentumValue}/{momentumMax}</span>
@@ -620,11 +495,6 @@ export default function MiningClick() {
                   <p className="mt-3 text-xs text-gray-400">
                     Passive bonus: +{Math.round((momentumMultiplier - 1) * 100)}%
                   </p>
-                </div>
-                <div className="mt-4 text-xs text-gray-400">
-                  <p>Daily Vein: +25% {miningOres.find((ore) => ore.id === dailyVeinBonus.oreId)?.name || 'ore'} yield</p>
-                  <p>Weekly Surge: +{Math.round((weeklySurgeBonus.xpMultiplier - 1) * 100)}% XP</p>
-                  <p>Active boost: {activeBoost?.name || 'None'}</p>
                 </div>
               </div>
             </div>
