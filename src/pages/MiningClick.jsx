@@ -234,7 +234,7 @@ export default function MiningClick() {
   }, [miningClickState?.pendingItems]);
 
   return (
-    <section className="min-h-screen bg-center bg-cover bg-no-repeat bg-[url('./jbm.jpg')] bg-gray-900 bg-blend-multiply lg:pl-64 dashboard-shell">
+    <section className="min-h-screen bg-page-primary lg:pl-64 dashboard-shell">
       <Sidebar />
       <div className="relative z-10 mx-auto max-w-6xl px-6 py-16 pt-24">
         <div className="mb-10 flex flex-wrap items-center justify-between gap-6">

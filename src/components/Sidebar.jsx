@@ -65,11 +65,9 @@ const navItems = [
   { name: 'Workshop', href: '/workshop', icon: HammerIcon },
   { name: 'Adventure', href: '/adventure', icon: BookOpenIcon },
   { name: 'Zones', href: '/zones', icon: CompassIcon },
-  { name: 'Residence', href: '/housing', icon: HomeIcon },
-  { name: 'Discord', href: 'https://discord.gg/BgqSghsmWY', icon: UserCircleIcon, external: true },
+  { name: 'Residence', href: '/housing', icon: HomeIcon }
 ];
 
-const offlineNavItems = [{ name: 'Load Save', href: '/load-save', icon: ArrowDownTrayIcon }];
 
 export default function Sidebar() {
   const location = useLocation();
@@ -78,7 +76,7 @@ export default function Sidebar() {
   const handleToggle = () => setIsOpen((prev) => !prev);
 
 
-  const items = [...navItems, ...offlineNavItems];
+  const items = [...navItems];
 
   const NavLinks = () => (
     <nav className="space-y-2">

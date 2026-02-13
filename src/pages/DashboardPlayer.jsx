@@ -36,11 +36,12 @@ export default function DashboardPlayer() {
     }
 
     return [...profile.generalMissions]
+      .filter((m) => !m.claimed || (m.type === 'house' && m.target === 'complete'))
       .map((mission) => {
         const progress = getMissionProgress(mission, profile);
         const percent = mission.type === 'house'
           ? (isMissionComplete(mission, profile) ? 100 : 0)
-          : Math.min(100, Math.round((progress / mission.target) * 100));
+          : Math.min(100, Math.round((progress / (mission.target || 1)) * 100));
         return {
           ...mission,
           progress,
@@ -49,8 +50,9 @@ export default function DashboardPlayer() {
         };
       })
       .sort((a, b) => {
+        // Prioritize completed (ready to claim) but not claimed
         if (a.complete !== b.complete) {
-          return a.complete ? 1 : -1;
+          return a.complete ? -1 : 1;
         }
         return b.percent - a.percent;
       })
@@ -170,7 +172,7 @@ export default function DashboardPlayer() {
   };
 
   return (
-    <section className="min-h-screen bg-center bg-cover bg-no-repeat bg-[url('./jbm.jpg')] bg-gray-900 bg-blend-multiply dashboard-shell lg:pl-64">
+    <section className="min-h-screen bg-page-primary lg:pl-64 dashboard-shell">
       <Sidebar />
       <DiscordModal />
       <div className="dashboard-orb orb-1" />
@@ -282,8 +284,8 @@ export default function DashboardPlayer() {
                   <div key={mission.id} className="group">
                     <div className="flex items-center justify-between text-[11px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 px-1">
                       <span>{mission.label}</span>
-                      <span className={mission.complete ? 'text-emerald-400' : 'text-yellow-400'}>
-                        {mission.percent}%
+                      <span className={mission.complete ? 'text-emerald-400 animate-pulse' : 'text-yellow-400'}>
+                        {mission.complete ? 'READY' : `${mission.percent}%`}
                       </span>
                     </div>
                     <div className="relative h-2 rounded-full bg-gray-900 border border-white/5 overflow-hidden">

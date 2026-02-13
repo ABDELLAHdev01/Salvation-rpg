@@ -1,11 +1,17 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import Sidebar from '../components/Sidebar';
 import authService from '../services/AuthService';
 import characterService from '../services/CharacterService';
 import { ensureGeneralMissions, getMissionProgress, isMissionComplete } from '../data/missionData';
 import { getPlayerXpForLevel } from '../data/playerData';
+
+// Standard UI Components
+import Panel from '../components/ui/Panel';
+import Button from '../components/ui/Button';
+import Badge from '../components/ui/Badge';
+import SectionHeader from '../components/ui/SectionHeader';
+import ProgressBar from '../components/ui/ProgressBar';
 
 const MOCK_AUTH = import.meta.env.VITE_MOCK_AUTH === 'true';
 
@@ -37,9 +43,9 @@ export default function Missions() {
   }, []);
 
   const missions = useMemo(() => profile?.generalMissions || [], [profile?.generalMissions]);
-  const playerLevel = profile?.stats?.level ?? 1;
-  const playerXp = profile?.stats?.xp ?? 0;
-  const gold = profile?.stats?.gold ?? 0;
+  const playerLevel = Number(profile?.stats?.level ?? 1);
+  const playerXp = Number(profile?.stats?.xp ?? 0);
+  const gold = Number(profile?.stats?.gold ?? 0);
 
   const completedCount = useMemo(
     () => missions.filter((mission) => isMissionComplete(mission, profile)).length,
@@ -65,7 +71,7 @@ export default function Missions() {
       return;
     }
 
-    const missionIndex = missions.findIndex((mission) => mission.id === missionId);
+    const missionIndex = missions.findIndex((m) => m.id === missionId);
     if (missionIndex === -1) {
       return;
     }
@@ -81,17 +87,35 @@ export default function Missions() {
       return;
     }
 
-    const nextMissions = [...missions];
-    nextMissions[missionIndex] = { ...mission, claimed: true };
+    // Prepare updates
+    const tempMissions = missions.map((m) =>
+      m.id === missionId ? { ...m, claimed: true } : m
+    );
 
-    const xpGain = mission.rewardXp || 0;
+    const xpGain = Number(mission.rewardXp || 0);
     const { nextLevel, nextXp } = applyPlayerXp(playerLevel, playerXp, xpGain);
-    const bonusLevels = mission.rewardLevels || 0;
+    const bonusLevels = Number(mission.rewardLevels || 0);
     const finalLevel = nextLevel + bonusLevels;
     const levelGain = finalLevel - playerLevel;
 
+    // Trigger sequential mission replacement
+    const { nextMissions, nextMeta } = ensureGeneralMissions(
+      tempMissions,
+      {
+        ...profile,
+        stats: {
+          ...profile.stats,
+          level: finalLevel,
+          xp: nextXp,
+          gold: gold + (mission.rewardGold || 0),
+        },
+      },
+      profile.generalMissionsMeta
+    );
+
     const updated = characterService.updateMockProfile({
       generalMissions: nextMissions,
+      generalMissionsMeta: nextMeta,
       stats: {
         ...profile.stats,
         level: finalLevel,
@@ -101,85 +125,105 @@ export default function Missions() {
     });
 
     setProfile(updated);
-    toast.success(`Mission claimed +${mission.rewardGold}g +${levelGain} level +${xpGain} XP.`);
+    toast.success(`Claimed +${mission.rewardGold}g +${levelGain} lvl +${xpGain} XP.`);
   };
 
   return (
-    <section className="min-h-screen bg-center bg-cover bg-no-repeat bg-[url('./jbm2.jpg')] bg-gray-900 bg-blend-multiply dashboard-shell lg:pl-64">
+    <section className="min-h-screen bg-page-secondary dashboard-shell lg:pl-64">
       <Sidebar />
-      <div className="dashboard-orb orb-1" />
-      <div className="dashboard-orb orb-2" />
-      <div className="dashboard-orb orb-3" />
       <div className="relative z-10 mx-auto max-w-5xl px-6 py-16 pt-24">
-        <div className="rounded-2xl p-8 shadow-xl backdrop-blur court-reveal glass-panel">
-          <div className="flex flex-wrap items-center justify-between gap-4">
-            <div>
-              <p className="section-kicker text-xs uppercase tracking-[0.4em] text-yellow-500">Progression</p>
-              <h1 className="mt-3 text-4xl font-extrabold text-white hero-title">General Missions</h1>
-              <p className="mt-3 text-base text-gray-300">
-                Complete long-term goals to boost your character level and gold.
-              </p>
-            </div>
-            <Link
-              to="/housing"
-              className="inline-flex items-center rounded-full px-4 py-2 text-xs font-semibold text-yellow-200 action-ghost"
-            >
-              Back to Housing
-            </Link>
-          </div>
 
-          <div className="mt-6 grid gap-4 sm:grid-cols-3">
-            <div className="court-card rounded-xl p-4">
-              <p className="text-xs uppercase tracking-[0.3em] text-gray-400">Player Level</p>
-              <p className="mt-2 text-2xl font-semibold text-white">{playerLevel}</p>
-            </div>
-            <div className="court-card rounded-xl p-4">
-              <p className="text-xs uppercase tracking-[0.3em] text-gray-400">Gold</p>
-              <p className="mt-2 text-2xl font-semibold text-yellow-300">{gold}</p>
-            </div>
-            <div className="image-panel image-panel-housing ornament-frame p-4">
-              <div className="image-panel-content">
-                <p className="text-xs uppercase tracking-[0.3em] text-gray-300">Completed</p>
-                <p className="mt-2 text-2xl font-semibold text-white">{completedCount}/{missions.length}</p>
-              </div>
-            </div>
-          </div>
+        <div className="mb-10 flex flex-wrap items-center justify-between gap-6">
+          <SectionHeader
+            kicker="Progression"
+            title="General Missions"
+            description="Complete long-term goals to boost your character level and wealth."
+          />
+          <Panel variant="subtle" className="text-center min-w-[140px]">
+            <p className="text-[10px] uppercase tracking-[0.3em] text-gray-500 font-bold">Player Level</p>
+            <p className="mt-1 text-4xl font-black text-white">{playerLevel}</p>
+          </Panel>
+        </div>
 
-          <div className="mt-8 space-y-4">
-            {missions.map((mission) => {
-              const progress = getMissionProgress(mission, profile);
-              const isComplete = isMissionComplete(mission, profile);
-              return (
-                <div
-                  key={mission.id}
-                  className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-yellow-700/20 bg-gray-950/70 p-4"
-                >
-                  <div>
-                    <p className="text-sm font-semibold text-white">{mission.label}</p>
-                    <p className="mt-1 text-xs text-gray-400">
-                      Progress: {mission.type === 'house' ? (isComplete ? 'Owned' : 'Not owned') : `${progress}/${mission.target}`}
-                    </p>
-                    <p className="mt-1 text-xs text-gray-400">
-                      Rewards: +{mission.rewardLevels || 0} level · +{mission.rewardGold || 0}g · +{mission.rewardXp || 0} XP
-                    </p>
+        <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <Panel variant="subtle" className="flex items-center justify-between">
+            <span className="text-xs uppercase tracking-widest text-gray-400">Current Gold</span>
+            <span className="text-xl font-bold text-yellow-500">{gold.toLocaleString()}g</span>
+          </Panel>
+          <Panel variant="subtle" className="flex items-center justify-between">
+            <span className="text-xs uppercase tracking-widest text-gray-400">Missions Run</span>
+            <span className="text-xl font-bold text-white">{completedCount}/{missions.length}</span>
+          </Panel>
+          <Panel variant="glass" className="sm:col-span-2 lg:col-span-1 py-3">
+            <ProgressBar
+              current={completedCount}
+              target={missions.length}
+              tone="gold"
+              label="Legacy Completion"
+            />
+          </Panel>
+        </div>
+
+        <div className="space-y-4">
+          {missions.map((mission) => {
+            const progress = getMissionProgress(mission, profile);
+            const isComplete = isMissionComplete(mission, profile);
+            const progressPct = mission.type === 'house'
+              ? (isComplete ? 100 : 0)
+              : Math.min(100, (progress / mission.target) * 100);
+
+            return (
+              <Panel
+                key={mission.id}
+                variant={isComplete && !mission.claimed ? 'ornament' : 'card'}
+                className={`transition-all duration-300 ${mission.claimed ? 'opacity-60 grayscale-[0.5]' : ''}`}
+              >
+                <div className="flex flex-wrap items-center justify-between gap-6">
+                  <div className="flex-1 min-w-[240px]">
+                    <div className="flex items-center gap-2">
+                      <h3 className="text-lg font-bold text-white">{mission.label}</h3>
+                      {mission.claimed && <Badge variant="success">Claimed</Badge>}
+                      {isComplete && !mission.claimed && <Badge variant="gold" className="animate-pulse">Ready</Badge>}
+                    </div>
+
+                    <div className="mt-3 grid gap-x-6 gap-y-1 sm:grid-cols-2 text-xs text-gray-400 font-medium">
+                      <div className="flex items-center gap-2">
+                        <span className="text-gray-600">Progress:</span>
+                        <span className={isComplete ? 'text-emerald-400' : 'text-gray-300'}>
+                          {mission.type === 'house' ? (isComplete ? 'Owned' : 'Not owned') : `${progress} / ${mission.target}`}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-gray-600">Reward:</span>
+                        <span className="text-yellow-600/80">
+                          +{mission.rewardGold}g, +{mission.rewardLevels} lvl, +{mission.rewardXp} XP
+                        </span>
+                      </div>
+                    </div>
+
+                    {!mission.claimed && (
+                      <div className="mt-4 h-1 w-full bg-gray-800 rounded-full overflow-hidden">
+                        <div
+                          className={`h-full transition-all duration-1000 ${isComplete ? 'bg-emerald-500' : 'bg-yellow-500/50'}`}
+                          style={{ width: `${progressPct}%` }}
+                        />
+                      </div>
+                    )}
                   </div>
-                  <button
-                    type="button"
+
+                  <Button
+                    variant={isComplete && !mission.claimed ? 'ornate' : 'secondary'}
                     onClick={() => handleClaim(mission.id)}
-                    className={`rounded-lg px-3 py-2 text-xs font-semibold ${mission.claimed
-                        ? 'bg-gray-700 text-gray-300'
-                        : isComplete
-                          ? 'action-primary text-white'
-                          : 'bg-gray-700 text-gray-300'
-                      }`}
                     disabled={!isComplete || mission.claimed}
+                    size="sm"
+                    className="min-w-[120px]"
                   >
-                    {mission.claimed ? 'Claimed' : isComplete ? 'Claim Reward' : 'In Progress'}
-                  </button>
+                    {mission.claimed ? 'Archived' : isComplete ? 'Claim Reward' : 'In Progress'}
+                  </Button>
                 </div>
-              );
-            })}
-          </div>
+              </Panel>
+            );
+          })}
         </div>
       </div>
     </section>
