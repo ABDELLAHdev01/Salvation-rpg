@@ -1,8 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import Sidebar from '../components/Sidebar';
-import { useRewardFloat } from '../components/RewardFloatProvider';
+import Sidebar from '../shared/layout/Sidebar';
+import { useRewardFloat } from '../shared/feedback/RewardFloatProvider';
 import authService from '../services/AuthService';
 import characterService from '../services/CharacterService';
 import {
@@ -20,26 +19,19 @@ import FarmUpgradePanel from '../features/farm/FarmUpgradePanel';
 import PlotCard from '../features/farm/PlotCard';
 import SeedSelector from '../features/farm/SeedSelector';
 
+// Farm Widgets
+import FarmHeader from '../features/farm/widgets/FarmHeader';
+import FarmStats from '../features/farm/widgets/FarmStats';
+import FarmWeatherPanel from '../features/farm/widgets/FarmWeatherPanel';
+
 // Standard UI Components
-import Panel from '../components/ui/Panel';
-import Button from '../components/ui/Button';
-import Badge from '../components/ui/Badge';
-import SectionHeader from '../components/ui/SectionHeader';
-import XpBar from '../components/XpBar';
+import Panel from '../shared/ui/Panel';
+import Button from '../shared/ui/Button';
 
 const MOCK_AUTH = import.meta.env.VITE_MOCK_AUTH === 'true';
 const UI_TICK_MS = 3000;
 const BASE_LAND_SIZE = 3;
 const LAND_EXPAND_SIZE = 2;
-
-const seasonBannerMap = {
-  spring: '/farm/seasons/Spring.png',
-  summer: '/farm/seasons/Summer.png',
-  autumn: '/farm/seasons/Autumnpng.png',
-  winter: '/farm/seasons/winterpng.png',
-};
-
-const getSeasonBanner = (season) => seasonBannerMap[season] || '/farm.png';
 
 const buildEmptyPlot = (index) => ({
   id: index,
@@ -68,9 +60,7 @@ export default function FarmPlots() {
   const pushReward = useRewardFloat();
 
   useEffect(() => {
-    if (!MOCK_AUTH) {
-      return;
-    }
+    if (!MOCK_AUTH) return;
 
     const username = authService.getCurrentUsername();
     const nextProfile = characterService.getMockProfile(username);
@@ -90,9 +80,7 @@ export default function FarmPlots() {
   }, []);
 
   useEffect(() => {
-    if (!MOCK_AUTH || !profile) {
-      return;
-    }
+    if (!MOCK_AUTH || !profile) return;
 
     const currentLandSize = profile.farmLandSize ?? BASE_LAND_SIZE;
     const currentPlots = normalizePlots(profile.farmPlots, currentLandSize);
@@ -149,9 +137,7 @@ export default function FarmPlots() {
   };
 
   const handleExpandLand = () => {
-    if (!MOCK_AUTH || !profile) {
-      return;
-    }
+    if (!MOCK_AUTH || !profile) return;
 
     if (gold < nextExpandCost) {
       toast.error('Not enough gold to expand the land.');
@@ -169,10 +155,7 @@ export default function FarmPlots() {
     const updated = characterService.updateMockProfile({
       farmLandSize: nextLandSize,
       farmPlots: nextPlots,
-      stats: {
-        ...profile.stats,
-        gold: gold - nextExpandCost,
-      },
+      stats: { ...profile.stats, gold: gold - nextExpandCost },
     });
 
     setProfile(updated);
@@ -192,9 +175,7 @@ export default function FarmPlots() {
   };
 
   const handlePlant = (cropId) => {
-    if (!MOCK_AUTH || !profile) {
-      return;
-    }
+    if (!MOCK_AUTH || !profile) return;
 
     if (plantMode === 'bulk' && farmLevel < 10) {
       toast.error('Farm level 10 required for bulk planting.');
@@ -202,9 +183,7 @@ export default function FarmPlots() {
     }
 
     const crop = farmCrops.find((entry) => entry.id === cropId);
-    if (!crop) {
-      return;
-    }
+    if (!crop) return;
 
     if (farmLevel < crop.levelRequired) {
       toast.error(`Farm level ${crop.levelRequired} required to plant this crop.`);
@@ -230,15 +209,7 @@ export default function FarmPlots() {
 
     let planted = 0;
     const nextPlots = plots.map((plot) => {
-      if (plot.cropId) {
-        return plot;
-      }
-
-      if (plantMode === 'single' && plot.id !== activePlotId) {
-        return plot;
-      }
-
-      if (planted >= plantCount) {
+      if (plot.cropId || (plantMode === 'single' && plot.id !== activePlotId) || planted >= plantCount) {
         return plot;
       }
 
@@ -252,8 +223,7 @@ export default function FarmPlots() {
       };
     });
 
-    const nextInventoryItems = { [seedItemId]: plantCount };
-    const nextInventory = removeItems(inventory, nextInventoryItems);
+    const nextInventory = removeItems(inventory, { [seedItemId]: plantCount });
 
     const updated = characterService.updateMockProfile({
       farmPlots: nextPlots,
@@ -261,37 +231,23 @@ export default function FarmPlots() {
     });
 
     setProfile(updated);
-    toast.success(
-      plantMode === 'bulk'
-        ? `${crop.name} planted in ${plantCount} plots.`
-        : `${crop.name} planted.`
-    );
+    toast.success(plantMode === 'bulk' ? `${crop.name} planted in ${plantCount} plots.` : `${crop.name} planted.`);
     closePlantModal();
   };
 
   const handleHarvest = (plotId) => {
-    if (!MOCK_AUTH || !profile) {
-      return;
-    }
+    if (!MOCK_AUTH || !profile) return;
 
     const plot = plots.find((entry) => entry.id === plotId);
-    if (!plot?.cropId) {
-      return;
-    }
-
-    if (!plot.harvestAt || plot.harvestAt > now) {
-      toast.error('Crop is not ready yet.');
+    if (!plot?.cropId || !plot.harvestAt || plot.harvestAt > now) {
+      if (plot?.cropId) toast.error('Crop is not ready yet.');
       return;
     }
 
     const crop = farmCrops.find((entry) => entry.id === plot.cropId);
-    if (!crop) {
-      return;
-    }
+    if (!crop) return;
 
-    const nextPlots = plots.map((entry) =>
-      entry.id === plotId ? buildEmptyPlot(entry.id) : entry
-    );
+    const nextPlots = plots.map((entry) => (entry.id === plotId ? buildEmptyPlot(entry.id) : entry));
 
     const seasonModifiers = getCropSeasonModifiers(crop.id, season);
     const totalYieldMultiplier = yieldMultiplier * seasonModifiers.yieldMultiplier * zoneModifiers.yield;
@@ -299,7 +255,6 @@ export default function FarmPlots() {
     const nextInventory = addItems(inventory, { [crop.yieldId]: adjustedYield });
 
     const goodName = farmGoods.find((good) => good.id === crop.yieldId)?.name || 'Goods';
-
     const xpGain = Math.max(5, adjustedYield * 8);
     const { nextLevel, nextXp, leveledUp } = applyFarmXp(xpGain);
 
@@ -311,9 +266,7 @@ export default function FarmPlots() {
     });
 
     setProfile(updated);
-    toast.success(
-      `Harvested ${crop.name} +${adjustedYield} ${goodName}${leveledUp ? ' · Farm level up!' : ''}.`
-    );
+    toast.success(`Harvested ${crop.name} +${adjustedYield} ${goodName}${leveledUp ? ' · Farm level up!' : ''}.`);
 
     const anchor = plotRefs.current.get(plotId);
     if (anchor) {
@@ -323,10 +276,7 @@ export default function FarmPlots() {
   };
 
   const handleHarvestAll = () => {
-    if (!MOCK_AUTH || !profile) {
-      return;
-    }
-
+    if (!MOCK_AUTH || !profile) return;
     if (farmLevel < 20) {
       toast.error('Farm level 20 required for bulk harvesting.');
       return;
@@ -345,9 +295,7 @@ export default function FarmPlots() {
 
     readyPlots.forEach((plot) => {
       const crop = farmCrops.find((entry) => entry.id === plot.cropId);
-      if (!crop) {
-        return;
-      }
+      if (!crop) return;
       const seasonModifiers = getCropSeasonModifiers(crop.id, season);
       const totalYieldMultiplier = yieldMultiplier * seasonModifiers.yieldMultiplier * zoneModifiers.yield;
       const adjustedYield = Math.max(1, Math.round(crop.yieldAmount * totalYieldMultiplier));
@@ -356,12 +304,9 @@ export default function FarmPlots() {
       yieldTotals[crop.yieldId] = (yieldTotals[crop.yieldId] || 0) + adjustedYield;
     });
 
-    const nextPlotsArr = plots.map((plot) =>
-      readyIds.has(plot.id) ? buildEmptyPlot(plot.id) : plot
-    );
+    const nextPlotsArr = plots.map((plot) => (readyIds.has(plot.id) ? buildEmptyPlot(plot.id) : plot));
 
     const { nextLevel, nextXp, leveledUp } = applyFarmXp(totalXp);
-
     const updated = characterService.updateMockProfile({
       farmPlots: nextPlotsArr,
       inventory: nextInventory,
@@ -379,10 +324,7 @@ export default function FarmPlots() {
         const goodName = farmGoods.find((good) => good.id === yieldId)?.name || 'Goods';
         pushReward(`+${amount} ${goodName}`, { tone: 'item', anchor, delay: index * 120 });
       });
-      if (totalXp > 0) {
-        const delay = yieldEntries.length * 120;
-        pushReward(`+${totalXp} XP`, { tone: 'xp', anchor, delay });
-      }
+      if (totalXp > 0) pushReward(`+${totalXp} XP`, { tone: 'xp', anchor, delay: yieldEntries.length * 120 });
     }
   };
 
@@ -390,50 +332,23 @@ export default function FarmPlots() {
     <section className="min-h-screen bg-center bg-cover bg-no-repeat bg-[url('./jbm2.jpg')] bg-gray-900 bg-blend-multiply lg:pl-64 dashboard-shell">
       <Sidebar />
       <div className="relative z-10 mx-auto max-w-6xl px-6 py-16 pt-24">
-        <div className="mb-10 flex flex-wrap items-center justify-between gap-6">
-          <SectionHeader
-            kicker="Harvestlands"
-            title="Farm Plots"
-            description="Cultivate the soil and expand your botanical empire. Nature provides for the patient."
-          />
-          <Panel variant="subtle" className="text-center min-w-[120px]">
-            <p className="text-[10px] uppercase tracking-[0.3em] text-gray-500 font-bold">Botany Mastery</p>
-            <p className="mt-1 text-3xl font-black text-emerald-400 drop-shadow-sm">Lvl {farmLevel}</p>
-          </Panel>
-        </div>
+        <FarmHeader farmLevel={farmLevel} />
 
         <div className="mb-8 grid gap-8 lg:grid-cols-[1.3fr_0.7fr]">
           <div className="space-y-8">
-            <Panel variant="glass">
-              <XpBar current={farmXp} target={farmXpTarget} label="Farming Progression" tone="emerald" />
-              <div className="mt-4 flex flex-wrap gap-3">
-                <Badge variant="success">Land Size: {landSize}</Badge>
-                <Badge variant="gold">Gold: {gold}</Badge>
-                {farmWeather && (
-                  <Badge variant="info">{farmWeather.label} ({farmWeather.season})</Badge>
-                )}
-              </div>
-            </Panel>
+            <FarmStats
+              farmXp={farmXp} farmXpTarget={farmXpTarget}
+              landSize={landSize} gold={gold} farmWeather={farmWeather}
+            />
 
             <Panel variant="card">
               <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
                 <p className="text-xs uppercase tracking-[0.3em] text-gray-500 font-bold">Active Soil</p>
                 <div className="flex flex-wrap items-center gap-3">
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    onClick={() => openPlantModal(null, 'bulk')}
-                    disabled={farmLevel < 10}
-                  >
+                  <Button variant="secondary" size="sm" onClick={() => openPlantModal(null, 'bulk')} disabled={farmLevel < 10}>
                     Bulk Plant {farmLevel < 10 && '(L10)'}
                   </Button>
-                  <Button
-                    variant="primary"
-                    size="sm"
-                    onClick={handleHarvestAll}
-                    ref={harvestAllRef}
-                    disabled={farmLevel < 20}
-                  >
+                  <Button variant="primary" size="sm" onClick={handleHarvestAll} ref={harvestAllRef} disabled={farmLevel < 20}>
                     Harvest All {farmLevel < 20 && '(L20)'}
                   </Button>
                 </div>
@@ -441,12 +356,8 @@ export default function FarmPlots() {
               <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
                 {plots.map((plot) => (
                   <PlotCard
-                    key={plot.id}
-                    plot={plot}
-                    now={now}
-                    openPlantModal={openPlantModal}
-                    handleHarvest={handleHarvest}
-                    plotRefs={plotRefs}
+                    key={plot.id} plot={plot} now={now}
+                    openPlantModal={openPlantModal} handleHarvest={handleHarvest} plotRefs={plotRefs}
                   />
                 ))}
               </div>
@@ -455,55 +366,19 @@ export default function FarmPlots() {
 
           <div className="space-y-8">
             <FarmUpgradePanel
-              farmLevel={farmLevel}
-              farmXp={farmXp}
-              farmXpTarget={farmXpTarget}
-              gold={gold}
-              landSize={landSize}
-              nextExpandCost={nextExpandCost}
-              nextExpandFarmLevel={nextExpandFarmLevel}
-              handleExpandLand={handleExpandLand}
+              farmLevel={farmLevel} farmXp={farmXp} farmXpTarget={farmXpTarget}
+              gold={gold} landSize={landSize} nextExpandCost={nextExpandCost}
+              nextExpandFarmLevel={nextExpandFarmLevel} handleExpandLand={handleExpandLand}
               LAND_EXPAND_SIZE={LAND_EXPAND_SIZE}
             />
-
-            {farmWeather && (
-              <Panel variant="ornament">
-                <p className="text-[10px] uppercase tracking-[0.3em] text-gray-300 font-bold mb-4">Seasonal Climate</p>
-                <div className="aspect-video overflow-hidden rounded-xl bg-gray-900/80 mb-4">
-                  <img
-                    src={getSeasonBanner(farmWeather.season)}
-                    alt={`${farmWeather.season} banner`}
-                    className="h-full w-full object-cover mix-blend-lighten opacity-80"
-                  />
-                </div>
-                <h4 className="text-xl font-bold text-white">{farmWeather.label}</h4>
-                <p className="mt-2 text-sm text-gray-400">
-                  Current Season: <span className="text-yellow-500 font-bold uppercase">{farmWeather.season}</span>
-                </p>
-                <div className="mt-4 space-y-2">
-                  <div className="flex justify-between text-xs">
-                    <span className="text-gray-500">Growth Rate</span>
-                    <span className="text-emerald-400 font-bold">x{farmWeather.growMultiplier}</span>
-                  </div>
-                  <div className="flex justify-between text-xs">
-                    <span className="text-gray-500">Yield Multiplier</span>
-                    <span className="text-yellow-400 font-bold">x{farmWeather.yieldMultiplier}</span>
-                  </div>
-                </div>
-              </Panel>
-            )}
+            <FarmWeatherPanel farmWeather={farmWeather} />
           </div>
         </div>
       </div>
 
       <SeedSelector
-        isOpen={showPlantModal}
-        plantMode={plantMode}
-        farmLevel={farmLevel}
-        season={season}
-        inventory={inventory}
-        handlePlant={handlePlant}
-        onClose={closePlantModal}
+        isOpen={showPlantModal} plantMode={plantMode} farmLevel={farmLevel}
+        season={season} inventory={inventory} handlePlant={handlePlant} onClose={closePlantModal}
       />
     </section>
   );

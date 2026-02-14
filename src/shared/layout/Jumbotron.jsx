@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import PlayersCount from "./PlayersCount";
+import PlayersCount from "../ui/PlayersCount";
 
 export default function Jumbotron() {
   return (
@@ -15,7 +15,7 @@ export default function Jumbotron() {
           src="logo.webp"
           className="mx-auto h-80 w-auto opacity-0 animate-[fadeIn_1s_ease-in-out_forwards]"
         />
-                  <h2 className="text-lg uppercase tracking-widest text-gray-300 mb-2 opacity-0 animate-[fadeIn_1s_ease-in-out_forwards]">
+        <h2 className="text-lg uppercase tracking-widest text-gray-300 mb-2 opacity-0 animate-[fadeIn_1s_ease-in-out_forwards]">
           A world torn by war, bound by fate
         </h2>
 

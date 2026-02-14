@@ -1,11 +1,11 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { Link } from 'react-router-dom';
 
 /**
  * StandardIZED Button component for Salvation RPG.
  * Supports Ornate, Primary, Secondary, Ghost, and Danger variants.
  */
-export default function Button({
+const Button = ({
     children,
     variant = 'primary',
     size = 'md',
@@ -15,7 +15,7 @@ export default function Button({
     isLoading,
     onClick,
     ...rest
-}) {
+}) => {
     // Ornate variant uses its own specific structure
     if (variant === 'ornate') {
         const combinedClassName = `ornate-button ${className} ${disabled ? 'opacity-50 pointer-events-none grayscale' : ''}`.trim();
@@ -94,4 +94,6 @@ export default function Button({
             {isLoading ? <span className="animate-pulse">Loading...</span> : children}
         </button>
     );
-}
+};
+
+export default memo(Button);

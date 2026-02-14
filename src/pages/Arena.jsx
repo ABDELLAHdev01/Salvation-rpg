@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import Sidebar from '../components/Sidebar';
+import Sidebar from '../shared/layout/Sidebar';
 import { clearArenaHistory, getArenaHistory } from '../data/arenaOpponents';
 
 export default function Arena() {
@@ -132,11 +132,10 @@ export default function Arena() {
                   type="button"
                   onClick={handleClearHistory}
                   disabled={history.length === 0}
-                  className={`rounded-full px-3 py-2 text-xs font-semibold uppercase tracking-[0.3em] ${
-                    history.length === 0
+                  className={`rounded-full px-3 py-2 text-xs font-semibold uppercase tracking-[0.3em] ${history.length === 0
                       ? 'bg-gray-700 text-gray-400'
                       : 'border border-yellow-700/40 text-yellow-200'
-                  }`}
+                    }`}
                 >
                   Clear History
                 </button>

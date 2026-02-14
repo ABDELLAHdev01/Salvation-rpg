@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import Sidebar from '../components/Sidebar';
+import Sidebar from '../shared/layout/Sidebar';
 import toast from 'react-hot-toast';
 import authService from '../services/AuthService';
 import characterService from '../services/CharacterService';
@@ -142,9 +142,8 @@ export default function Zones() {
           </div>
 
           <div
-            className={`mt-6 rounded-2xl border border-yellow-700/30 bg-gray-950/70 p-6 zone-active-panel ${
-              zonePulseId === activeZone?.id ? 'zone-activate-panel' : ''
-            }`}
+            className={`mt-6 rounded-2xl border border-yellow-700/30 bg-gray-950/70 p-6 zone-active-panel ${zonePulseId === activeZone?.id ? 'zone-activate-panel' : ''
+              }`}
             style={{
               '--zone-spot': activeTheme.spot,
             }}
@@ -188,17 +187,15 @@ export default function Zones() {
                 return (
                   <div
                     key={zone.id}
-                    className={`rounded-2xl border border-yellow-700/30 bg-gray-900/80 p-6 shadow-[0_0_18px_rgba(15,23,42,0.4)] zone-card ${
-                      zonePulseId === zone.id ? 'zone-activate-card' : ''
-                    }`}
+                    className={`rounded-2xl border border-yellow-700/30 bg-gray-900/80 p-6 shadow-[0_0_18px_rgba(15,23,42,0.4)] zone-card ${zonePulseId === zone.id ? 'zone-activate-card' : ''
+                      }`}
                     style={{
                       '--zone-spot': theme.spot,
                     }}
                   >
                     <div
-                      className={`zone-map ${isUnlocked ? '' : 'zone-map-locked'} ${
-                        zonePulseId === zone.id ? 'zone-map-transition' : ''
-                      }`}
+                      className={`zone-map ${isUnlocked ? '' : 'zone-map-locked'} ${zonePulseId === zone.id ? 'zone-map-transition' : ''
+                        }`}
                       style={{
                         '--zone-hue': theme.hue,
                         '--zone-accent': theme.accent,
@@ -301,13 +298,12 @@ export default function Zones() {
                         type="button"
                         onClick={() => handleSetActive(zone.id)}
                         disabled={!isUnlocked || isActive}
-                        className={`rounded-full px-4 py-2 text-xs font-semibold ${
-                          isActive
+                        className={`rounded-full px-4 py-2 text-xs font-semibold ${isActive
                             ? 'bg-yellow-500/10 text-yellow-200'
                             : isUnlocked
                               ? 'bg-yellow-400 text-gray-900'
                               : 'bg-gray-700 text-gray-400'
-                        }`}
+                          }`}
                       >
                         {isActive ? 'Active' : isUnlocked ? 'Set Active' : `Unlocks at L${zone.unlockLevel}`}
                       </button>

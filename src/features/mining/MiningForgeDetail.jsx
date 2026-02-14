@@ -1,7 +1,7 @@
 import React from 'react';
-import Panel from '../../components/ui/Panel';
-import SectionHeader from '../../components/ui/SectionHeader';
-import Button from '../../components/ui/Button';
+import Panel from '../../shared/ui/Panel';
+import SectionHeader from '../../shared/ui/SectionHeader';
+import Button from '../../shared/ui/Button';
 
 export default function MiningForgeDetail({
     currentForge,

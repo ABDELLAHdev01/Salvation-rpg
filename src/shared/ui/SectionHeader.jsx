@@ -1,12 +1,12 @@
-import React from 'react';
+import React, { memo } from 'react';
 
-export default function SectionHeader({
+const SectionHeader = ({
     kicker,
     title,
     description,
     className = '',
     actions,
-}) {
+}) => {
     return (
         <div className={`flex flex-wrap items-end justify-between gap-4 ${className}`.trim()}>
             <div className="max-w-3xl">
@@ -33,4 +33,6 @@ export default function SectionHeader({
             )}
         </div>
     );
-}
+};
+
+export default memo(SectionHeader);

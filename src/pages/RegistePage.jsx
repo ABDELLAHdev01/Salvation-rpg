@@ -1,5 +1,5 @@
 import React from 'react'
-import RegisteForm from '../components/RegisteForm'
+import RegisteForm from '../shared/auth/RegisteForm';
 
 export default function RegistePage() {
   return (

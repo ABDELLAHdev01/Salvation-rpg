@@ -1,7 +1,11 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import Sidebar from '../components/Sidebar';
+import Sidebar from '../shared/layout/Sidebar';
+import Panel from '../shared/ui/Panel';
+import Button from '../shared/ui/Button';
+import Badge from '../shared/ui/Badge';
+import SectionHeader from '../shared/ui/SectionHeader';
 import authService from '../services/AuthService';
 import characterService from '../services/CharacterService';
 import { expeditionLocations, getExpeditionLocation, rollExpeditionRewards } from '../data/expeditionData';
@@ -238,9 +242,8 @@ export default function Adventure() {
                     <button
                       type="button"
                       onClick={handleClaim}
-                      className={`rounded-lg px-4 py-2 text-xs font-semibold ${
-                        isComplete ? 'action-primary text-white' : 'bg-gray-700 text-gray-300'
-                      }`}
+                      className={`rounded-lg px-4 py-2 text-xs font-semibold ${isComplete ? 'action-primary text-white' : 'bg-gray-700 text-gray-300'
+                        }`}
                       disabled={!isComplete}
                     >
                       Claim Rewards
@@ -317,9 +320,8 @@ export default function Adventure() {
                       <button
                         type="button"
                         onClick={() => handleSendExpedition(location.id)}
-                        className={`rounded-lg px-4 py-2 text-xs font-semibold ${
-                          canSend ? 'action-primary text-white' : 'bg-gray-700 text-gray-300'
-                        }`}
+                        className={`rounded-lg px-4 py-2 text-xs font-semibold ${canSend ? 'action-primary text-white' : 'bg-gray-700 text-gray-300'
+                          }`}
                         disabled={!canSend}
                         title={!meetsLevel ? `Requires level ${location.levelRequired || 1}` : undefined}
                       >

@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import Navbar from '../components/Navbar';
+import Navbar from '../shared/layout/Navbar';
 import authService from '../services/AuthService';
 import characterService from '../services/CharacterService';
 import toast from 'react-hot-toast';
@@ -215,11 +215,10 @@ export default function EditCharacter() {
                         type="button"
                         key={race.key}
                         onClick={() => !isLocked && setRaceKey(race.key)}
-                        className={`flex items-start gap-3 rounded-xl border p-4 text-left transition ${
-                          isSelected
+                        className={`flex items-start gap-3 rounded-xl border p-4 text-left transition ${isSelected
                             ? 'border-yellow-400 bg-yellow-500/10'
                             : 'border-yellow-700/30 bg-gray-950/40 hover:border-yellow-500/70'
-                        } ${isLocked ? 'cursor-not-allowed opacity-50' : ''}`}
+                          } ${isLocked ? 'cursor-not-allowed opacity-50' : ''}`}
                       >
                         <img
                           src={race.image}
@@ -251,11 +250,10 @@ export default function EditCharacter() {
                       type="button"
                       key={image}
                       onClick={() => setImageKey(image)}
-                      className={`overflow-hidden rounded-xl border transition ${
-                        imageKey === image
+                      className={`overflow-hidden rounded-xl border transition ${imageKey === image
                           ? 'border-yellow-400 ring-2 ring-yellow-400'
                           : 'border-yellow-700/30 hover:border-yellow-500/70'
-                      }`}
+                        }`}
                     >
                       <img
                         src={`/raceicon/${raceKey}_${image}.png`}
@@ -282,11 +280,10 @@ export default function EditCharacter() {
                   type="button"
                   onClick={handleSave}
                   disabled={!isValidName || !raceKey || !imageKey || isSaving}
-                  className={`inline-flex items-center rounded-lg px-5 py-2 text-sm font-semibold transition ${
-                    !isValidName || !raceKey || !imageKey || isSaving
+                  className={`inline-flex items-center rounded-lg px-5 py-2 text-sm font-semibold transition ${!isValidName || !raceKey || !imageKey || isSaving
                       ? 'bg-gray-700 text-gray-300'
                       : 'action-primary text-white'
-                  }`}
+                    }`}
                 >
                   {isSaving ? 'Saving...' : 'Save Changes'}
                 </button>

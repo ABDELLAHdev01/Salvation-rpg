@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import Sidebar from '../components/Sidebar';
+import Sidebar from '../shared/layout/Sidebar';
 import authService from '../services/AuthService';
 import characterService from '../services/CharacterService';
 import {
@@ -138,9 +138,9 @@ export default function ArenaFight() {
             <div className="space-y-4">
               <div className="image-panel image-panel-arena ornament-frame p-6">
                 <div className="image-panel-content">
-                <p className="text-xs uppercase tracking-[0.3em] text-gray-400">Arena Hazard</p>
-                <h3 className="mt-2 text-2xl font-semibold text-white">{hazard?.name || 'Unknown'}</h3>
-                <p className="mt-2 text-sm text-gray-300">{hazard?.effect || 'Hazard details unavailable.'}</p>
+                  <p className="text-xs uppercase tracking-[0.3em] text-gray-400">Arena Hazard</p>
+                  <h3 className="mt-2 text-2xl font-semibold text-white">{hazard?.name || 'Unknown'}</h3>
+                  <p className="mt-2 text-sm text-gray-300">{hazard?.effect || 'Hazard details unavailable.'}</p>
                 </div>
               </div>
               <div className="court-card rounded-2xl p-6">
@@ -181,11 +181,10 @@ export default function ArenaFight() {
                       key={amount}
                       type="button"
                       onClick={() => handleWagerChange(amount)}
-                      className={`rounded-full px-3 py-1 text-xs font-semibold ${
-                        wager === amount
+                      className={`rounded-full px-3 py-1 text-xs font-semibold ${wager === amount
                           ? 'bg-yellow-400 text-gray-900'
                           : 'border border-yellow-700/40 text-yellow-200'
-                      }`}
+                        }`}
                     >
                       {amount}g
                     </button>

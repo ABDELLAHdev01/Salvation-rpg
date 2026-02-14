@@ -1,5 +1,5 @@
 import React from 'react'
-import LoginForm from '../components/loginForm'
+import LoginForm from '../shared/auth/LoginForm';
 
 function LoginPage() {
   return (

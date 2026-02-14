@@ -1,8 +1,8 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import Sidebar from '../components/Sidebar';
-import { useRewardFloat } from '../components/RewardFloatProvider';
+import Sidebar from '../shared/layout/Sidebar';
+import { useRewardFloat } from '../shared/feedback/RewardFloatProvider';
 import authService from '../services/AuthService';
 import characterService from '../services/CharacterService';
 import { getExpeditionLocation, rollExpeditionRewards } from '../data/expeditionData';
@@ -198,9 +198,8 @@ export default function ExpeditionActive() {
                       type="button"
                       onClick={handleClaim}
                       ref={claimButtonRef}
-                      className={`rounded-lg px-4 py-2 text-xs font-semibold ${
-                        isComplete ? 'action-primary text-white' : 'bg-gray-700 text-gray-300'
-                      }`}
+                      className={`rounded-lg px-4 py-2 text-xs font-semibold ${isComplete ? 'action-primary text-white' : 'bg-gray-700 text-gray-300'
+                        }`}
                       disabled={!isComplete}
                     >
                       Claim Rewards

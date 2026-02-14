@@ -34,8 +34,8 @@ const Missions = lazy(() => import("./pages/Missions"));
 const LoadSave = lazy(() => import("./pages/LoadSave"));
 const PageNotFound = lazy(() => import("./pages/PageNotFound"));
 import ProtectedRoute from "./services/ProtectedRoute";
-import { RewardFloatProvider } from "./components/RewardFloatProvider";
-import InteractionFeedbackLayer from "./components/InteractionFeedbackLayer";
+import { RewardFloatProvider } from "./shared/feedback/RewardFloatProvider";
+import InteractionFeedbackLayer from "./shared/feedback/InteractionFeedbackLayer";
 
 const OFFLINE_MODE = import.meta.env.VITE_OFFLINE_MODE === "true";
 const prefetchCommonRoutes = () => {

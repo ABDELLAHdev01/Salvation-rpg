@@ -1,10 +1,10 @@
-import React from 'react';
+import React, { memo } from 'react';
 
 /**
  * StandardIZED ProgressBar component for Salvation RPG.
  * Supports Gold, Emerald, Cyan, and Danger tones with shimmer animations.
  */
-export default function ProgressBar({
+const ProgressBar = ({
     value,
     max,
     label,
@@ -13,7 +13,7 @@ export default function ProgressBar({
     size = 'md',
     showMeta = true,
     className = '',
-}) {
+}) => {
     const percentage = max > 0 ? Math.min(100, Math.max(0, (value / max) * 100)) : 0;
 
     let toneClass = 'bg-yellow-500/90 shadow-[0_0_10px_rgba(234,179,8,0.4)]';
@@ -62,4 +62,6 @@ export default function ProgressBar({
             </div>
         </div>
     );
-}
+};
+
+export default memo(ProgressBar);

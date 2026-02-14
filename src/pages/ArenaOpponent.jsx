@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import Sidebar from '../components/Sidebar';
+import Sidebar from '../shared/layout/Sidebar';
 import authService from '../services/AuthService';
 import characterService from '../services/CharacterService';
 import {
@@ -65,9 +65,9 @@ export default function ArenaOpponent() {
           <div className="mt-6 grid gap-4 sm:grid-cols-2">
             <div className="image-panel image-panel-arena ornament-frame p-4 text-left">
               <div className="image-panel-content">
-              <p className="text-xs uppercase tracking-[0.3em] text-gray-400">Arena Hazard</p>
-              <p className="mt-2 text-lg font-semibold text-white">{hazard?.name || 'Unknown'}</p>
-              <p className="mt-1 text-sm text-gray-300">{hazard?.effect || 'Hazard effect unknown.'}</p>
+                <p className="text-xs uppercase tracking-[0.3em] text-gray-400">Arena Hazard</p>
+                <p className="mt-2 text-lg font-semibold text-white">{hazard?.name || 'Unknown'}</p>
+                <p className="mt-1 text-sm text-gray-300">{hazard?.effect || 'Hazard effect unknown.'}</p>
               </div>
             </div>
             <div className="court-card rounded-xl p-4 text-left">
