@@ -1,12 +1,12 @@
 import React from 'react'
-import Navbar from '../components/Navbar'
-import Jumbotron from '../components/Jumbotron'
+import Navbar from '../shared/layout/Navbar';
+import Jumbotron from '../shared/layout/Jumbotron';
 
- function Home() {
+function Home() {
   return (
     <>
-    <Navbar />
-    <Jumbotron />
+      <Navbar />
+      <Jumbotron />
 
     </>
   )

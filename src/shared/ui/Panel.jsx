@@ -1,15 +1,15 @@
-import React from 'react';
+import React, { memo } from 'react';
 
 /**
  * StandardIZED Panel component for Salvation RPG.
  * Supports Glass, Card (default), Ornament, and Subtle variants.
  */
-export default function Panel({
+const Panel = ({
     variant = 'card',
     children,
     className = '',
     ...rest
-}) {
+}) => {
     let baseClass = 'rounded-2xl transition-all duration-300';
     let paddingClass = 'p-6';
 
@@ -43,4 +43,6 @@ export default function Panel({
             )}
         </div>
     );
-}
+};
+
+export default memo(Panel);

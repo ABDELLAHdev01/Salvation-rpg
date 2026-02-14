@@ -1,15 +1,15 @@
-import React from 'react';
+import React, { memo } from 'react';
 
 /**
  * StandardIZED Badge component for Salvation RPG.
  * Supports Semantic (Success, Warning, Danger, Info) and Theme (Gold, Cyan) variants.
  */
-export default function Badge({
+const Badge = ({
     children,
     variant = 'gold',
     className = '',
     ...rest
-}) {
+}) => {
     let variantClass = '';
 
     switch (variant) {
@@ -45,4 +45,6 @@ export default function Badge({
             {children}
         </span>
     );
-}
+};
+
+export default memo(Badge);

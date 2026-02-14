@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import Sidebar from '../components/Sidebar';
+import Sidebar from '../shared/layout/Sidebar';
 
 export default function SellGear() {
   const navigate = useNavigate();

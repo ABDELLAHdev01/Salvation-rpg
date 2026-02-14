@@ -1,7 +1,7 @@
 import React from 'react';
 import { formatDuration } from '../../data/miningData';
-import Panel from '../../components/ui/Panel';
-import SectionHeader from '../../components/ui/SectionHeader';
+import Panel from '../../shared/ui/Panel';
+import SectionHeader from '../../shared/ui/SectionHeader';
 
 export default function MiningSessionStatus({
     isMining,

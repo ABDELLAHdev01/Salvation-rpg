@@ -1,7 +1,7 @@
-import React from 'react';
-import ProgressBar from './ui/ProgressBar';
+import React, { memo } from 'react';
+import ProgressBar from './ProgressBar';
 
-export default function XpBar({ current = 0, target = 1, label = 'XP', tone = 'gold' }) {
+const XpBar = ({ current = 0, target = 1, label = 'XP', tone = 'gold' }) => {
   const safeTarget = Math.max(1, target);
   const remaining = Math.max(0, safeTarget - current);
 
@@ -19,4 +19,6 @@ export default function XpBar({ current = 0, target = 1, label = 'XP', tone = 'g
       </p>
     </div>
   );
-}
+};
+
+export default memo(XpBar);

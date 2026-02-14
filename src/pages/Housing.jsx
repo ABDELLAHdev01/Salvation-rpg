@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import Sidebar from '../components/Sidebar';
+import Sidebar from '../shared/layout/Sidebar';
 import authService from '../services/AuthService';
 import characterService from '../services/CharacterService';
 import { getHousingTierById, housingTiers } from '../data/housingData';
@@ -194,11 +194,10 @@ export default function Housing() {
                         type="button"
                         onClick={() => handleSetActive(house.id)}
                         disabled={isActive}
-                        className={`rounded-full px-3 py-1 text-xs font-semibold ${
-                          isActive
+                        className={`rounded-full px-3 py-1 text-xs font-semibold ${isActive
                             ? 'bg-yellow-500/10 text-yellow-200'
                             : 'bg-yellow-400 text-gray-900'
-                        }`}
+                          }`}
                       >
                         {isActive ? 'Active' : 'Set Active'}
                       </button>
@@ -220,66 +219,65 @@ export default function Housing() {
               </span>
             </div>
             <div className="mt-6 grid gap-4 lg:grid-cols-3">
-            {availableHouses.map((house) => {
-              const isOwned = false;
-              const meetsLevel = level >= house.levelRequired;
-              const canAfford = gold >= house.price;
-              const isLocked = !isOwned && (!meetsLevel || !canAfford);
+              {availableHouses.map((house) => {
+                const isOwned = false;
+                const meetsLevel = level >= house.levelRequired;
+                const canAfford = gold >= house.price;
+                const isLocked = !isOwned && (!meetsLevel || !canAfford);
 
-              return (
-                <div
-                  key={house.id}
-                  className="rounded-2xl border border-yellow-700/30 bg-gray-900/80 p-6"
-                >
-                  <div className="flex flex-wrap items-center justify-between gap-3">
-                    <div>
-                      <p className="text-xs uppercase tracking-[0.3em] text-gray-400">{house.tier}</p>
-                      <h2 className="mt-2 text-2xl font-semibold text-white">{house.name}</h2>
+                return (
+                  <div
+                    key={house.id}
+                    className="rounded-2xl border border-yellow-700/30 bg-gray-900/80 p-6"
+                  >
+                    <div className="flex flex-wrap items-center justify-between gap-3">
+                      <div>
+                        <p className="text-xs uppercase tracking-[0.3em] text-gray-400">{house.tier}</p>
+                        <h2 className="mt-2 text-2xl font-semibold text-white">{house.name}</h2>
+                      </div>
+                      <div className="rounded-full border border-yellow-700/40 bg-gray-950/70 px-3 py-1 text-xs text-yellow-200">
+                        Level {house.levelRequired} · {house.price}g
+                      </div>
                     </div>
-                    <div className="rounded-full border border-yellow-700/40 bg-gray-950/70 px-3 py-1 text-xs text-yellow-200">
-                      Level {house.levelRequired} · {house.price}g
+                    {house.image && (
+                      <div className="mt-4 rounded-xl border border-yellow-700/30 bg-gray-950/70 p-2">
+                        <img
+                          src={house.image}
+                          alt={house.name}
+                          className="w-full h-auto max-h-[260px] object-contain"
+                        />
+                      </div>
+                    )}
+                    <p className="mt-4 text-sm text-gray-300">{house.prompt}</p>
+                    <div className="mt-4 rounded-xl border border-yellow-700/20 bg-gray-950/70 px-4 py-3">
+                      <p className="text-xs uppercase tracking-[0.3em] text-gray-400">Residence Effect</p>
+                      <p className="mt-2 text-sm text-yellow-200">
+                        {house.effect?.name || 'Rested Comfort'}: {house.effect?.detail || '+2% health regeneration in safe zones.'}
+                      </p>
                     </div>
-                  </div>
-                  {house.image && (
-                    <div className="mt-4 rounded-xl border border-yellow-700/30 bg-gray-950/70 p-2">
-                      <img
-                        src={house.image}
-                        alt={house.name}
-                        className="w-full h-auto max-h-[260px] object-contain"
-                      />
-                    </div>
-                  )}
-                  <p className="mt-4 text-sm text-gray-300">{house.prompt}</p>
-                  <div className="mt-4 rounded-xl border border-yellow-700/20 bg-gray-950/70 px-4 py-3">
-                    <p className="text-xs uppercase tracking-[0.3em] text-gray-400">Residence Effect</p>
-                    <p className="mt-2 text-sm text-yellow-200">
-                      {house.effect?.name || 'Rested Comfort'}: {house.effect?.detail || '+2% health regeneration in safe zones.'}
-                    </p>
-                  </div>
 
-                  <div className="mt-5 flex flex-wrap items-center gap-3">
-                    <button
-                      type="button"
-                      onClick={() => handlePurchase(house)}
-                      disabled={isLocked}
-                      className={`rounded-full px-3 py-1 text-xs font-semibold ${
-                        isLocked
-                          ? 'bg-gray-700 text-gray-400'
-                          : 'bg-yellow-400 text-gray-900'
-                      }`}
-                    >
-                      {house.price === 0 ? 'Claim' : 'Buy'}
-                    </button>
-                    {!meetsLevel && (
-                      <span className="text-xs text-gray-400">Requires level {house.levelRequired}</span>
-                    )}
-                    {meetsLevel && !canAfford && !isOwned && (
-                      <span className="text-xs text-gray-400">Need {house.price - gold}g more</span>
-                    )}
+                    <div className="mt-5 flex flex-wrap items-center gap-3">
+                      <button
+                        type="button"
+                        onClick={() => handlePurchase(house)}
+                        disabled={isLocked}
+                        className={`rounded-full px-3 py-1 text-xs font-semibold ${isLocked
+                            ? 'bg-gray-700 text-gray-400'
+                            : 'bg-yellow-400 text-gray-900'
+                          }`}
+                      >
+                        {house.price === 0 ? 'Claim' : 'Buy'}
+                      </button>
+                      {!meetsLevel && (
+                        <span className="text-xs text-gray-400">Requires level {house.levelRequired}</span>
+                      )}
+                      {meetsLevel && !canAfford && !isOwned && (
+                        <span className="text-xs text-gray-400">Need {house.price - gold}g more</span>
+                      )}
+                    </div>
                   </div>
-                </div>
-              );
-            })}
+                );
+              })}
             </div>
             {availableHouses.length === 0 && (
               <p className="mt-6 text-sm text-gray-300">All residences are owned. Await new tiers.</p>

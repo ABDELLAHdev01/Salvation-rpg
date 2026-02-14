@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import Sidebar from '../components/Sidebar';
-import OrnateButton from '../components/OrnateButton';
+import Sidebar from '../shared/layout/Sidebar';
+import OrnateButton from '../shared/ui/OrnateButton';
 import authService from '../services/AuthService';
 import characterService from '../services/CharacterService';
 import { ensureFarmTasks, ensureFarmWeather, farmCrops } from '../data/farmData';

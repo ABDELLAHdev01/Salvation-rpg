@@ -1,7 +1,7 @@
 import React from 'react';
-import Panel from '../../components/ui/Panel';
-import SectionHeader from '../../components/ui/SectionHeader';
-import XpBar from '../../components/XpBar';
+import Panel from '../../shared/ui/Panel';
+import SectionHeader from '../../shared/ui/SectionHeader';
+import XpBar from '../../shared/ui/XpBar';
 
 export default function MiningLevelCard({
     miningLevel,

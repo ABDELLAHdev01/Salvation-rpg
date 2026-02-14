@@ -1,7 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import toast from 'react-hot-toast';
-import Sidebar from '../components/Sidebar';
-import XpBar from '../components/XpBar';
+import Sidebar from '../shared/layout/Sidebar';
 import authService from '../services/AuthService';
 import characterService from '../services/CharacterService';
 import {
@@ -24,11 +23,13 @@ import MiningClickNode from '../features/mining/MiningClickNode';
 import MiningNodeLoot from '../features/mining/MiningNodeLoot';
 import MiningClickInfoPanel from '../features/mining/MiningClickInfoPanel';
 
+// Mining Widgets
+import MiningClickHeader from '../features/mining/widgets/MiningClickHeader';
+import MiningClickStats from '../features/mining/widgets/MiningClickStats';
+
 // Standard UI Components
-import Panel from '../components/ui/Panel';
-import Button from '../components/ui/Button';
-import Badge from '../components/ui/Badge';
-import SectionHeader from '../components/ui/SectionHeader';
+import Panel from '../shared/ui/Panel';
+import Button from '../shared/ui/Button';
 
 const MOCK_AUTH = import.meta.env.VITE_MOCK_AUTH === 'true';
 
@@ -37,9 +38,7 @@ export default function MiningClick() {
   const [now, setNow] = useState(Date.now());
 
   useEffect(() => {
-    if (!MOCK_AUTH) {
-      return undefined;
-    }
+    if (!MOCK_AUTH) return;
 
     const username = authService.getCurrentUsername();
     const nextProfile = characterService.getMockProfile(username);
@@ -237,29 +236,18 @@ export default function MiningClick() {
     <section className="min-h-screen bg-page-primary lg:pl-64 dashboard-shell">
       <Sidebar />
       <div className="relative z-10 mx-auto max-w-6xl px-6 py-16 pt-24">
-        <div className="mb-10 flex flex-col sm:flex-row sm:items-center justify-between gap-6">
-          <SectionHeader
-            kicker="Click Mining"
-            title="Shatter the Veins"
-            description="Active extraction yields high-density rewards. Every strike matters."
-          />
-          <Panel variant="subtle" className="text-center w-full sm:w-auto sm:min-w-[120px]">
-            <p className="text-[10px] uppercase tracking-[0.3em] text-gray-500 font-bold">Mining Mastery</p>
-            <p className="mt-1 text-3xl font-black text-cyan-400 drop-shadow-sm">Lvl {miningLevel}</p>
-          </Panel>
-        </div>
+        <MiningClickHeader miningLevel={miningLevel} />
 
-        <Panel variant="glass" className="mb-8">
-          <XpBar current={miningXp} target={miningXpTarget} label="Skill Progression" tone="cyan" />
-          <div className="mt-4 flex flex-wrap gap-3">
-            <Badge variant="cyan">Pickaxe T{pickaxeLevel}</Badge>
-            <Badge variant="info">Forge Lvl {miningForgeLevel}</Badge>
-            {miningPrestigeLevel > 0 && <Badge variant="gold">Prestige {miningPrestigeLevel}</Badge>}
-            {dailyVeinBonus > 0 && <Badge variant="gold">Vein Bonus: +{Math.round(dailyVeinBonus * 100)}%</Badge>}
-            {weeklySurgeBonus > 0 && <Badge variant="warning">Weekly Surge: +{Math.round(weeklySurgeBonus * 100)}%</Badge>}
-            {activeBoost && <Badge variant="success">Active: {activeBoost.name}</Badge>}
-          </div>
-        </Panel>
+        <MiningClickStats
+          miningXp={miningXp}
+          miningXpTarget={miningXpTarget}
+          pickaxeLevel={pickaxeLevel}
+          miningForgeLevel={miningForgeLevel}
+          miningPrestigeLevel={miningPrestigeLevel}
+          dailyVeinBonus={dailyVeinBonus}
+          weeklySurgeBonus={weeklySurgeBonus}
+          activeBoost={activeBoost}
+        />
 
         <div className="grid gap-8 lg:grid-cols-[1fr_0.8fr]">
           <div className="space-y-8">

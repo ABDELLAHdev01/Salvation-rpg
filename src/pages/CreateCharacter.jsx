@@ -1,10 +1,10 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import SelectRace from "../components/character/SelectRace";
-import SelectSex from "../components/character/SelectSex";
-import ChooseName from "../components/character/ChooseName";
-import TermsAndAbout from "../components/character/TermsAndAbout";
-import ReviewCharacter from "../components/character/ReviewCharacter";
+import SelectRace from "../features/character/SelectRace";
+import SelectSex from "../features/character/SelectSex";
+import ChooseName from "../features/character/ChooseName";
+import TermsAndAbout from "../features/character/TermsAndAbout";
+import ReviewCharacter from "../features/character/ReviewCharacter";
 import CharacterService from "../services/CharacterService";
 import toast from "react-hot-toast";
 
@@ -117,11 +117,10 @@ export default function CreateCharacter() {
               {stepLabels.map((step, index) => (
                 <span
                   key={step.title}
-                  className={`rounded-full border px-3 py-1 ${
-                    index === currentIndex
+                  className={`rounded-full border px-3 py-1 ${index === currentIndex
                       ? "border-yellow-500 bg-yellow-500/10 text-yellow-200"
                       : "border-yellow-700/30 bg-gray-900/60"
-                  }`}
+                    }`}
                 >
                   {step.title}
                 </span>

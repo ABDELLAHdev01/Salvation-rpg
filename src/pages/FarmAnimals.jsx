@@ -1,9 +1,9 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import Sidebar from '../components/Sidebar';
-import XpBar from '../components/XpBar';
-import { useRewardFloat } from '../components/RewardFloatProvider';
+import Sidebar from '../shared/layout/Sidebar';
+import XpBar from '../shared/ui/XpBar';
+import { useRewardFloat } from '../shared/feedback/RewardFloatProvider';
 import authService from '../services/AuthService';
 import characterService from '../services/CharacterService';
 import { farmAnimals, farmGoods, getFarmXpForLevel } from '../data/farmData';
@@ -208,61 +208,60 @@ export default function FarmAnimals() {
               {farmAnimals
                 .filter((animal) => (animals[animal.id]?.count || 0) > 0)
                 .map((animal) => {
-                const owned = animals[animal.id]?.count || 0;
-                const last = animals[animal.id]?.lastCollectedAt || now;
-                const adjustedInterval = Math.max(
-                  60 * 1000,
-                  Math.round(animal.produceEveryMs * animalSpeedMultiplier)
-                );
-                const remaining = Math.max(0, adjustedInterval - (now - last));
-                const ready = owned > 0 && remaining <= 0;
-                const goodName = farmGoods.find((good) => good.id === animal.produceId)?.name || 'Goods';
-                return (
-                  <div
-                    key={animal.id}
-                    ref={(node) => {
-                      if (node) {
-                        animalRefs.current.set(animal.id, node);
-                      } else {
-                        animalRefs.current.delete(animal.id);
-                      }
-                    }}
-                    className="animal-card rounded-xl"
-                  >
-                    <img
-                      src={`/farm/${animal.id}.png`}
-                      alt={animal.name}
-                      className="animal-card__image"
-                    />
-                    <div className="animal-card__body">
-                      <p className="text-sm font-semibold text-white">{animal.name}</p>
-                      <p className="mt-1 text-xs text-gray-400">
-                        Produces every {formatDuration(adjustedInterval)}
-                      </p>
-                      <p className="mt-1 text-xs text-gray-400">
-                        Yield: {animal.produceAmount} {goodName} per animal
-                      </p>
-                      <div className="mt-3 flex flex-wrap items-center gap-3 text-xs text-gray-300">
-                        <span className="rounded-full bg-yellow-500/10 px-3 py-1 text-xs text-yellow-200">
-                          Owned: {owned}
-                        </span>
-                      </div>
-                      <div className="mt-3 flex flex-wrap items-center gap-2">
-                        <button
-                          type="button"
-                          onClick={() => handleCollectAnimals(animal.id)}
-                          className={`rounded-lg px-3 py-2 text-xs font-semibold ${
-                            ready ? 'action-primary text-white' : 'bg-gray-700 text-gray-300'
-                          }`}
-                          disabled={!ready}
-                        >
-                          {ready ? 'Collect' : owned > 0 ? `Ready in ${formatDuration(remaining)}` : 'No animals'}
-                        </button>
+                  const owned = animals[animal.id]?.count || 0;
+                  const last = animals[animal.id]?.lastCollectedAt || now;
+                  const adjustedInterval = Math.max(
+                    60 * 1000,
+                    Math.round(animal.produceEveryMs * animalSpeedMultiplier)
+                  );
+                  const remaining = Math.max(0, adjustedInterval - (now - last));
+                  const ready = owned > 0 && remaining <= 0;
+                  const goodName = farmGoods.find((good) => good.id === animal.produceId)?.name || 'Goods';
+                  return (
+                    <div
+                      key={animal.id}
+                      ref={(node) => {
+                        if (node) {
+                          animalRefs.current.set(animal.id, node);
+                        } else {
+                          animalRefs.current.delete(animal.id);
+                        }
+                      }}
+                      className="animal-card rounded-xl"
+                    >
+                      <img
+                        src={`/farm/${animal.id}.png`}
+                        alt={animal.name}
+                        className="animal-card__image"
+                      />
+                      <div className="animal-card__body">
+                        <p className="text-sm font-semibold text-white">{animal.name}</p>
+                        <p className="mt-1 text-xs text-gray-400">
+                          Produces every {formatDuration(adjustedInterval)}
+                        </p>
+                        <p className="mt-1 text-xs text-gray-400">
+                          Yield: {animal.produceAmount} {goodName} per animal
+                        </p>
+                        <div className="mt-3 flex flex-wrap items-center gap-3 text-xs text-gray-300">
+                          <span className="rounded-full bg-yellow-500/10 px-3 py-1 text-xs text-yellow-200">
+                            Owned: {owned}
+                          </span>
+                        </div>
+                        <div className="mt-3 flex flex-wrap items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() => handleCollectAnimals(animal.id)}
+                            className={`rounded-lg px-3 py-2 text-xs font-semibold ${ready ? 'action-primary text-white' : 'bg-gray-700 text-gray-300'
+                              }`}
+                            disabled={!ready}
+                          >
+                            {ready ? 'Collect' : owned > 0 ? `Ready in ${formatDuration(remaining)}` : 'No animals'}
+                          </button>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                );
-              })}
+                  );
+                })}
             </div>
           </div>
         </div>

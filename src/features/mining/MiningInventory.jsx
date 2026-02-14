@@ -1,6 +1,6 @@
 import React from 'react';
-import Panel from '../../components/ui/Panel';
-import SectionHeader from '../../components/ui/SectionHeader';
+import Panel from '../../shared/ui/Panel';
+import SectionHeader from '../../shared/ui/SectionHeader';
 import { miningOres } from '../../data/miningData';
 import { getItemCount } from '../../services/inventoryService';
 

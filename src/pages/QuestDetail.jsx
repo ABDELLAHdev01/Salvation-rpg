@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useParams } from 'react-router-dom';
-import Navbar from '../components/Navbar';
+import Navbar from '../shared/layout/Navbar';
 import { mockQuests } from '../data/mockQuests';
 
 export default function QuestDetail() {

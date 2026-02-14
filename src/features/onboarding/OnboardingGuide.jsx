@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect, memo } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import authService from '../services/AuthService';
 import characterService from '../services/CharacterService';
@@ -38,7 +38,7 @@ const onboardingSteps = [
   },
 ];
 
-export default function OnboardingGuide() {
+const OnboardingGuide = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [showOnboarding, setShowOnboarding] = useState(false);
@@ -136,9 +136,8 @@ export default function OnboardingGuide() {
           <button
             type="button"
             onClick={handlePrevStep}
-            className={`rounded-lg px-4 py-2 text-xs font-semibold ${
-              onboardingStep === 0 ? 'bg-gray-800 text-gray-500' : 'action-ghost text-yellow-200'
-            }`}
+            className={`rounded-lg px-4 py-2 text-xs font-semibold ${onboardingStep === 0 ? 'bg-gray-800 text-gray-500' : 'action-ghost text-yellow-200'
+              }`}
             disabled={onboardingStep === 0}
           >
             Back
@@ -154,4 +153,6 @@ export default function OnboardingGuide() {
       </div>
     </>
   );
-}
+};
+
+export default memo(OnboardingGuide);

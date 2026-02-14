@@ -1,5 +1,7 @@
 import React from 'react';
-import XpBar from '../../components/XpBar';
+import XpBar from '../../shared/ui/XpBar';
+import Panel from '../../shared/ui/Panel';
+import Badge from '../../shared/ui/Badge';
 import { farmGoods } from '../../data/farmData';
 import { getItemCount } from '../../services/inventoryService';
 

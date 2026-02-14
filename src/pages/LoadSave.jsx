@@ -2,7 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 import { Navigate, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import Navbar from '../components/Navbar';
+import Navbar from '../shared/layout/Navbar';
 
 const OFFLINE_MODE = import.meta.env.VITE_OFFLINE_MODE === 'true';
 const STORAGE_KEYS = [
@@ -362,11 +362,10 @@ export default function LoadSave() {
               <button
                 type="button"
                 onClick={handleConfirm}
-                className={`inline-flex items-center justify-center rounded-lg px-4 py-2 text-sm font-semibold text-white ${
-                  confirmState.action === 'clear'
+                className={`inline-flex items-center justify-center rounded-lg px-4 py-2 text-sm font-semibold text-white ${confirmState.action === 'clear'
                     ? 'bg-red-600 hover:bg-red-500'
                     : 'action-primary'
-                }`}
+                  }`}
               >
                 {confirmState.action === 'clear' ? 'Clear Save' : 'Confirm'}
               </button>

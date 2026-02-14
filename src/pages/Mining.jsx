@@ -1,8 +1,8 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import Sidebar from '../components/Sidebar';
-import { useRewardFloat } from '../components/RewardFloatProvider';
+import Sidebar from '../shared/layout/Sidebar';
+import { useRewardFloat } from '../shared/feedback/RewardFloatProvider';
 import authService from '../services/AuthService';
 import characterService from '../services/CharacterService';
 import {
