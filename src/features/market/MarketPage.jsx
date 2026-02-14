@@ -383,6 +383,7 @@ export default function Market() {
       toast.error('No farm goods to sell.');
       return;
     }
+
     if (skipBulkConfirm) {
       const updated = characterService.updateMockProfile({
         inventory: removeItems(inventory, sellAllGoods.itemMap),
@@ -519,17 +520,18 @@ export default function Market() {
             handleSellAllOres={handleSellAllOres}
             formatGold={formatGold}
           />
-
-          <MarketBulkSaleModal
-            pendingBulkSale={pendingBulkSale}
-            formatGold={formatGold}
-            handleCancelBulkSale={handleCancelBulkSale}
-            handleConfirmBulkSale={handleConfirmBulkSale}
-            skipBulkConfirm={skipBulkConfirm}
-            setSkipBulkConfirm={setSkipBulkConfirm}
-          />
         </div>
       </div>
+
+      {/* Modal rendered outside the z-10 container */}
+      <MarketBulkSaleModal
+        pendingBulkSale={pendingBulkSale}
+        formatGold={formatGold}
+        handleCancelBulkSale={handleCancelBulkSale}
+        handleConfirmBulkSale={handleConfirmBulkSale}
+        skipBulkConfirm={skipBulkConfirm}
+        setSkipBulkConfirm={setSkipBulkConfirm}
+      />
     </section>
   );
 }

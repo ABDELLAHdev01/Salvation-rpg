@@ -52,19 +52,33 @@ export default function Mining() {
   const [dismissTarget, setDismissTarget] = useState(null);
   const [nextAutoClaimAt, setNextAutoClaimAt] = useState(null);
   const haulRef = useRef(null);
+  const isMountedRef = useRef(true);
   const pushReward = useRewardFloat();
 
   useEffect(() => {
+    // Set mounted flag
+    isMountedRef.current = true;
+
     if (!MOCK_AUTH) {
-      return undefined;
+      return () => {
+        isMountedRef.current = false;
+      };
     }
 
     const username = authService.getCurrentUsername();
     const nextProfile = characterService.getMockProfile(username);
     setProfile(nextProfile);
 
-    const timer = setInterval(() => setNow(Date.now()), UI_TICK_MS);
-    return () => clearInterval(timer);
+    const timer = setInterval(() => {
+      if (isMountedRef.current) {
+        setNow(Date.now());
+      }
+    }, UI_TICK_MS);
+
+    return () => {
+      isMountedRef.current = false;
+      clearInterval(timer);
+    };
   }, []);
 
   const miningSession = profile?.miningSession || null;
@@ -224,7 +238,9 @@ export default function Mining() {
       miningContracts: nextContracts,
     });
 
-    setProfile(updated);
+    if (isMountedRef.current) {
+      setProfile(updated);
+    }
   }, [now, profile, miningLevel, miningContracts]);
 
   useEffect(() => {
@@ -251,7 +267,9 @@ export default function Mining() {
             hirelingRemainder: nextHirelingRemainder,
           },
         });
-        setProfile(updated);
+        if (isMountedRef.current) {
+          setProfile(updated);
+        }
       }
       return;
     }
@@ -347,7 +365,9 @@ export default function Mining() {
       activeMiningBoost: nextActiveBoostId,
     });
 
-    setProfile(updated);
+    if (isMountedRef.current) {
+      setProfile(updated);
+    }
   }, [
     now,
     profile,
@@ -381,7 +401,9 @@ export default function Mining() {
     const updated = characterService.updateMockProfile({
       miningClickState: nextState,
     });
-    setProfile(updated);
+    if (isMountedRef.current) {
+      setProfile(updated);
+    }
   }, [profile, miningLevel, pickaxeLevel, ensureClickState]);
 
   const handleStartMining = () => {
