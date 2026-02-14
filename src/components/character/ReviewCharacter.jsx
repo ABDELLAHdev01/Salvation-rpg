@@ -8,9 +8,9 @@ export default function ReviewCharacter({
   onConfirm,
   onPrev,
 }) {
-  const defaultImage = '/raceicon/noimage.jpg';
+  const defaultImage = '/raceicon/noimage.webp';
   const previewImage = race && selectedImage
-    ? `/raceicon/${race.toLowerCase()}_${selectedImage}.png`
+    ? `/raceicon/${race.toLowerCase()}_${selectedImage}.webp`
     : defaultImage;
 
   return (

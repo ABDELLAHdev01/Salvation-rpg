@@ -61,7 +61,7 @@ export default function Farm() {
   const monthlyTotal = profile?.farmTasks?.monthly?.tasks?.length || 0;
 
   return (
-    <section className="min-h-screen bg-center bg-cover bg-no-repeat bg-[url('./jbm2.jpg')] bg-gray-900 bg-blend-multiply dashboard-shell lg:pl-64">
+    <section className="min-h-screen bg-center bg-cover bg-no-repeat bg-[url('./jbm2.webp')] bg-gray-900 bg-blend-multiply dashboard-shell lg:pl-64">
       <Sidebar />
       <div className="dashboard-orb orb-1" />
       <div className="dashboard-orb orb-2" />
@@ -87,7 +87,7 @@ export default function Farm() {
 
           <div className="mt-6 overflow-hidden rounded-2xl border border-yellow-700/30 bg-gray-950/70">
             <img
-              src="/farm.png"
+              src="/farm.webp"
               alt="Farmstead"
               className="h-48 w-full object-cover sm:h-56"
             />

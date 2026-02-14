@@ -114,7 +114,7 @@ export default function Inventory() {
   }, [inventoryRows]);
 
   return (
-    <section className="min-h-screen bg-center bg-cover bg-no-repeat bg-[url('./jbm.jpg')] bg-gray-900 bg-blend-multiply dashboard-shell lg:pl-64">
+    <section className="min-h-screen bg-center bg-cover bg-no-repeat bg-[url('./jbm.webp')] bg-gray-900 bg-blend-multiply dashboard-shell lg:pl-64">
       <Sidebar />
       <div className="dashboard-orb orb-1" />
       <div className="dashboard-orb orb-2" />
@@ -246,12 +246,12 @@ export default function Inventory() {
                   <div className="flex items-start gap-4">
                     <div className="h-16 w-16 overflow-hidden rounded-xl border border-yellow-700/30 bg-gray-950/70">
                       <img
-                        src={item.image || '/raceicon/noimage.jpg'}
+                        src={item.image || '/raceicon/noimage.webp'}
                         alt={item.name}
                         className="h-full w-full object-cover"
                         onError={(event) => {
                           event.target.onerror = null;
-                          event.target.src = '/raceicon/noimage.jpg';
+                          event.target.src = '/raceicon/noimage.webp';
                         }}
                       />
                     </div>

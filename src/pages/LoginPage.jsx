@@ -3,7 +3,7 @@ import LoginForm from '../components/loginForm'
 
 function LoginPage() {
   return (
-    <section className="min-h-screen bg-center bg-cover bg-no-repeat bg-[url('./jbm.jpg')] bg-gray-900 bg-blend-multiply dashboard-shell">
+    <section className="min-h-screen bg-center bg-cover bg-no-repeat bg-[url('./jbm.webp')] bg-gray-900 bg-blend-multiply dashboard-shell">
       <div className="dashboard-orb orb-1" />
       <div className="dashboard-orb orb-2" />
       <div className="dashboard-orb orb-3" />

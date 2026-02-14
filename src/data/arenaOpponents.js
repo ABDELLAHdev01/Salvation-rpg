@@ -36,7 +36,7 @@ export const opponents = [
     name: 'Nyx the Veiled',
     level: 22,
     rank: 'IV',
-    image: '/raceicon/elf_female_2.png',
+    image: '/raceicon/elf_female_2.webp',
     gear: ['Shadowleaf Cloak', 'Stormcaller Bow', 'Moonlit Bracers'],
     stats: [
       { label: 'Attack', value: 72 },
@@ -48,7 +48,7 @@ export const opponents = [
     name: 'Korr the Ironhowl',
     level: 21,
     rank: 'IV',
-    image: '/raceicon/orc_male_2.png',
+    image: '/raceicon/orc_male_2.webp',
     gear: ['Grimforge Axe', 'Ironhide Pauldrons', 'Bloodbound Greaves'],
     stats: [
       { label: 'Attack', value: 82 },
@@ -60,7 +60,7 @@ export const opponents = [
     name: 'Seren Ashwind',
     level: 22,
     rank: 'IV',
-    image: '/raceicon/human_female_1.png',
+    image: '/raceicon/human_female_1.webp',
     gear: ['Sunforged Saber', 'Dawnward Shield', 'Valorist Boots'],
     stats: [
       { label: 'Attack', value: 68 },
@@ -72,7 +72,7 @@ export const opponents = [
     name: 'Varek Nightfall',
     level: 23,
     rank: 'V',
-    image: '/raceicon/vampire_male_1.png',
+    image: '/raceicon/vampire_male_1.webp',
     gear: ['Ebonfang Dagger', 'Crimson Mantle', 'Nocturne Signet'],
     stats: [
       { label: 'Attack', value: 78 },
@@ -84,7 +84,7 @@ export const opponents = [
     name: 'Lyra Dawnveil',
     level: 21,
     rank: 'IV',
-    image: '/raceicon/elf_female_1.png',
+    image: '/raceicon/elf_female_1.webp',
     gear: ['Silversong Blade', 'Aether Veil', 'Glintstep Boots'],
     stats: [
       { label: 'Attack', value: 65 },
@@ -96,7 +96,7 @@ export const opponents = [
     name: 'Brann Stonewake',
     level: 22,
     rank: 'IV',
-    image: '/raceicon/human_male_2.png',
+    image: '/raceicon/human_male_2.webp',
     gear: ['Bastion Hammer', 'Wardplate', 'Gritstone Greaves'],
     stats: [
       { label: 'Attack', value: 70 },
@@ -108,7 +108,7 @@ export const opponents = [
     name: 'Brynn Ironroot',
     level: 20,
     rank: 'III',
-    image: '/raceicon/dwarf_male_1.png',
+    image: '/raceicon/dwarf_male_1.webp',
     gear: ['Stonebreaker Maul', 'Deepforge Plate', 'Anvilstep Boots'],
     stats: [
       { label: 'Attack', value: 66 },
@@ -120,7 +120,7 @@ export const opponents = [
     name: 'Mira Embercrown',
     level: 20,
     rank: 'III',
-    image: '/raceicon/vampire_female_1.png',
+    image: '/raceicon/vampire_female_1.webp',
     gear: ['Ashen Scepter', 'Crimson Shawl', 'Duskfire Rings'],
     stats: [
       { label: 'Attack', value: 62 },

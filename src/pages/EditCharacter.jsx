@@ -13,42 +13,42 @@ const raceOptions = [
     name: 'Human',
     key: 'human',
     description: 'Balanced and ambitious, humans adapt quickly and thrive in any role.',
-    image: '/raceicon/human.png',
+    image: '/raceicon/human.webp',
     isEnabled: true,
   },
   {
     name: 'Elf',
     key: 'elf',
     description: 'Graceful and magically attuned, excelling in archery, spellcraft, and agility.',
-    image: '/raceicon/elf.png',
+    image: '/raceicon/elf.webp',
     isEnabled: true,
   },
   {
     name: 'Orc',
     key: 'orc',
     description: 'Ferocious and powerful, orcs are born warriors, thriving in close combat.',
-    image: '/raceicon/org.png',
+    image: '/raceicon/org.webp',
     isEnabled: false,
   },
   {
     name: 'Dwarf',
     key: 'dwarf',
     description: 'Stout and determined, master craftsmen and fearless fighters.',
-    image: '/raceicon/dowrf.png',
+    image: '/raceicon/dowrf.webp',
     isEnabled: false,
   },
   {
     name: 'Vampire',
     key: 'vampire',
     description: 'Dark magic, enhanced strength, and a thirst for blood.',
-    image: '/raceicon/vampire.png',
+    image: '/raceicon/vampire.webp',
     isEnabled: true,
   },
   {
     name: 'Werewolf',
     key: 'werewolf',
     description: 'Untamed hunters who transform under moonlight.',
-    image: '/raceicon/wherewolf.png',
+    image: '/raceicon/wherewolf.webp',
     isEnabled: false,
   },
 ];
@@ -102,7 +102,7 @@ export default function EditCharacter() {
   const goldAvailable = profile?.stats?.gold ?? 0;
   const canAffordRaceChange = !isRaceChange || goldAvailable >= RACE_CHANGE_COST;
 
-  const previewImage = raceKey && imageKey ? `/raceicon/${raceKey}_${imageKey}.png` : '/raceicon/noimage.jpg';
+  const previewImage = raceKey && imageKey ? `/raceicon/${raceKey}_${imageKey}.webp` : '/raceicon/noimage.webp';
 
   const handleSave = async () => {
     if (!isValidName || !raceKey || !imageKey) {
@@ -136,7 +136,7 @@ export default function EditCharacter() {
   };
 
   return (
-    <section className="min-h-screen bg-center bg-cover bg-no-repeat bg-[url('./jbm.jpg')] bg-gray-900 bg-blend-multiply dashboard-shell">
+    <section className="min-h-screen bg-center bg-cover bg-no-repeat bg-[url('./jbm.webp')] bg-gray-900 bg-blend-multiply dashboard-shell">
       <Navbar />
       <div className="dashboard-orb orb-1" />
       <div className="dashboard-orb orb-2" />
@@ -173,7 +173,7 @@ export default function EditCharacter() {
                   className="h-full w-full object-cover"
                   onError={(event) => {
                     event.target.onerror = null;
-                    event.target.src = '/raceicon/noimage.jpg';
+                    event.target.src = '/raceicon/noimage.webp';
                   }}
                 />
               </div>
@@ -227,7 +227,7 @@ export default function EditCharacter() {
                           className="h-12 w-12 rounded-xl bg-gray-900/60 object-contain"
                           onError={(event) => {
                             event.target.onerror = null;
-                            event.target.src = '/raceicon/noimage.jpg';
+                            event.target.src = '/raceicon/noimage.webp';
                           }}
                         />
                         <div>
@@ -258,12 +258,12 @@ export default function EditCharacter() {
                       }`}
                     >
                       <img
-                        src={`/raceicon/${raceKey}_${image}.png`}
+                        src={`/raceicon/${raceKey}_${image}.webp`}
                         alt="Portrait option"
                         className="h-28 w-full object-cover"
                         onError={(event) => {
                           event.target.onerror = null;
-                          event.target.src = '/raceicon/noimage.jpg';
+                          event.target.src = '/raceicon/noimage.webp';
                         }}
                       />
                     </button>

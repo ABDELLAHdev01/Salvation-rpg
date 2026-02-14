@@ -33,13 +33,13 @@ const BASE_LAND_SIZE = 3;
 const LAND_EXPAND_SIZE = 2;
 
 const seasonBannerMap = {
-  spring: '/farm/seasons/Spring.png',
-  summer: '/farm/seasons/Summer.png',
-  autumn: '/farm/seasons/Autumnpng.png',
-  winter: '/farm/seasons/winterpng.png',
+  spring: '/farm/seasons/Spring.webp',
+  summer: '/farm/seasons/Summer.webp',
+  autumn: '/farm/seasons/Autumnpng.webp',
+  winter: '/farm/seasons/winterpng.webp',
 };
 
-const getSeasonBanner = (season) => seasonBannerMap[season] || '/farm.png';
+const getSeasonBanner = (season) => seasonBannerMap[season] || '/farm.webp';
 
 const buildEmptyPlot = (index) => ({
   id: index,
@@ -387,7 +387,7 @@ export default function FarmPlots() {
   };
 
   return (
-    <section className="min-h-screen bg-center bg-cover bg-no-repeat bg-[url('./jbm2.jpg')] bg-gray-900 bg-blend-multiply lg:pl-64 dashboard-shell">
+    <section className="min-h-screen bg-center bg-cover bg-no-repeat bg-[url('./jbm2.webp')] bg-gray-900 bg-blend-multiply lg:pl-64 dashboard-shell">
       <Sidebar />
       <div className="relative z-10 mx-auto max-w-6xl px-6 py-16 pt-24">
         <div className="mb-10 flex flex-wrap items-center justify-between gap-6">

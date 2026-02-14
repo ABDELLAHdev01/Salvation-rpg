@@ -14,7 +14,7 @@ import {
 const MOCK_AUTH = import.meta.env.VITE_MOCK_AUTH === 'true';
 
 export default function ArenaOpponent() {
-  const [playerAvatar, setPlayerAvatar] = useState('/raceicon/noimage.jpg');
+  const [playerAvatar, setPlayerAvatar] = useState('/raceicon/noimage.webp');
   const [opponent, setOpponent] = useState(() => getOrCreateOpponent());
   const [hazard, setHazard] = useState(() => getOrCreateHazard());
   const [taunt, setTaunt] = useState(null);
@@ -42,7 +42,7 @@ export default function ArenaOpponent() {
   }, []);
 
   return (
-    <section className="min-h-screen bg-center bg-cover bg-no-repeat bg-[url('./jbm.jpg')] bg-gray-900 bg-blend-multiply dashboard-shell lg:pl-64">
+    <section className="min-h-screen bg-center bg-cover bg-no-repeat bg-[url('./jbm.webp')] bg-gray-900 bg-blend-multiply dashboard-shell lg:pl-64">
       <Sidebar />
       <div className="dashboard-orb orb-1" />
       <div className="dashboard-orb orb-2" />
@@ -86,7 +86,7 @@ export default function ArenaOpponent() {
                   className="h-full w-full object-contain"
                   onError={(event) => {
                     event.target.onerror = null;
-                    event.target.src = '/raceicon/noimage.jpg';
+                    event.target.src = '/raceicon/noimage.webp';
                   }}
                 />
               </div>
@@ -132,7 +132,7 @@ export default function ArenaOpponent() {
                   className="h-full w-full object-contain"
                   onError={(event) => {
                     event.target.onerror = null;
-                    event.target.src = '/raceicon/noimage.jpg';
+                    event.target.src = '/raceicon/noimage.webp';
                   }}
                 />
               </div>

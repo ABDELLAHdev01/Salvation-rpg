@@ -15,12 +15,12 @@ export default function MarketItemCard({
             <div className="flex items-start gap-4">
                 <div className="h-16 w-16 overflow-hidden rounded-xl border border-yellow-700/30 bg-gray-900/70">
                     <img
-                        src={item.image || '/raceicon/noimage.jpg'}
+                        src={item.image || '/raceicon/noimage.webp'}
                         alt={item.name}
                         className="h-full w-full object-cover"
                         onError={(event) => {
                             event.target.onerror = null;
-                            event.target.src = '/raceicon/noimage.jpg';
+                            event.target.src = '/raceicon/noimage.webp';
                         }}
                     />
                 </div>

@@ -120,7 +120,7 @@ export const getSeedImageSrc = (cropId) => {
   }
   const safeId = String(cropId);
   const fileName = `${safeId.charAt(0).toUpperCase()}${safeId.slice(1)}`;
-  return `/farm/seeds/${fileName}.png`;
+  return `/farm/seeds/${fileName}.webp`;
 };
 
 export const farmGoods = [

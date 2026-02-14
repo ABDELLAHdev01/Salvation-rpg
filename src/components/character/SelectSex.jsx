@@ -13,20 +13,20 @@ export default function SelectSex({
 
   const images = {
     Male: [
-      { name: 'male_1', path: `/raceicon/${selectedRace.toLowerCase()}_male_1.png` },
-      { name: 'male_2', path: `/raceicon/${selectedRace.toLowerCase()}_male_2.png` },
-      { name: 'male_3', path: `/raceicon/${selectedRace.toLowerCase()}_male_3.png` },
-      { name: 'male_4', path: `/raceicon/${selectedRace.toLowerCase()}_male_4.png` },
+      { name: 'male_1', path: `/raceicon/${selectedRace.toLowerCase()}_male_1.webp` },
+      { name: 'male_2', path: `/raceicon/${selectedRace.toLowerCase()}_male_2.webp` },
+      { name: 'male_3', path: `/raceicon/${selectedRace.toLowerCase()}_male_3.webp` },
+      { name: 'male_4', path: `/raceicon/${selectedRace.toLowerCase()}_male_4.webp` },
     ],
     Female: [
-      { name: 'female_1', path: `/raceicon/${selectedRace.toLowerCase()}_female_1.png` },
-      { name: 'female_2', path: `/raceicon/${selectedRace.toLowerCase()}_female_2.png` },
-      { name: 'female_3', path: `/raceicon/${selectedRace.toLowerCase()}_female_3.png` },
-      { name: 'female_4', path: `/raceicon/${selectedRace.toLowerCase()}_female_4.png` },
+      { name: 'female_1', path: `/raceicon/${selectedRace.toLowerCase()}_female_1.webp` },
+      { name: 'female_2', path: `/raceicon/${selectedRace.toLowerCase()}_female_2.webp` },
+      { name: 'female_3', path: `/raceicon/${selectedRace.toLowerCase()}_female_3.webp` },
+      { name: 'female_4', path: `/raceicon/${selectedRace.toLowerCase()}_female_4.webp` },
     ],
   };
 
-  const defaultImage = '/raceicon/noimage.jpg';
+  const defaultImage = '/raceicon/noimage.webp';
 
   const currentImages = selectedGender && images[selectedGender] ? images[selectedGender] : [];
 

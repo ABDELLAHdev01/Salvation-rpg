@@ -48,7 +48,7 @@ export default function PlotCard({
         >
             <div className="w-full overflow-hidden leading-none text-[0px] bg-gray-950/20">
                 <img
-                    src="/plot/plotcCasesV2.png"
+                    src="/plot/plotcCasesV2.webp"
                     alt="Plot state"
                     className="block w-[300%] max-w-none align-top transition-transform duration-500"
                     style={{

@@ -3,7 +3,7 @@ import RegisteForm from '../components/RegisteForm'
 
 export default function PageNotFound() {
   return (
-    <section className="min-h-screen bg-center bg-cover bg-no-repeat bg-[url('./jbm.jpg')] bg-gray-900 bg-blend-multiply">
+    <section className="min-h-screen bg-center bg-cover bg-no-repeat bg-[url('./jbm.webp')] bg-gray-900 bg-blend-multiply">
     <div className="px-2 mx-auto max-w-screen-xl text-center py-14 lg:py-30 flex flex-col justify-center h-full">
       <h1 className="mb-4 text-7xl tracking-tight font-extrabold lg:text-9xl text-white">
         404

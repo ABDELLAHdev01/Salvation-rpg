@@ -12,7 +12,7 @@ export default function ChooseName({
 }) {
   const [isValidName, setIsValidName] = useState(false);
 
-  const defaultImage = "/raceicon/noimage.jpg";
+  const defaultImage = "/raceicon/noimage.webp";
 
   useEffect(() => {
     setIsValidName(nameRegex.test(characterName.trim()));
@@ -20,7 +20,7 @@ export default function ChooseName({
 
   const getImageSrc = () => {
     if (!selectedRace || !selectedImage) return defaultImage;
-    return `/raceicon/${selectedRace.toLowerCase()}_${selectedImage}.png`;
+    return `/raceicon/${selectedRace.toLowerCase()}_${selectedImage}.webp`;
   };
 
   return (

@@ -960,7 +960,7 @@ export default function Mining() {
   }, [now, isMining, nextAutoClaimAt, handleAutoClaimPartial]);
 
   return (
-    <section className="min-h-screen bg-center bg-cover bg-no-repeat bg-[url('./jbm.jpg')] bg-gray-900 bg-blend-multiply dashboard-shell lg:pl-64">
+    <section className="min-h-screen bg-center bg-cover bg-no-repeat bg-[url('./jbm.webp')] bg-gray-900 bg-blend-multiply dashboard-shell lg:pl-64">
       <Sidebar />
       <div className="dashboard-orb orb-1" />
       <div className="dashboard-orb orb-2" />
@@ -993,7 +993,7 @@ export default function Mining() {
 
           <div className="mt-6 overflow-hidden rounded-2xl border border-yellow-700/30 bg-gray-950/70">
             <img
-              src="/cave.png"
+              src="/cave.webp"
               alt="Mining cave"
               className="h-48 w-full object-cover sm:h-56"
             />

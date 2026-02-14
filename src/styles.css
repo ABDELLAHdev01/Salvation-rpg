@@ -471,15 +471,15 @@
 }
 
 .farm-hub-card--plots {
-  background-image: url('/farm/hub/plots.png');
+  background-image: url('/farm/hub/plots.webp');
 }
 
 .farm-hub-card--animals {
-  background-image: url('/farm/hub/animals.png');
+  background-image: url('/farm/hub/animals.webp');
 }
 
 .farm-hub-card--tasks {
-  background-image: url('/farm/hub/tasks.png');
+  background-image: url('/farm/hub/tasks.webp');
 }
 
 .farm-hub-card__meta {

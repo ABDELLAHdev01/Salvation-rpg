@@ -5,7 +5,7 @@ export const housingTiers = [
     tier: 'New Player',
     levelRequired: 1,
     price: 0,
-    image: '/houses/house_1.png',
+    image: '/houses/house_1.webp',
     effect: {
       name: 'Rested Comfort',
       detail: '+2% health regeneration in safe zones.',
@@ -21,7 +21,7 @@ export const housingTiers = [
     tier: 'Early Progression',
     levelRequired: 4,
     price: 250,
-    image: '/houses/house_2.png',
+    image: '/houses/house_2.webp',
     effect: {
       name: 'Sturdy Hearth',
       detail: '+3% shield strength on the first arena round.',
@@ -37,7 +37,7 @@ export const housingTiers = [
     tier: 'Mid Game',
     levelRequired: 8,
     price: 700,
-    image: '/houses/house_3.png',
+    image: '/houses/house_3.webp',
     effect: {
       name: 'Warmth of Home',
       detail: '+4% stamina recovery after quests.',
@@ -53,7 +53,7 @@ export const housingTiers = [
     tier: 'Advanced Player',
     levelRequired: 12,
     price: 1400,
-    image: '/houses/house_4.png',
+    image: '/houses/house_4.webp',
     effect: {
       name: 'Golden Wards',
       detail: '+5% defense for the first 60 seconds of combat.',
@@ -69,7 +69,7 @@ export const housingTiers = [
     tier: 'Elite',
     levelRequired: 16,
     price: 2400,
-    image: '/houses/house_5.png',
+    image: '/houses/house_5.webp',
     effect: {
       name: 'Courtly Blessing',
       detail: '+6% critical strike chance in arena duels.',
@@ -85,7 +85,7 @@ export const housingTiers = [
     tier: 'High-End',
     levelRequired: 20,
     price: 3600,
-    image: '/houses/house_6.png',
+    image: '/houses/house_6.webp',
     effect: {
       name: 'Gilded Recovery',
       detail: '+7% healing received from potions.',
@@ -101,7 +101,7 @@ export const housingTiers = [
     tier: 'Endgame',
     levelRequired: 24,
     price: 5200,
-    image: '/houses/house_7.png',
+    image: '/houses/house_7.webp',
     effect: {
       name: 'Runebound Resilience',
       detail: '+8% damage reduction after a dodge.',
@@ -117,7 +117,7 @@ export const housingTiers = [
     tier: 'God-Tier',
     levelRequired: 30,
     price: 8200,
-    image: '/houses/house_8.png',
+    image: '/houses/house_8.webp',
     effect: {
       name: 'Divine Shield',
       detail: '+10% max health and a radiant barrier every 3 fights.',

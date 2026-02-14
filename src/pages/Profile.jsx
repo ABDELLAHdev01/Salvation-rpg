@@ -59,7 +59,7 @@ export default function Profile() {
   };
 
   return (
-    <section className="min-h-screen bg-center bg-cover bg-no-repeat bg-[url('./jbm.jpg')] bg-gray-900 bg-blend-multiply dashboard-shell lg:pl-64">
+    <section className="min-h-screen bg-center bg-cover bg-no-repeat bg-[url('./jbm.webp')] bg-gray-900 bg-blend-multiply dashboard-shell lg:pl-64">
       <Sidebar />
       <div className="dashboard-orb orb-1" />
       <div className="dashboard-orb orb-2" />
@@ -70,7 +70,7 @@ export default function Profile() {
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
               <div className="h-28 w-28 overflow-hidden rounded-2xl border border-yellow-700/50 bg-gray-900/80">
                 <img
-                  src={character?.avatarUrl || '/raceicon/noimage.jpg'}
+                  src={character?.avatarUrl || '/raceicon/noimage.webp'}
                   alt={character?.name || 'Hero portrait'}
                   className="h-full w-full object-cover"
                 />

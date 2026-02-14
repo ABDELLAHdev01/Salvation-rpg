@@ -5,15 +5,15 @@ import { workshopItems } from './workshopData';
 
 export const getSeedItemId = (cropId) => `seed-${cropId}`;
 
-const defaultImage = '/raceicon/noimage.jpg';
+const defaultImage = '/raceicon/noimage.webp';
 
 const farmGoodImageMap = {
-  egg: '/farm/chicken.png',
-  milk: '/farm/cow.png',
-  wool: '/farm/sheep.png',
-  cheese: '/farm/goat.png',
-  truffle: '/farm/pig.png',
-  honey: '/farm/bee.png',
+  egg: '/farm/chicken.webp',
+  milk: '/farm/cow.webp',
+  wool: '/farm/sheep.webp',
+  cheese: '/farm/goat.webp',
+  truffle: '/farm/pig.webp',
+  honey: '/farm/bee.webp',
 };
 
 const getFarmGoodImage = (goodId) => {
@@ -52,7 +52,7 @@ const farmAnimalItems = farmAnimals.map((animal) => ({
   type: 'farm-animal',
   price: animal.price,
   sellPrice: animal.sellPrice,
-  image: `/farm/${animal.id}.png`,
+  image: `/farm/${animal.id}.webp`,
 }));
 
 const miningOreItems = miningOres.map((ore) => ({

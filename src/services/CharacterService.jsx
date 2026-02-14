@@ -135,7 +135,7 @@ class CharacterService {
       const characters = getMockCharacters();
       const raceKey = characterData.raceKey || characterData.race?.toLowerCase() || 'human';
       const imageKey = characterData.imageKey || null;
-      const avatarUrl = raceKey && imageKey ? `/raceicon/${raceKey}_${imageKey}.png` : '/raceicon/noimage.jpg';
+      const avatarUrl = raceKey && imageKey ? `/raceicon/${raceKey}_${imageKey}.webp` : '/raceicon/noimage.webp';
 
       characters[username] = {
         ...characterData,
@@ -284,8 +284,8 @@ class CharacterService {
 
       const nextImageKey = updateData.imageKey || existing.imageKey || null;
       const avatarUrl = nextRaceKey && nextImageKey
-        ? `/raceicon/${nextRaceKey}_${nextImageKey}.png`
-        : existing.avatarUrl || '/raceicon/noimage.jpg';
+        ? `/raceicon/${nextRaceKey}_${nextImageKey}.webp`
+        : existing.avatarUrl || '/raceicon/noimage.webp';
 
       characters[username] = {
         ...existing,

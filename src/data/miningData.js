@@ -1,16 +1,16 @@
 export const miningOres = [
-  { id: 'iron', name: 'Iron', tier: 1, price: 26, image: '/ores/iron.png' },
-  { id: 'copper', name: 'Copper', tier: 1, price: 28, image: '/ores/copper.png' },
-  { id: 'bronze', name: 'Bronze', tier: 1, price: 34, image: '/ores/bronze.png' },
-  { id: 'silver', name: 'Silver', tier: 2, price: 62, image: '/ores/silver.png' },
-  { id: 'electrum', name: 'Electrum', tier: 2, price: 74, image: '/ores/electrum.png' },
-  { id: 'gold', name: 'Gold', tier: 3, price: 96, image: '/ores/gold.png' },
-  { id: 'platinum', name: 'Platinum', tier: 3, price: 132, image: '/ores/platinum.png' },
-  { id: 'mythril', name: 'Mythril', tier: 4, price: 170, image: '/ores/mythril.png' },
-  { id: 'orichalcum', name: 'Orichalcum', tier: 4, price: 205, image: '/ores/orichalcum.png' },
-  { id: 'adamantite', name: 'Adamantite', tier: 5, price: 265, image: '/ores/adamantite.png' },
-  { id: 'voidsteel', name: 'Voidsteel', tier: 5, price: 310, image: '/ores/voidsteel.png' },
-  { id: 'starforge', name: 'Starforge Ore', tier: 6, price: 395, image: '/ores/starforge.png' },
+  { id: 'iron', name: 'Iron', tier: 1, price: 26, image: '/ores/iron.webp' },
+  { id: 'copper', name: 'Copper', tier: 1, price: 28, image: '/ores/copper.webp' },
+  { id: 'bronze', name: 'Bronze', tier: 1, price: 34, image: '/ores/bronze.webp' },
+  { id: 'silver', name: 'Silver', tier: 2, price: 62, image: '/ores/silver.webp' },
+  { id: 'electrum', name: 'Electrum', tier: 2, price: 74, image: '/ores/electrum.webp' },
+  { id: 'gold', name: 'Gold', tier: 3, price: 96, image: '/ores/gold.webp' },
+  { id: 'platinum', name: 'Platinum', tier: 3, price: 132, image: '/ores/platinum.webp' },
+  { id: 'mythril', name: 'Mythril', tier: 4, price: 170, image: '/ores/mythril.webp' },
+  { id: 'orichalcum', name: 'Orichalcum', tier: 4, price: 205, image: '/ores/orichalcum.webp' },
+  { id: 'adamantite', name: 'Adamantite', tier: 5, price: 265, image: '/ores/adamantite.webp' },
+  { id: 'voidsteel', name: 'Voidsteel', tier: 5, price: 310, image: '/ores/voidsteel.webp' },
+  { id: 'starforge', name: 'Starforge Ore', tier: 6, price: 395, image: '/ores/starforge.webp' },
 ];
 
 export const miningStoreItems = miningOres.map((ore) => ({
@@ -120,7 +120,7 @@ export const pickaxeUpgrades = [
     price: 0,
     requiredMiningLevel: 1,
     rarity: 'Common',
-    image: '/pickaxe/rustbound.png',
+    image: '/pickaxe/rustbound.webp',
     visual: 'Iron head with rawhide grip',
   },
   {
@@ -129,7 +129,7 @@ export const pickaxeUpgrades = [
     price: 320,
     requiredMiningLevel: 2,
     rarity: 'Uncommon',
-    image: '/pickaxe/forged.png',
+    image: '/pickaxe/forged.webp',
     visual: 'Brass edges and chain-wrapped haft',
   },
   {
@@ -138,7 +138,7 @@ export const pickaxeUpgrades = [
     price: 720,
     requiredMiningLevel: 4,
     rarity: 'Rare',
-    image: '/pickaxe/runed.png',
+    image: '/pickaxe/runed.webp',
     visual: 'Runed steel with ember inlay',
   },
   {
@@ -147,7 +147,7 @@ export const pickaxeUpgrades = [
     price: 1400,
     requiredMiningLevel: 7,
     rarity: 'Epic',
-    image: '/pickaxe/gilded.png',
+    image: '/pickaxe/gilded.webp',
     visual: 'Gold-flanged head, crimson binding',
   },
   {
@@ -156,7 +156,7 @@ export const pickaxeUpgrades = [
     price: 2600,
     requiredMiningLevel: 10,
     rarity: 'Legendary',
-    image: '/pickaxe/mythril.png',
+    image: '/pickaxe/mythril.webp',
     visual: 'Mythril shimmer and frost-blue core',
   },
   {
@@ -165,7 +165,7 @@ export const pickaxeUpgrades = [
     price: 4200,
     requiredMiningLevel: 13,
     rarity: 'Mythic',
-    image: '/pickaxe/voidsteel.png',
+    image: '/pickaxe/voidsteel.webp',
     visual: 'Voidsteel veins wrapped in obsidian rope',
   },
   {
@@ -174,7 +174,7 @@ export const pickaxeUpgrades = [
     price: 6200,
     requiredMiningLevel: 16,
     rarity: 'Relic',
-    image: '/pickaxe/starforge.png',
+    image: '/pickaxe/starforge.webp',
     visual: 'Celestial core with arcane lattice',
   },
 ];

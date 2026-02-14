@@ -7,42 +7,42 @@ export default function SelectRace({ onContinue, onSelectRace, selectedRace, onP
       name: 'Human',
       description:
         'Balanced and ambitious, humans adapt quickly and thrive in any role, from knights to scholars.',
-      image: '/raceicon/human.png',
+      image: '/raceicon/human.webp',
       isEnabled: true, // Enabled
     },
     {
       name: 'Elf',
       description:
         'Elves are graceful and magically attuned, excelling in archery, spellcraft, and agility.',
-      image: '/raceicon/elf.png',
+      image: '/raceicon/elf.webp',
       isEnabled: true, // Enabled
     },
     {
       name: 'Orc',
       description:
         'Ferocious and powerful, orcs are born warriors, thriving in close combat and brute strength.',
-      image: '/raceicon/org.png',
+      image: '/raceicon/org.webp',
       isEnabled: false, // Disabled
     },
     {
       name: 'Dwarf',
       description:
         'Stout and determined, dwarves are master craftsmen and fearless fighters with unmatched resilience.',
-      image: '/raceicon/dowrf.png',
+      image: '/raceicon/dowrf.webp',
       isEnabled: false, // Enabled
     },
     {
       name: 'Vampire',
       description:
         'Cursed with immortality, vampires possess dark magic, enhanced strength, and a thirst for blood.',
-      image: '/raceicon/vampire.png',
+      image: '/raceicon/vampire.webp',
       isEnabled: true, // Disabled
     },
     {
       name: 'Werewolf',
       description:
         'Fierce and untamed, werewolves transform under the moonlight and wield savage physical power.',
-      image: '/raceicon/wherewolf.png',
+      image: '/raceicon/wherewolf.webp',
       isEnabled: false, // Enabled
     },
   ];
@@ -72,7 +72,7 @@ export default function SelectRace({ onContinue, onSelectRace, selectedRace, onP
               src={race.image}
               alt={race.name}
               className="w-20 h-20 mx-auto mb-3 object-contain"
-              onError={(e) => e.target.src = '/raceicon/noimage.jpg'}
+              onError={(e) => e.target.src = '/raceicon/noimage.webp'}
             />
             <h2 className="text-xl font-semibold text-white mb-1">{race.name}</h2>
             <p className="text-gray-400 text-sm">{race.description}</p>
