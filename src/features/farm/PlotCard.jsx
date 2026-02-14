@@ -1,6 +1,6 @@
 import React from 'react';
-import { formatDuration } from '../../data/miningData';
-import { farmCrops } from '../../data/farmData';
+import { formatDuration } from '../../core/data/miningData';
+import { farmCrops } from '../../core/data/farmData';
 import Panel from '../../shared/ui/Panel';
 import Button from '../../shared/ui/Button';
 

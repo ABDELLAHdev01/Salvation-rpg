@@ -2,7 +2,7 @@ import React from 'react';
 import Panel from '../../shared/ui/Panel';
 import SectionHeader from '../../shared/ui/SectionHeader';
 import Button from '../../shared/ui/Button';
-import { miningOres } from '../../data/miningData';
+import { miningOres } from '../../core/data/miningData';
 
 export default function MiningPickaxeDetail({
     currentPickaxe,

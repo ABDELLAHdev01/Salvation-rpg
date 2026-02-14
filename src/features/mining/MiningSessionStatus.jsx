@@ -1,5 +1,5 @@
 import React from 'react';
-import { formatDuration } from '../../data/miningData';
+import { formatDuration } from '../../core/data/miningData';
 import Panel from '../../shared/ui/Panel';
 import SectionHeader from '../../shared/ui/SectionHeader';
 

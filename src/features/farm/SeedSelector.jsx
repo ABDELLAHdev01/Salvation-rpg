@@ -1,8 +1,8 @@
 import React from 'react';
-import { farmCrops, farmGoods, getSeedImageSrc, getCropSeasonBadges } from '../../data/farmData';
-import { getSeedItemId } from '../../data/itemsCatalog';
-import { formatDuration } from '../../data/miningData';
-import { getItemCount } from '../../services/inventoryService';
+import { farmCrops, farmGoods, getSeedImageSrc, getCropSeasonBadges } from '../../core/data/farmData';
+import { getSeedItemId } from '../../core/data/itemsCatalog';
+import { formatDuration } from '../../core/data/miningData';
+import { getItemCount } from '../../core/services/inventoryService';
 import Panel from '../../shared/ui/Panel';
 import Button from '../../shared/ui/Button';
 import Badge from '../../shared/ui/Badge';

@@ -3,8 +3,9 @@ import Panel from '../../shared/ui/Panel';
 import SectionHeader from '../../shared/ui/SectionHeader';
 import Button from '../../shared/ui/Button';
 import Badge from '../../shared/ui/Badge';
-import { miningConsumables, miningBoosterIcons, formatDuration } from '../../data/miningData';
-import { getItemCount } from '../../services/inventoryService';
+import { miningConsumables, miningBoosterIcons } from '../../core/data/miningData';
+import { formatDuration } from '../../core/data/miningData';
+import { getItemCount } from '../../core/services/inventoryService';
 
 export default function MiningBoosters({
     inventory,

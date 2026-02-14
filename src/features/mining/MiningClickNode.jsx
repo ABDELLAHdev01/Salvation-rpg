@@ -1,5 +1,5 @@
 import React from 'react';
-import { miningOres } from '../../data/miningData';
+import { miningOres } from '../../core/data/miningData';
 
 export default function MiningClickNode({
     node,

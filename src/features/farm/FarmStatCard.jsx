@@ -2,8 +2,8 @@ import React from 'react';
 import XpBar from '../../shared/ui/XpBar';
 import Panel from '../../shared/ui/Panel';
 import Badge from '../../shared/ui/Badge';
-import { farmGoods } from '../../data/farmData';
-import { getItemCount } from '../../services/inventoryService';
+import { farmGoods } from '../../core/data/farmData';
+import { getItemCount } from '../../core/services/inventoryService';
 
 const FarmStatCard = React.memo(function FarmStatCard({ farmLevel, farmXp, farmXpTarget, gold, inventory }) {
     const goodsCount = farmGoods.reduce((sum, good) => sum + getItemCount(inventory, good.id), 0);

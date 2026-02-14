@@ -3,7 +3,7 @@ import Panel from '../../shared/ui/Panel';
 import SectionHeader from '../../shared/ui/SectionHeader';
 import Button from '../../shared/ui/Button';
 import Badge from '../../shared/ui/Badge';
-import { miningHirelings } from '../../data/miningData';
+import { miningHirelings } from '../../core/data/miningData';
 
 export default function MiningHirelings({
     miningHirelingsOwned,
