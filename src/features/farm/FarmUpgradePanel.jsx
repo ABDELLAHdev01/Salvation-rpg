@@ -1,7 +1,7 @@
 import React from 'react';
-import Panel from '../../components/ui/Panel';
-import Button from '../../components/ui/Button';
-import Badge from '../../components/ui/Badge';
+import Panel from '../../shared/ui/Panel';
+import Button from '../../shared/ui/Button';
+import Badge from '../../shared/ui/Badge';
 
 const FarmUpgradePanel = React.memo(function FarmUpgradePanel({
     farmLevel,

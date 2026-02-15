@@ -1,5 +1,5 @@
 import React from 'react';
-import { getItemCount } from '../../services/inventoryService';
+import { getItemCount } from '../../core/services/inventoryService';
 
 export default function FarmTaskGroup({
     label,

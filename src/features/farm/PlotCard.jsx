@@ -1,8 +1,8 @@
 import React from 'react';
-import { formatDuration } from '../../data/miningData';
-import { farmCrops } from '../../data/farmData';
-import Panel from '../../components/ui/Panel';
-import Button from '../../components/ui/Button';
+import { formatDuration } from '../../core/data/miningData';
+import { farmCrops } from '../../core/data/farmData';
+import Panel from '../../shared/ui/Panel';
+import Button from '../../shared/ui/Button';
 
 export default function PlotCard({
     plot,

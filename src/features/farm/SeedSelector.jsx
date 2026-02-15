@@ -1,11 +1,11 @@
 import React from 'react';
-import { farmCrops, farmGoods, getSeedImageSrc, getCropSeasonBadges } from '../../data/farmData';
-import { getSeedItemId } from '../../data/itemsCatalog';
-import { formatDuration } from '../../data/miningData';
-import { getItemCount } from '../../services/inventoryService';
-import Panel from '../../components/ui/Panel';
-import Button from '../../components/ui/Button';
-import Badge from '../../components/ui/Badge';
+import { farmCrops, farmGoods, getSeedImageSrc, getCropSeasonBadges } from '../../core/data/farmData';
+import { getSeedItemId } from '../../core/data/itemsCatalog';
+import { formatDuration } from '../../core/data/miningData';
+import { getItemCount } from '../../core/services/inventoryService';
+import Panel from '../../shared/ui/Panel';
+import Button from '../../shared/ui/Button';
+import Badge from '../../shared/ui/Badge';
 
 export default function SeedSelector({
     isOpen,

@@ -11,7 +11,15 @@ export default function MarketBulkSaleModal({
     if (!pendingBulkSale) return null;
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+        <div
+            className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4"
+            onClick={(e) => {
+                // Only close if clicking the backdrop, not the modal content
+                if (e.target === e.currentTarget) {
+                    handleCancelBulkSale();
+                }
+            }}
+        >
             <div className="w-full max-w-md rounded-2xl border border-yellow-700/30 bg-gray-950 p-6 shadow-2xl">
                 <h3 className="text-xl font-bold text-white">Bulk Sale Confirmation</h3>
                 <p className="mt-2 text-sm text-gray-300">
