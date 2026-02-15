@@ -3,14 +3,22 @@ import Panel from '../../../shared/ui/Panel';
 import SectionHeader from '../../../shared/ui/SectionHeader';
 
 const PlayerIdentityCard = ({ character, playerLevel }) => {
+    const avatarSrc = (() => {
+        const raw = character?.avatarUrl || '/raceicon/noimage.webp';
+        return raw.startsWith('/') ? raw : `/${raw}`;
+    })();
+
     return (
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
             <div className="flex flex-col sm:flex-row sm:items-center gap-6">
                 <div className="h-24 w-24 shrink-0 overflow-hidden rounded-2xl border-2 border-yellow-700/40 bg-gray-900/90 shadow-2xl mx-auto sm:mx-0">
                     <img
-                        src={character?.avatarUrl || '/raceicon/noimage.webp'}
+                        src={avatarSrc}
                         alt={character?.name || 'Unknown adventurer'}
                         className="h-full w-full object-cover"
+                        onError={(event) => {
+                            event.currentTarget.src = '/raceicon/noimage.webp';
+                        }}
                     />
                 </div>
                 <div className="text-center sm:text-left">
