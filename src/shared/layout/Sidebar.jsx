@@ -46,17 +46,6 @@ const HammerIcon = ({ className }) => (
   </svg>
 );
 
-const CompassIcon = ({ className }) => (
-  <svg viewBox="0 0 24 24" className={className} fill="none" stroke="currentColor" strokeWidth="1.6">
-    <circle cx="12" cy="12" r="9" />
-    <path strokeLinecap="round" strokeLinejoin="round" d="M10 10l4-2-2 4-4 2 2-4z" />
-    <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v2" />
-    <path strokeLinecap="round" strokeLinejoin="round" d="M12 19v2" />
-    <path strokeLinecap="round" strokeLinejoin="round" d="M3 12h2" />
-    <path strokeLinecap="round" strokeLinejoin="round" d="M19 12h2" />
-  </svg>
-);
-
 const navItems = [
   { name: 'Dashboard', href: '/dashboard', icon: Squares2X2Icon },
   { name: 'Farm', href: '/farm', icon: PigIcon },
@@ -64,7 +53,6 @@ const navItems = [
   { name: 'Market', href: '/market', icon: BriefcaseIcon },
   { name: 'Workshop', href: '/workshop', icon: HammerIcon },
   { name: 'Adventure', href: '/adventure', icon: BookOpenIcon },
-  { name: 'Zones', href: '/zones', icon: CompassIcon },
   { name: 'Residence', href: '/housing', icon: HomeIcon }
 ];
 

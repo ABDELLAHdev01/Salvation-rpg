@@ -6,7 +6,6 @@ export default function MiningClickInfoPanel({
     momentum,
     clickEfficiency,
     clickBaseXp,
-    zoneMiningXpMultiplier,
     clickDamage,
     clickCooldownMs,
     nodeBreakMultiplier,
@@ -53,7 +52,7 @@ export default function MiningClickInfoPanel({
                     <p className="text-xs uppercase tracking-[0.3em] text-gray-400">Economy Math</p>
                     <div className="mt-3 space-y-1 text-xs text-gray-400">
                         <p>Click efficiency: x{clickEfficiency.toFixed(2)} (cap 1.60)</p>
-                        <p>Base click XP: {clickBaseXp} · Zone XP x{zoneMiningXpMultiplier.toFixed(2)}</p>
+                        <p>Base click XP: {clickBaseXp}</p>
                         <p>Node damage per click: {clickDamage}</p>
                         <p>Click cooldown: {clickCooldownMs}ms</p>
                         <p>Break bonus: +{Math.round((nodeBreakMultiplier - 1) * 100)}% yield</p>

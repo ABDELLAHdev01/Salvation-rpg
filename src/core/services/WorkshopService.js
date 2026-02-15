@@ -1,6 +1,5 @@
 import authService from './AuthService';
 import characterService from './CharacterService';
-import { getDefaultZoneId, getZoneModifiersForId } from '../data/zonesData';
 import {
   getWorkshopRecipe,
   getWorkshopRecipesForStation,
@@ -132,7 +131,7 @@ const grantOutputs = (profile, recipe, quantity) => {
   return { ...profile, inventory: nextInventory };
 };
 
-const buildJob = ({ recipeId, quantity, startAt, durationMultiplier, zoneId }) => {
+const buildJob = ({ recipeId, quantity, startAt, durationMultiplier }) => {
   const recipe = getWorkshopRecipe(recipeId);
   if (!recipe) {
     return null;
@@ -145,7 +144,6 @@ const buildJob = ({ recipeId, quantity, startAt, durationMultiplier, zoneId }) =
     quantity: scaled,
     startAt,
     finishAt: startAt + duration,
-    zoneId: zoneId || null,
   };
 };
 
@@ -192,8 +190,7 @@ const processWorkshopQueue = ({ now = Date.now() } = {}) => {
       return;
     }
 
-    const zoneModifiers = getZoneModifiersForId(job.zoneId || nextProfile.activeZoneId);
-    const xpGain = Math.max(1, Math.round(recipe.xp * job.quantity * zoneModifiers.workshopXpMultiplier));
+    const xpGain = Math.max(1, Math.round(recipe.xp * job.quantity));
     nextProfile = grantOutputs(nextProfile, recipe, job.quantity);
     const { nextLevel, nextXp } = applyWorkshopXp(
       nextProfile.workshopLevel,
@@ -247,15 +244,12 @@ const queueWorkshopJob = ({ recipeId, quantity = 1, now = Date.now() } = {}) => 
   const queue = [...workshopState.workshopQueue].sort((a, b) => a.finishAt - b.finishAt);
   const lastFinishAt = queue.length > 0 ? queue[queue.length - 1].finishAt : now;
   const startAt = Math.max(now, lastFinishAt);
-  const zoneId = profile.activeZoneId || getDefaultZoneId();
-  const zoneModifiers = getZoneModifiersForId(zoneId);
-  const totalDurationMultiplier = (upgrade.durationMultiplier || 1) * zoneModifiers.workshopDurationMultiplier;
+  const totalDurationMultiplier = upgrade.durationMultiplier || 1;
   const job = buildJob({
     recipeId,
     quantity,
     startAt,
     durationMultiplier: totalDurationMultiplier,
-    zoneId,
   });
 
   if (!job) {

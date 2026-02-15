@@ -8,7 +8,6 @@ import characterService from '../../core/services/CharacterService';
 import { getExpeditionLocation, rollExpeditionRewards } from '../../core/data/expeditionData';
 import { formatDuration } from '../../core/data/miningData';
 import { getPlayerXpForLevel } from '../../core/data/playerData';
-import { getZoneModifiersForId } from '../../core/data/zonesData';
 
 const MOCK_AUTH = import.meta.env.VITE_MOCK_AUTH === 'true';
 
@@ -93,10 +92,9 @@ export default function ExpeditionActive() {
       return;
     }
 
-    const zoneModifiers = getZoneModifiersForId(session.zoneId || profile.activeZoneId);
     const reward = rollExpeditionRewards(activeLocation);
-    const adjustedGold = Math.max(0, Math.round(reward.gold * (zoneModifiers.expeditionGoldMultiplier || 1)));
-    const adjustedXp = Math.max(0, Math.round(reward.xp * (zoneModifiers.expeditionXpMultiplier || 1)));
+    const adjustedGold = Math.max(0, Math.round(reward.gold));
+    const adjustedXp = Math.max(0, Math.round(reward.xp));
     const currentLevel = profile.stats?.level ?? 1;
     const currentXp = profile.stats?.xp ?? 0;
     const currentGold = profile.stats?.gold ?? 0;

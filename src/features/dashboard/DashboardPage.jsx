@@ -12,7 +12,6 @@ import { ensureGeneralMissions, getMissionProgress, isMissionComplete } from '..
 import { getExpeditionLocation } from '../../core/data/expeditionData';
 import WorkshopService from '../../core/services/WorkshopService';
 import { getWorkshopXpForLevel } from '../../core/data/workshopData';
-import { getZoneById, getUnlockedZoneIdsByLevel, zones } from '../../core/data/zonesData';
 
 // Standard UI Components
 import Panel from '../../shared/ui/Panel';
@@ -22,7 +21,6 @@ import Button from '../../shared/ui/Button';
 import PlayerIdentityCard from './widgets/PlayerIdentityCard';
 import PlayerStatsBar from './widgets/PlayerStatsBar';
 import ExpeditionStatusCard from './widgets/ExpeditionStatusCard';
-import ZoneControlPanel from './widgets/ZoneControlPanel';
 import MissionSpotlight from './widgets/MissionSpotlight';
 import SkillProgressGrid from './widgets/SkillProgressGrid';
 import ResidenceCard from './widgets/ResidenceCard';
@@ -132,21 +130,6 @@ export default function DashboardPlayer() {
     ? Math.max(0, expeditionSession.endTime - now)
     : 0;
   const expeditionReady = !!expeditionSession && expeditionRemaining === 0;
-  const activeZone = getZoneById(profile?.activeZoneId) || zones[0];
-  const unlockedZoneIds = profile?.unlockedZones?.length
-    ? profile.unlockedZones
-    : getUnlockedZoneIdsByLevel(playerLevel);
-  const unlockedZones = zones.filter((zone) => unlockedZoneIds.includes(zone.id));
-
-  const handleZoneChange = (event) => {
-    if (!profile) return;
-    const nextZoneId = event.target.value;
-    if (!nextZoneId || nextZoneId === profile.activeZoneId) return;
-    const updated = characterService.updateMockProfile({ activeZoneId: nextZoneId });
-    setProfile(updated);
-    const zoneName = getZoneById(nextZoneId)?.name || 'New zone';
-    toast.success(`${zoneName} is now active.`);
-  };
 
   return (
     <section className="min-h-screen bg-page-primary lg:pl-64 dashboard-shell">
@@ -165,17 +148,12 @@ export default function DashboardPlayer() {
               gold={profile?.stats?.gold}
               activeHouse={activeHouse}
             />
-            <div className="mt-6 grid gap-6 lg:grid-cols-2">
+            <div className="mt-6">
               <ExpeditionStatusCard
                 expeditionLocation={expeditionLocation}
                 expeditionReady={expeditionReady}
                 expeditionRemaining={expeditionRemaining}
                 formatDuration={formatDuration}
-              />
-              <ZoneControlPanel
-                activeZone={activeZone}
-                unlockedZones={unlockedZones}
-                handleZoneChange={handleZoneChange}
               />
             </div>
           </Panel>

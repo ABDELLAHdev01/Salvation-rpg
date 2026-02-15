@@ -8,7 +8,6 @@ import authService from '../../core/services/AuthService';
 import characterService from '../../core/services/CharacterService';
 import { farmAnimals, farmGoods, getFarmXpForLevel } from '../../core/data/farmData';
 import { formatDuration } from '../../core/data/miningData';
-import { getZoneModifiers } from '../../core/data/zonesData';
 import { addItems } from '../../core/services/inventoryService';
 
 const MOCK_AUTH = import.meta.env.VITE_MOCK_AUTH === 'true';
@@ -65,9 +64,8 @@ export default function FarmAnimals() {
   const animals = useMemo(() => normalizeAnimals(profile?.farmAnimals), [profile]);
   const inventory = profile?.inventory || {};
   const farmXpTarget = getFarmXpForLevel(farmLevel);
-  const zoneModifiers = getZoneModifiers(profile);
-  const animalYieldMultiplier = zoneModifiers.farmAnimalYieldMultiplier ?? 1;
-  const animalSpeedMultiplier = zoneModifiers.farmAnimalSpeedMultiplier ?? 1;
+  const animalYieldMultiplier = 1;
+  const animalSpeedMultiplier = 1;
 
   const applyFarmXp = (xpGain) => {
     let nextLevel = farmLevel;

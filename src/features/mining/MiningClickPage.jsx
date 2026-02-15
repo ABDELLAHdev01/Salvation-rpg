@@ -15,7 +15,6 @@ import {
   getOresForTier,
   rollMiningTick,
 } from '../../core/data/miningData';
-import { getZoneModifiers } from '../../core/data/zonesData';
 import { addItems } from '../../core/services/inventoryService';
 
 // Extracted Features
@@ -63,15 +62,7 @@ export default function MiningClick() {
 
   const miningXpTarget = getMiningXpForLevel(miningLevel);
 
-  const zoneMiningXmMods = useMemo(() => {
-    const activeZoneId = profile?.activeZoneId;
-    if (!activeZoneId) return { xp: 1, break: 1 };
-    const mods = getZoneModifiers(activeZoneId);
-    return {
-      xp: mods.miningXpMultiplier ?? 1,
-      break: mods.nodeBreakMultiplier ?? 1,
-    };
-  }, [profile?.activeZoneId]);
+  const zoneMiningXmMods = { xp: 1, break: 1 };
 
   const dailyVeinBonus = useMemo(() => getDailyVeinBonus(profile), [profile]);
   const weeklySurgeBonus = useMemo(() => getWeeklySurgeBonus(profile), [profile]);
@@ -291,7 +282,6 @@ export default function MiningClick() {
               momentum={miningClickState?.momentum || 0}
               clickEfficiency={clickEfficiency}
               clickBaseXp={clickBaseXp}
-              zoneMiningXpMultiplier={zoneMiningXmMods.xp}
               clickDamage={clickDamage}
               clickCooldownMs={clickCooldownMs}
               nodeBreakMultiplier={zoneMiningXmMods.break}

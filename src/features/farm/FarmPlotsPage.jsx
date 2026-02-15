@@ -12,7 +12,6 @@ import {
   getCropSeasonModifiers,
 } from '../../core/data/farmData';
 import { getSeedItemId } from '../../core/data/itemsCatalog';
-import { getZoneModifiers } from '../../core/data/zonesData';
 import { addItems, getItemCount, removeItems } from '../../core/services/inventoryService';
 
 import FarmUpgradePanel from './FarmUpgradePanel';
@@ -105,15 +104,7 @@ export default function FarmPlots() {
   const yieldMultiplier = farmWeather?.yieldMultiplier ?? 1;
   const season = farmWeather?.season;
 
-  const zoneModifiers = useMemo(() => {
-    const activeZoneId = profile?.activeZoneId;
-    if (!activeZoneId) return { grow: 1, yield: 1 };
-    const mods = getZoneModifiers(activeZoneId);
-    return {
-      grow: mods.farmGrowMultiplier ?? 1,
-      yield: mods.farmYieldMultiplier ?? 1,
-    };
-  }, [profile?.activeZoneId]);
+  const zoneModifiers = { grow: 1, yield: 1 };
 
   const expansionLevel = Math.max(0, Math.floor((landSize - BASE_LAND_SIZE) / LAND_EXPAND_SIZE));
   const nextExpandCost = 350 + expansionLevel * 250;

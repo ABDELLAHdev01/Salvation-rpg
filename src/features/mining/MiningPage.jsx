@@ -28,7 +28,6 @@ import {
   miningConsumables,
   miningHirelings,
 } from '../../core/data/miningData';
-import { getZoneModifiers } from '../../core/data/zonesData';
 import { addItems, getItemCount, removeItems } from '../../core/services/inventoryService';
 
 import MiningInventory from './MiningInventory';
@@ -109,9 +108,8 @@ export default function Mining() {
   const miningClickState = profile?.miningClickState || null;
   const momentumValue = miningClickState?.momentum?.value || 0;
   const momentumMultiplier = 1 + Math.min(0.1, momentumValue * 0.001);
-  const zoneModifiers = getZoneModifiers(profile);
-  const zoneMiningYieldMultiplier = zoneModifiers.miningYieldMultiplier ?? 1;
-  const zoneMiningXpMultiplier = zoneModifiers.miningXpMultiplier ?? 1;
+  const zoneMiningYieldMultiplier = 1;
+  const zoneMiningXpMultiplier = 1;
   const xpToNext = getMiningXpForLevel(miningLevel);
   const currentPickaxe = getPickaxeUpgrade(pickaxeLevel);
   const nextPickaxe = getNextPickaxeUpgrade(pickaxeLevel);

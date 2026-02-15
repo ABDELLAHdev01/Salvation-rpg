@@ -29,7 +29,6 @@ const FarmPlots = lazy(() => import("./features/farm/FarmPlotsPage"));
 const FarmAnimals = lazy(() => import("./features/farm/FarmAnimalsPage"));
 const FarmTasks = lazy(() => import("./features/farm/FarmTasksPage"));
 const Workshop = lazy(() => import("./features/workshop/WorkshopPage"));
-const Zones = lazy(() => import("./features/zones/ZonesPage"));
 const DevCheats = lazy(() => import("./features/system/DevCheatsPage"));
 const Missions = lazy(() => import("./features/missions/MissionsPage"));
 const LoadSave = lazy(() => import("./features/system/LoadSavePage"));
@@ -258,14 +257,6 @@ function App() {
             element={
               <ProtectedRoute>
                 <Workshop />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/zones"
-            element={
-              <ProtectedRoute>
-                <Zones />
               </ProtectedRoute>
             }
           />

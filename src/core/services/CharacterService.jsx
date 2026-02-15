@@ -1,6 +1,5 @@
 import toast from 'react-hot-toast';
 import authService from './AuthService';
-import { getDefaultZoneId, getUnlockedZoneIdsByLevel, getZoneById } from '../data/zonesData';
 import { getSeedItemId } from '../data/itemsCatalog';
 import { applyInventoryDelta, normalizeInventory } from './inventoryService';
 
@@ -39,26 +38,12 @@ const buildGeneralMissionsMeta = (profile) => {
   };
 };
 
-const normalizeZones = (profile) => {
+const stripZoneFields = (profile) => {
   if (!profile) {
     return profile;
   }
-
-  const defaultZoneId = getDefaultZoneId();
-  const level = profile.stats?.level ?? 1;
-  const unlockedByLevel = getUnlockedZoneIdsByLevel(level);
-  const existingUnlocked = Array.isArray(profile.unlockedZones) ? profile.unlockedZones : [];
-  const unlockedZones = Array.from(new Set([...existingUnlocked, ...unlockedByLevel]));
-  const hasActive = profile.activeZoneId && getZoneById(profile.activeZoneId);
-  const activeZoneId = unlockedZones.includes(profile.activeZoneId)
-    ? profile.activeZoneId
-    : (hasActive ? profile.activeZoneId : defaultZoneId);
-
-  return {
-    ...profile,
-    activeZoneId: unlockedZones.includes(activeZoneId) ? activeZoneId : (unlockedZones[0] || defaultZoneId),
-    unlockedZones,
-  };
+  const { activeZoneId, unlockedZones, ...rest } = profile;
+  return rest;
 };
 
 const mergeInventoryMaps = (base, addition) => {
@@ -180,8 +165,6 @@ class CharacterService {
           workshopXp: 0,
           workshopUpgradeLevel: 1,
           workshopQueue: [],
-          activeZoneId: getDefaultZoneId(),
-          unlockedZones: getUnlockedZoneIdsByLevel(defaultStats.level),
           generalMissions: [],
           createdAt: Date.now(),
         };
@@ -256,8 +239,6 @@ class CharacterService {
           workshopXp: 0,
           workshopUpgradeLevel: 1,
           workshopQueue: [],
-          activeZoneId: getDefaultZoneId(),
-          unlockedZones: getUnlockedZoneIdsByLevel(defaultStats.level),
           generalMissions: [],
           createdAt: Date.now(),
         };
@@ -360,11 +341,9 @@ class CharacterService {
         workshopXp: 0,
         workshopUpgradeLevel: 1,
         workshopQueue: [],
-        activeZoneId: getDefaultZoneId(),
-        unlockedZones: getUnlockedZoneIdsByLevel(defaultStats.level),
         createdAt: Date.now(),
       };
-      profiles[username] = normalizeZones(profiles[username]);
+      profiles[username] = stripZoneFields(profiles[username]);
       setMockProfiles(profiles);
     } else {
       const current = profiles[username];
@@ -404,13 +383,11 @@ class CharacterService {
           workshopXp: 0,
           workshopUpgradeLevel: 1,
           workshopQueue: [],
-          activeZoneId: getDefaultZoneId(),
-          unlockedZones: getUnlockedZoneIdsByLevel(defaultStats.level),
           generalMissions: [],
           createdAt: current.createdAt || Date.now(),
         };
         resetProfile.generalMissionsMeta = buildGeneralMissionsMeta(resetProfile);
-        profiles[username] = normalizeZones(resetProfile);
+        profiles[username] = stripZoneFields(resetProfile);
         localStorage.removeItem(`expeditionSession:${username}`);
         localStorage.setItem(resetKey, 'true');
         setMockProfiles(profiles);
@@ -494,7 +471,7 @@ class CharacterService {
         };
         nextProfile.generalMissionsMeta =
           current.generalMissionsMeta || buildGeneralMissionsMeta(nextProfile);
-        profiles[username] = normalizeZones(nextProfile);
+        profiles[username] = stripZoneFields(nextProfile);
         setMockProfiles(profiles);
       }
     }
@@ -545,8 +522,6 @@ class CharacterService {
       workshopXp: 0,
       workshopUpgradeLevel: 1,
       workshopQueue: [],
-      activeZoneId: getDefaultZoneId(),
-      unlockedZones: getUnlockedZoneIdsByLevel(defaultStats.level),
       generalMissions: [],
       createdAt: Date.now(),
     };
@@ -555,16 +530,16 @@ class CharacterService {
       existing.generalMissionsMeta = buildGeneralMissionsMeta(existing);
     }
 
-    profiles[username] = {
+    profiles[username] = stripZoneFields({
       ...existing,
       ...profileData,
-    };
+    });
 
     if (!profiles[username].inventory) {
       profiles[username].inventory = buildInventoryFromLegacy(profiles[username]);
     }
 
-    profiles[username] = normalizeZones(profiles[username]);
+    profiles[username] = stripZoneFields(profiles[username]);
 
     if (!profiles[username].generalMissionsMeta) {
       profiles[username].generalMissionsMeta = buildGeneralMissionsMeta(profiles[username]);
