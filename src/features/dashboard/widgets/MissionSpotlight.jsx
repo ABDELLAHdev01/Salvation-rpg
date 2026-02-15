@@ -4,6 +4,7 @@ import SectionHeader from '../../../shared/ui/SectionHeader';
 import Button from '../../../shared/ui/Button';
 
 const MissionSpotlight = ({ missionSpotlight }) => {
+    console.log(missionSpotlight)
     return (
         <Panel variant="card" className="court-reveal-delay-1 flex flex-col h-full">
             <SectionHeader
@@ -20,7 +21,7 @@ const MissionSpotlight = ({ missionSpotlight }) => {
                     missionSpotlight.map((mission) => (
                         <div key={mission.id} className="group">
                             <div className="flex items-center justify-between text-[11px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 px-1">
-                                <span>{mission.title}</span>
+                                <span>{mission.label}</span>
                                 <span className={mission.complete ? 'text-emerald-400 animate-pulse' : 'text-yellow-400'}>
                                     {mission.complete ? 'READY' : `${mission.percent}%`}
                                 </span>

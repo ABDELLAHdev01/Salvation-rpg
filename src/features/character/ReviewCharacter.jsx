@@ -1,10 +1,12 @@
 import React from 'react';
+import { getCityById } from '../../core/data/citiesData';
 
 export default function ReviewCharacter({
   name,
   race,
   gender,
   selectedImage,
+  selectedCity,
   onConfirm,
   onPrev,
 }) {
@@ -12,6 +14,8 @@ export default function ReviewCharacter({
   const previewImage = race && selectedImage
     ? `/raceicon/${race.toLowerCase()}_${selectedImage}.webp`
     : defaultImage;
+
+  const cityData = selectedCity ? getCityById(selectedCity) : null;
 
   return (
     <div className="w-full max-w-4xl mx-auto">
@@ -46,7 +50,31 @@ export default function ReviewCharacter({
               <span className="text-gray-400">Gender</span>
               <span className="text-white font-semibold">{gender || '—'}</span>
             </div>
+            <div className="flex items-center justify-between">
+              <span className="text-gray-400">Origin City</span>
+              <span 
+                className="text-white font-semibold flex items-center gap-2"
+                style={{ color: cityData?.accentColor }}
+              >
+                {cityData ? (
+                  <>
+                    <img 
+                      src={cityData.logo} 
+                      alt={`${cityData.name} logo`}
+                      className="w-5 h-5 object-contain"
+                      onError={(e) => e.target.style.display = 'none'}
+                    />
+                    <span>{cityData.name}</span>
+                  </>
+                ) : '—'}
+              </span>
+            </div>
           </div>
+          {cityData && (
+            <div className="mt-4 rounded-lg border border-yellow-700/20 bg-gray-950/70 px-3 py-2 text-xs text-gray-300">
+              <p className="italic">"{cityData.lore}"</p>
+            </div>
+          )}
           <div className="mt-6 rounded-lg border border-yellow-700/20 bg-gray-950/70 px-3 py-2 text-xs text-gray-300">
             Your choices will shape your starting stats and storyline.
           </div>

@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import SelectRace from "./SelectRace";
 import SelectSex from "./SelectSex";
 import ChooseName from "./ChooseName";
-import TermsAndAbout from "./TermsAndAbout";
+import SelectCity from "./SelectCity";
 import ReviewCharacter from "./ReviewCharacter";
 import CharacterService from "../../core/services/CharacterService";
 import toast from "react-hot-toast";
@@ -14,6 +14,7 @@ export default function CreateCharacter() {
   const [selectedGender, setSelectedGender] = useState(null);
   const [selectedImage, setSelectedImage] = useState(null);
   const [characterName, setCharacterName] = useState("");
+  const [selectedCity, setSelectedCity] = useState(null);
   const navigate = useNavigate();
 
   const next = () => setCurrentIndex((prev) => Math.min(prev + 1, steps.length - 1));
@@ -28,6 +29,7 @@ export default function CreateCharacter() {
       sex: selectedGender,
       imageKey: selectedImage || null,
       characterNumber: selectedImage?.match(/\d+/)?.[0] || null,
+      city: selectedCity || null,
     };
 
     try {
@@ -41,7 +43,7 @@ export default function CreateCharacter() {
   };
 
   const stepLabels = [
-    { title: "Terms" },
+    { title: "City" },
     { title: "Race" },
     { title: "Gender" },
     { title: "Name" },
@@ -49,10 +51,11 @@ export default function CreateCharacter() {
   ];
 
   const steps = [
-    <TermsAndAbout
-      key="terms"
-      onAgree={next}
-      onCancel={() => toast.error("You must agree to proceed")}
+    <SelectCity
+      key="city"
+      selectedCity={selectedCity}
+      onSelectCity={setSelectedCity}
+      onContinue={next}
     />,
     <SelectRace
       key="race"
@@ -80,7 +83,7 @@ export default function CreateCharacter() {
       selectedRace={selectedRace}
       selectedImage={selectedImage}
       onNameChange={setCharacterName}
-      onContinue={handleCharacterCreation}
+      onContinue={next}
       onPrev={prev}
     />,
     <ReviewCharacter
@@ -89,6 +92,7 @@ export default function CreateCharacter() {
       race={selectedRace}
       gender={selectedGender}
       selectedImage={selectedImage}
+      selectedCity={selectedCity}
       onConfirm={handleCharacterCreation}
       onPrev={prev}
     />,
