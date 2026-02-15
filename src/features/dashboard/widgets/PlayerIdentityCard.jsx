@@ -8,7 +8,7 @@ const PlayerIdentityCard = ({ character, playerLevel }) => {
             <div className="flex flex-col sm:flex-row sm:items-center gap-6">
                 <div className="h-24 w-24 shrink-0 overflow-hidden rounded-2xl border-2 border-yellow-700/40 bg-gray-900/90 shadow-2xl mx-auto sm:mx-0">
                     <img
-                        src={character?.avatarUrl || '/raceicon/noimage.jpg'}
+                        src={character?.avatarUrl || '/raceicon/noimage.webp'}
                         alt={character?.name || 'Unknown adventurer'}
                         className="h-full w-full object-cover"
                     />

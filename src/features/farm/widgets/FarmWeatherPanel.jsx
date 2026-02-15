@@ -2,13 +2,13 @@ import React, { memo } from 'react';
 import Panel from '../../../shared/ui/Panel';
 
 const seasonBannerMap = {
-    spring: '/farm/seasons/Spring.png',
-    summer: '/farm/seasons/Summer.png',
-    autumn: '/farm/seasons/Autumnpng.png',
-    winter: '/farm/seasons/winterpng.png',
+    spring: '/farm/seasons/Spring.webp',
+    summer: '/farm/seasons/Summer.webp',
+    autumn: '/farm/seasons/Autumnpng.webp',
+    winter: '/farm/seasons/winterpng.webp',
 };
 
-const getSeasonBanner = (season) => seasonBannerMap[season] || '/farm.png';
+const getSeasonBanner = (season) => seasonBannerMap[season] || '/farm.webp';
 
 const FarmWeatherPanel = ({ farmWeather }) => {
     if (!farmWeather) return null;

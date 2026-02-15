@@ -10,7 +10,7 @@ const ResidenceCard = ({ activeHouse }) => {
             <SectionHeader kicker="Real Estate" title="Residence" />
             <div className="mt-4 aspect-video overflow-hidden rounded-xl border border-yellow-700/30 bg-gray-950/80 shadow-inner group">
                 <img
-                    src={activeHouse?.image || '/houses/house_1.png'}
+                    src={activeHouse?.image || '/houses/house_1.webp'}
                     alt={activeHouse?.name || 'Residence'}
                     className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
                 />

@@ -7,7 +7,7 @@ export default function ProfileHeader({ character, profile, favoriteAchievement,
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
                 <div className="h-28 w-28 overflow-hidden rounded-2xl border border-yellow-700/50 bg-gray-900/80">
                     <img
-                        src={character?.avatarUrl || '/raceicon/noimage.jpg'}
+                        src={character?.avatarUrl || '/raceicon/noimage.webp'}
                         alt={character?.name || 'Hero portrait'}
                         className="h-full w-full object-cover"
                     />
