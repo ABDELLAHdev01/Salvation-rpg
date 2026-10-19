@@ -9,6 +9,12 @@ export function registerWorldTextures(scene) {
 
   const TILE_SIZE = 32;
 
+  // 0. Transparent Invisible Collision Texture
+  const colCanvas = document.createElement('canvas');
+  colCanvas.width = 4;
+  colCanvas.height = 4;
+  scene.textures.addCanvas('col_invisible', colCanvas);
+
   // 1. Generate Dedicated 32x32 Terrain Tile Textures
   const createTileCanvas = (drawFn) => {
     const c = document.createElement('canvas');
@@ -20,70 +26,92 @@ export function registerWorldTextures(scene) {
     return c;
   };
 
-  // Tile: Lush Meadow Grass
+  // Tile: Lush Fantasy Meadow Grass
   const grassCanvas = createTileCanvas((ctx) => {
-    ctx.fillStyle = '#1e3a1f';
+    ctx.fillStyle = '#265c2b';
     ctx.fillRect(0, 0, TILE_SIZE, TILE_SIZE);
-    ctx.fillStyle = '#2d5a2f';
-    ctx.fillRect(4, 4, 24, 24);
-    ctx.fillStyle = '#3e7b41';
-    ctx.fillRect(6, 6, 8, 8);
-    ctx.fillRect(18, 16, 6, 6);
-    ctx.fillStyle = '#fde047'; // Flowers
+    ctx.fillStyle = '#347838';
+    ctx.fillRect(2, 2, 28, 28);
+    ctx.fillStyle = '#45994b';
+    ctx.fillRect(4, 4, 10, 8);
+    ctx.fillRect(18, 14, 10, 8);
+    ctx.fillStyle = '#5ab361'; // Fresh grass tufts
+    ctx.fillRect(6, 6, 2, 4);
+    ctx.fillRect(20, 16, 2, 4);
+    ctx.fillStyle = '#fde047'; // Buttercups
     ctx.fillRect(8, 18, 2, 2);
-    ctx.fillRect(22, 8, 2, 2);
+    ctx.fillRect(24, 8, 2, 2);
+    ctx.fillStyle = '#f472b6'; // Wild clover blossoms
+    ctx.fillRect(14, 10, 2, 2);
   });
   scene.textures.addCanvas('tile_grass', grassCanvas);
 
-  // Tile: Cobblestone Dirt Path
+  // Tile: Sun-Worn Cobblestone Dirt Path
   const pathCanvas = createTileCanvas((ctx) => {
-    ctx.fillStyle = '#78350f';
+    ctx.fillStyle = '#7c4a24';
     ctx.fillRect(0, 0, TILE_SIZE, TILE_SIZE);
-    ctx.fillStyle = '#92400e';
+    ctx.fillStyle = '#9a6234';
     ctx.fillRect(2, 2, 28, 28);
-    ctx.fillStyle = '#b45309';
-    ctx.fillRect(6, 6, 8, 6);
-    ctx.fillRect(18, 14, 8, 8);
+    ctx.fillStyle = '#b87a45';
+    ctx.fillRect(4, 4, 10, 8);
+    ctx.fillRect(16, 14, 12, 10);
+    ctx.fillStyle = '#d49b6a'; // Smooth pavers
+    ctx.fillRect(6, 6, 6, 4);
+    ctx.fillRect(18, 16, 8, 6);
+    ctx.fillStyle = '#5c3314'; // Grout seams
+    ctx.fillRect(2, 13, 28, 1);
+    ctx.fillRect(15, 2, 1, 28);
   });
   scene.textures.addCanvas('tile_path', pathCanvas);
 
-  // Tile: Deep Cavern Stone
+  // Tile: Deep Cavern Mineral Stone
   const stoneCanvas = createTileCanvas((ctx) => {
-    ctx.fillStyle = '#1c1917';
+    ctx.fillStyle = '#22252e';
     ctx.fillRect(0, 0, TILE_SIZE, TILE_SIZE);
-    ctx.fillStyle = '#292524';
+    ctx.fillStyle = '#323644';
     ctx.fillRect(2, 2, 28, 28);
-    ctx.fillStyle = '#44403c';
-    ctx.fillRect(6, 6, 10, 6);
-    ctx.fillRect(18, 16, 8, 8);
-    ctx.fillStyle = '#78716c'; // Mineral specks
-    ctx.fillRect(8, 20, 2, 2);
-    ctx.fillRect(20, 8, 2, 2);
+    ctx.fillStyle = '#444a5e';
+    ctx.fillRect(4, 4, 12, 8);
+    ctx.fillRect(16, 16, 12, 10);
+    ctx.fillStyle = '#596078'; // Stone facets
+    ctx.fillRect(6, 6, 8, 4);
+    ctx.fillRect(18, 18, 8, 6);
+    ctx.fillStyle = '#38bdf8'; // Glowing azure crystal speck
+    ctx.fillRect(10, 22, 2, 2);
+    ctx.fillStyle = '#facc15'; // Gold pyrite speck
+    ctx.fillRect(22, 8, 2, 2);
   });
   scene.textures.addCanvas('tile_stone', stoneCanvas);
 
-  // Tile: Tilled Farm Soil
+  // Tile: Rich Tilled Farm Soil
   const soilCanvas = createTileCanvas((ctx) => {
-    ctx.fillStyle = '#451a03';
+    ctx.fillStyle = '#4a2511';
     ctx.fillRect(0, 0, TILE_SIZE, TILE_SIZE);
-    ctx.fillStyle = '#5c2406';
+    ctx.fillStyle = '#663417';
     ctx.fillRect(2, 2, 28, 28);
-    ctx.fillStyle = '#2b0f02'; // Furrows
-    ctx.fillRect(4, 8, 24, 2);
-    ctx.fillRect(4, 16, 24, 2);
-    ctx.fillRect(4, 24, 24, 2);
+    ctx.fillStyle = '#82441f'; // Mound ridges
+    ctx.fillRect(4, 5, 24, 4);
+    ctx.fillRect(4, 13, 24, 4);
+    ctx.fillRect(4, 21, 24, 4);
+    ctx.fillStyle = '#361809'; // Moist furrows
+    ctx.fillRect(4, 9, 24, 2);
+    ctx.fillRect(4, 17, 24, 2);
+    ctx.fillRect(4, 25, 24, 2);
   });
   scene.textures.addCanvas('tile_soil', soilCanvas);
 
-  // Tile: Water
+  // Tile: Shimmering Sylvan Water
   const waterCanvas = createTileCanvas((ctx) => {
-    ctx.fillStyle = '#0369a1';
-    ctx.fillRect(0, 0, TILE_SIZE, TILE_SIZE);
     ctx.fillStyle = '#0284c7';
+    ctx.fillRect(0, 0, TILE_SIZE, TILE_SIZE);
+    ctx.fillStyle = '#0ea5e9';
     ctx.fillRect(2, 2, 28, 28);
-    ctx.fillStyle = '#38bdf8';
-    ctx.fillRect(6, 10, 12, 2);
-    ctx.fillRect(14, 20, 10, 2);
+    ctx.fillStyle = '#38bdf8'; // Ripples
+    ctx.fillRect(4, 8, 14, 2);
+    ctx.fillRect(14, 18, 14, 2);
+    ctx.fillStyle = '#bae6fd'; // Sunlight glints
+    ctx.fillRect(8, 9, 4, 1);
+    ctx.fillRect(20, 19, 4, 1);
   });
   scene.textures.addCanvas('tile_water', waterCanvas);
 

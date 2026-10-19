@@ -121,6 +121,7 @@ export default function PhaserWorldCanvas({
       parent: containerRef.current,
       width: containerRef.current.clientWidth || 960,
       height: 600,
+      backgroundColor: '#265c2b',
       pixelArt: true,
       input: {
         keyboard: true,

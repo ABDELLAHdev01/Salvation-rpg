@@ -65,6 +65,12 @@ export default class WorldScene extends Phaser.Scene {
   }
 
   create() {
+    // 0. Ensure Camera FX is clean and set mood lighting
+    this.cameras.main.resetFX();
+    const bgColors = { homestead: '#234d20', forest: '#1b3f19', mine: '#181a20', village: '#3a2718' };
+    this.cameras.main.setBackgroundColor(bgColors[this.currentZone] || '#234d20');
+    this.cameras.main.fadeIn(250, 0, 0, 0);
+
     // 1. Register Procedural World Textures
     registerWorldTextures(this);
 
@@ -147,6 +153,17 @@ export default class WorldScene extends Phaser.Scene {
         repeat: a.repeat,
       });
     });
+
+    // CRITICAL: Re-bind existing player sprite so it never references a destroyed texture
+    if (this.player && this.player.active) {
+      this.player.setTexture(textureKey, 0);
+      const idleFrames = { south: 0, west: 4, east: 8, north: 12 };
+      try {
+        this.player.setFrame(idleFrames[this.playerFacing] ?? 0);
+      } catch {
+        // Safe guard
+      }
+    }
   }
 
   buildCurrentZone() {
@@ -207,9 +224,10 @@ export default class WorldScene extends Phaser.Scene {
     this.physics.add.collider(this.enemies, this.obstacles);
     this.physics.add.collider(this.player, this.enemies);
 
-    // Camera follow
+    // Camera follow - immediately center to avoid initial 0,0 black offset
     this.cameras.main.setBounds(0, 0, worldW, worldH);
-    this.cameras.main.startFollow(this.player, true, 0.1, 0.1);
+    this.cameras.main.centerOn(spawnX, spawnY);
+    this.cameras.main.startFollow(this.player, true, 0.15, 0.15);
     this.cameras.main.setZoom(1.5);
   }
 
@@ -217,7 +235,7 @@ export default class WorldScene extends Phaser.Scene {
     // 1. Manor House
     const house = this.add.image(14 * 32 + 16, 4 * 32, 'prop_house');
     house.setDepth(15);
-    const houseCollider = this.obstacles.create(14 * 32 + 16, 4 * 32 + 10, null);
+    const houseCollider = this.obstacles.create(14 * 32 + 16, 4 * 32 + 10, 'col_invisible');
     houseCollider.setSize(80, 40);
     houseCollider.setVisible(false);
 
@@ -244,7 +262,7 @@ export default class WorldScene extends Phaser.Scene {
       if (x < 12 || x > 18) {
         const t = this.add.image(x * 32, 2 * 32, 'prop_tree');
         t.setDepth(10);
-        const col = this.obstacles.create(x * 32, 2 * 32 + 14, null);
+        const col = this.obstacles.create(x * 32, 2 * 32 + 14, 'col_invisible');
         col.setSize(20, 16);
         col.setVisible(false);
       }
@@ -312,10 +330,10 @@ export default class WorldScene extends Phaser.Scene {
   buildMineProps() {
     // Perimeter Cave Colliders
     for (let x = 0; x < 40; x += 1) {
-      const topCol = this.obstacles.create(x * 32, 16, null);
+      const topCol = this.obstacles.create(x * 32, 16, 'col_invisible');
       topCol.setSize(32, 32);
       topCol.setVisible(false);
-      const botCol = this.obstacles.create(x * 32, 29 * 32, null);
+      const botCol = this.obstacles.create(x * 32, 29 * 32, 'col_invisible');
       botCol.setSize(32, 32);
       botCol.setVisible(false);
     }
@@ -374,7 +392,7 @@ export default class WorldScene extends Phaser.Scene {
       if (Math.abs(tx - 20 * 32) > 64 || Math.abs(ty - 14 * 32) > 64) {
         const tree = this.add.image(tx, ty, 'prop_tree');
         tree.setDepth(10);
-        const col = this.obstacles.create(tx, ty + 14, null);
+        const col = this.obstacles.create(tx, ty + 14, 'col_invisible');
         col.setSize(20, 16);
         col.setVisible(false);
       }
@@ -407,7 +425,7 @@ export default class WorldScene extends Phaser.Scene {
       const b = this.add.image(sx, sy, 'prop_house');
       b.setScale(0.7);
       b.setDepth(10);
-      const col = this.obstacles.create(sx, sy + 5, null);
+      const col = this.obstacles.create(sx, sy + 5, 'col_invisible');
       col.setSize(50, 24);
       col.setVisible(false);
 
