@@ -135,3 +135,117 @@ export const wardenOath = {
   title: 'The Oath of the Solitary Hearth',
   inscription: 'I swear by the soil beneath my feet, by the cold stone of the deep, and by the spark of the unquenched forge: I shall tend the furrow, strike the vein, shelter the beast, and uphold the hearth until the light returns to Aethelgard.',
 };
+
+export const mentorMilestones = [
+  {
+    id: 'milestone_farm_5',
+    mentorId: 'selyse',
+    name: 'Verdant Awakening',
+    reqSkill: 'farmLevel',
+    reqValue: 5,
+    summary: 'Reach Farm Level 5',
+    dialogue:
+      'Warden, the soil sings once more! The frost recedes from the valley edges, and the ancient seeds take root with a vigor we have not witnessed since the Great Eclipse. You have restored honor to the green boughs.',
+    quote: 'The roots run deeper than the winter frost.',
+    rewardGold: 150,
+    rewardXp: 100,
+    rewardTitle: 'Sylvan Tender',
+  },
+  {
+    id: 'milestone_mining_5',
+    mentorId: 'bran',
+    name: 'Song of the Deep Strata',
+    reqSkill: 'miningLevel',
+    reqValue: 5,
+    summary: 'Reach Mining Level 5',
+    dialogue:
+      "By the stone of the roots, you've got delver blood in you! Hear that deep echo in the lower shafts? That's the mountain recognizing a true master of the pick. Keep digging true, Warden—the depths hold no terror for you now.",
+    quote: 'Cold stone bends to an unyielding will.',
+    rewardGold: 150,
+    rewardXp: 100,
+    rewardTitle: 'Deep Delver',
+  },
+  {
+    id: 'milestone_workshop_5',
+    mentorId: 'elric',
+    name: 'Tempered in Sunforge Flame',
+    reqSkill: 'workshopLevel',
+    reqValue: 5,
+    summary: 'Reach Workshop Level 5',
+    dialogue:
+      "Look at the heat in that smelter, Warden! No soot-choked novice ever forged steel that clean. With tools like these, the cold winds of Aethelgard won't breach your gates for a hundred winters.",
+    quote: 'Fire cleanses what shadow corrupts.',
+    rewardGold: 150,
+    rewardXp: 100,
+    rewardTitle: 'Master Hearthsmith',
+  },
+  {
+    id: 'milestone_estate_tier_2',
+    mentorId: 'moira',
+    name: 'Bastion of the Hearthlands',
+    reqType: 'estate',
+    summary: 'Acquire 2+ Estates or Furnish 3+ Interior Relics',
+    dialogue:
+      "Now this is a true hearth! The animals are well-sheltered, the rafters are reinforced, and the smell of fresh timber warms the blood. You're turning this forsaken ruin into a real bastion of Salvation.",
+    quote: 'Where beasts find shelter, hope takes root.',
+    rewardGold: 200,
+    rewardXp: 150,
+    rewardTitle: 'Hearth Patriarch',
+  },
+];
+
+/**
+ * Get mentor by ID
+ * @param {string} mentorId
+ * @returns {object|null}
+ */
+export const getMentorById = (mentorId) => {
+  if (!mentorId) return null;
+  return estateMentors.find((m) => m.id.toLowerCase() === String(mentorId).toLowerCase()) || null;
+};
+
+/**
+ * Get mentor milestone by ID
+ * @param {string} milestoneId
+ * @returns {object|null}
+ */
+export const getMentorMilestoneById = (milestoneId) => {
+  if (!milestoneId) return null;
+  return mentorMilestones.find((m) => m.id.toLowerCase() === String(milestoneId).toLowerCase()) || null;
+};
+
+/**
+ * Check whether a player profile meets eligibility for a milestone
+ * @param {object} milestone
+ * @param {object} profile
+ * @returns {boolean}
+ */
+export const checkMilestoneEligibility = (milestone, profile) => {
+  if (!milestone || !profile) return false;
+  if (milestone.reqSkill) {
+    const current = profile[milestone.reqSkill] ?? 1;
+    return current >= milestone.reqValue;
+  }
+  if (milestone.reqType === 'estate') {
+    const housesCount = Array.isArray(profile.ownedHouses) ? profile.ownedHouses.length : 1;
+    const amenitiesCount = Array.isArray(profile.estateAmenities) ? profile.estateAmenities.length : 0;
+    return housesCount >= 2 || amenitiesCount >= 3;
+  }
+  return false;
+};
+
+/**
+ * Retrieve all pending (unacknowledged and eligible) mentor milestones
+ * @param {object} profile
+ * @returns {Array<object>}
+ */
+export const getPendingMentorMilestones = (profile) => {
+  if (!profile) return [];
+  const acknowledged = Array.isArray(profile.acknowledgedMilestones)
+    ? profile.acknowledgedMilestones
+    : [];
+  return mentorMilestones.filter(
+    (m) => !acknowledged.includes(m.id) && checkMilestoneEligibility(m, profile)
+  );
+};
+

@@ -2,6 +2,8 @@ import toast from 'react-hot-toast';
 import authService from './AuthService';
 import { getSeedItemId } from '../data/itemsCatalog';
 import { applyInventoryDelta, normalizeInventory } from './inventoryService';
+import { getPlayerXpForLevel } from '../data/playerData';
+import { getMentorMilestoneById } from '../data/loreData';
 
 const MOCK_AUTH = true;
 const MOCK_CHARACTERS_KEY = 'mockCharacters';
@@ -141,6 +143,7 @@ class CharacterService {
           unlockedTitles: ['Warden Initiate'],
           claimedChapters: [],
           estateAmenities: [],
+          acknowledgedMilestones: [],
           bio: 'A quiet traveler sworn to the Sunforge, seeking relics and renown.',
           houseId: 'starter-cottage',
           ownedHouses: ['starter-cottage'],
@@ -325,6 +328,7 @@ class CharacterService {
         unlockedTitles: ['Warden Initiate'],
         claimedChapters: [],
         estateAmenities: [],
+        acknowledgedMilestones: [],
         houseId: 'starter-cottage',
         ownedHouses: ['starter-cottage'],
         miningLevel: 1,
@@ -372,6 +376,10 @@ class CharacterService {
             username,
             stats: { ...defaultStats },
             title: current.title || 'Warden Initiate',
+            unlockedTitles: Array.isArray(current.unlockedTitles) ? current.unlockedTitles : ['Warden Initiate'],
+            claimedChapters: Array.isArray(current.claimedChapters) ? current.claimedChapters : [],
+            estateAmenities: Array.isArray(current.estateAmenities) ? current.estateAmenities : [],
+            acknowledgedMilestones: Array.isArray(current.acknowledgedMilestones) ? current.acknowledgedMilestones : [],
             bio: current.bio || 'A quiet traveler sworn to the Sunforge, seeking relics and renown.',
             houseId: 'starter-cottage',
             ownedHouses: ['starter-cottage'],
@@ -489,6 +497,7 @@ class CharacterService {
           unlockedTitles: Array.isArray(current.unlockedTitles) ? current.unlockedTitles : ['Warden Initiate'],
           claimedChapters: Array.isArray(current.claimedChapters) ? current.claimedChapters : [],
           estateAmenities: Array.isArray(current.estateAmenities) ? current.estateAmenities : [],
+          acknowledgedMilestones: Array.isArray(current.acknowledgedMilestones) ? current.acknowledgedMilestones : [],
         };
         nextProfile.generalMissionsMeta =
           current.generalMissionsMeta || buildGeneralMissionsMeta(nextProfile);
@@ -566,6 +575,78 @@ class CharacterService {
       profiles[username].generalMissionsMeta = buildGeneralMissionsMeta(profiles[username]);
     }
 
+    setMockProfiles(profiles);
+    return profiles[username];
+  }
+
+  acknowledgeMentorMilestone(milestoneId) {
+    if (!MOCK_AUTH) {
+      return null;
+    }
+
+    const username = authService.getCurrentUsername();
+    if (!username) {
+      return null;
+    }
+
+    const profiles = getMockProfiles();
+    const profile = profiles[username];
+    if (!profile) {
+      return null;
+    }
+
+    const acknowledged = Array.isArray(profile.acknowledgedMilestones)
+      ? profile.acknowledgedMilestones
+      : [];
+    if (acknowledged.includes(milestoneId)) {
+      return profile;
+    }
+
+    const milestone = getMentorMilestoneById(milestoneId);
+    if (!milestone) {
+      return profile;
+    }
+
+    const currentGold = profile.stats?.gold ?? 0;
+    const currentXp = profile.stats?.xp ?? 0;
+    const currentLevel = profile.stats?.level ?? 1;
+
+    const addedGold = milestone.rewardGold || 0;
+    const addedXp = milestone.rewardXp || 0;
+    const rewardTitle = milestone.rewardTitle;
+
+    let nextLevel = currentLevel;
+    let nextXp = currentXp + addedXp;
+    let targetXp = getPlayerXpForLevel(nextLevel);
+
+    while (nextXp >= targetXp) {
+      nextXp -= targetXp;
+      nextLevel += 1;
+      targetXp = getPlayerXpForLevel(nextLevel);
+    }
+
+    const existingTitles = Array.isArray(profile.unlockedTitles)
+      ? profile.unlockedTitles
+      : ['Warden Initiate'];
+    const nextTitles =
+      rewardTitle && !existingTitles.includes(rewardTitle)
+        ? [...existingTitles, rewardTitle]
+        : existingTitles;
+
+    const nextProfile = {
+      ...profile,
+      stats: {
+        ...profile.stats,
+        gold: currentGold + addedGold,
+        xp: nextXp,
+        level: nextLevel,
+      },
+      unlockedTitles: nextTitles,
+      title: rewardTitle || profile.title,
+      acknowledgedMilestones: [...acknowledged, milestoneId],
+    };
+
+    profiles[username] = stripZoneFields(nextProfile);
     setMockProfiles(profiles);
     return profiles[username];
   }

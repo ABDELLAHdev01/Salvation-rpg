@@ -122,3 +122,9 @@ graph TD
 - **Studio Recommendation:** Introduce 6 interactive interior furnishings (Hearthfire, Delver's Trophy, Herb Dry-Rack, Training Dummy, Lectern, Vault Coffer) granting passive bonuses across mining, farming, combat, and gold.
 - **Status:** **APPROVED & IMPLEMENTED** (Interactive amenities tab in HousingPage.jsx, verified across 53 unit tests).
 
+#### Decision Item 7: Estate Mentors Counsel & Milestone Vignettes (`TICK-E03`)
+- **The Issue:** Key progression thresholds (Farm Level 5, Mining Level 5, Workshop Level 5, Estate Tier 2) were purely numerical, lacking narrative recognition from estate mentors.
+- **Studio Recommendation:** Introduce an interactive Estate Advisory Council directly on the Command Deck and in the Lore Annals (`MentorCounselWidget`, `MentorMilestoneModal`, and expanded `LorePage`), allowing players to consult Elric, Selyse, Moira, Bran, and Gideon. Progression thresholds trigger celebratory dialogue modals, tribute payouts (+Gold, +XP), and prestigious title rewards (Sylvan Tender, Deep Delver, Master Hearthsmith, Hearth Patriarch).
+- **Status:** **APPROVED & IMPLEMENTED** (Council advisory widget, celebratory acclaim modal, illustrated dialogue banners in lore, verified across 59 passing unit tests).
+
+

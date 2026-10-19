@@ -1,10 +1,35 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import Sidebar from '../../shared/layout/Sidebar';
-import { worldHistory, estateMentors, factionLore, wardenOath } from '../../core/data/loreData';
+import {
+  worldHistory,
+  estateMentors,
+  factionLore,
+  wardenOath,
+  mentorMilestones,
+} from '../../core/data/loreData';
+
+const MENTOR_NAV_MAP = {
+  elric: { label: 'Visit Workshop', to: '/workshop' },
+  selyse: { label: 'Visit Farm Plots', to: '/farm' },
+  moira: { label: 'Visit Pastures', to: '/farm/animals' },
+  bran: { label: 'Visit Mining Shafts', to: '/mining' },
+  gideon: { label: 'Visit Market', to: '/market' },
+};
 
 export default function Lore() {
   const [activeTab, setActiveTab] = useState('history');
+  const [selectedMentorId, setSelectedMentorId] = useState('elric');
+
+  const selectedMentor =
+    estateMentors.find((m) => m.id === selectedMentorId) || estateMentors[0];
+  const selectedMilestone = mentorMilestones.find(
+    (m) => m.mentorId === selectedMentor.id
+  );
+  const mentorNav = MENTOR_NAV_MAP[selectedMentor.id] || {
+    label: 'Visit Estate',
+    to: '/housing',
+  };
 
   const tabs = [
     { id: 'history', label: 'World Chronicles' },
@@ -126,41 +151,135 @@ export default function Lore() {
 
           {/* Tab 3: Estate Mentors */}
           {activeTab === 'mentors' && (
-            <div className="mt-8 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {estateMentors.map((mentor) => (
-                <div
-                  key={mentor.id}
-                  className="court-card flex flex-col justify-between rounded-2xl border border-yellow-700/30 bg-gray-950/85 p-6 transition hover:border-yellow-500/50"
-                >
-                  <div>
-                    <div className="flex items-center gap-3.5">
-                      <div className="h-14 w-14 shrink-0 overflow-hidden rounded-xl border border-yellow-700/40 bg-gray-900 shadow">
-                        <img
-                          src={mentor.avatar}
-                          alt={mentor.name}
-                          className="h-full w-full object-cover"
-                        />
-                      </div>
-                      <div>
-                        <h2 className="text-lg font-bold text-white">{mentor.name}</h2>
-                        <p className="text-xs text-yellow-500 font-semibold">{mentor.title}</p>
-                        <span className="inline-block mt-1 rounded bg-gray-800/80 px-2 py-0.5 text-[10px] text-gray-300">
-                          {mentor.domain}
-                        </span>
-                      </div>
-                    </div>
-                    <p className="mt-4 text-xs leading-relaxed text-gray-300">{mentor.lore}</p>
-                    <blockquote className="mt-3 border-l-2 border-yellow-600/50 pl-2.5 text-xs italic text-yellow-200/80">
-                      "{mentor.quote}"
-                    </blockquote>
+            <div className="mt-8 space-y-8">
+              {/* Featured Illustrated Dialogue Banner */}
+              <div className="court-card rounded-2xl border-2 border-yellow-500/50 bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950 p-6 md:p-8 shadow-xl">
+                <div className="flex flex-col md:flex-row gap-6 items-start">
+                  <div className="relative shrink-0 mx-auto md:mx-0">
+                    <div className="absolute inset-0 rounded-2xl bg-yellow-500/20 blur-xl" />
+                    <img
+                      src={selectedMentor.avatar}
+                      alt={selectedMentor.name}
+                      className="relative h-28 w-28 md:h-36 md:w-36 rounded-2xl border-2 border-yellow-500/70 object-cover shadow-2xl"
+                    />
+                    <span className="absolute -bottom-2 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-yellow-500 px-3 py-0.5 text-[10px] font-black uppercase tracking-wider text-gray-950 shadow">
+                      {selectedMentor.domain.split('&')[0]}
+                    </span>
                   </div>
 
-                  <div className="mt-5 rounded-lg border border-yellow-700/20 bg-gray-900/60 p-2.5 text-[11px] text-gray-300">
-                    <span className="font-semibold text-yellow-400">Mentor Tip: </span>
-                    {mentor.tip}
+                  <div className="flex-1 text-left">
+                    <div className="flex flex-wrap items-center justify-between gap-2 border-b border-yellow-700/30 pb-3">
+                      <div>
+                        <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-yellow-500">
+                          Frontier Mentor & Counsel
+                        </span>
+                        <h2 className="text-2xl md:text-3xl font-extrabold text-white hero-title">
+                          {selectedMentor.name}
+                        </h2>
+                        <p className="text-xs font-semibold text-yellow-300">
+                          {selectedMentor.title}
+                        </p>
+                      </div>
+                      <Link
+                        to={mentorNav.to}
+                        className="inline-flex items-center gap-1.5 rounded-xl border border-yellow-500/50 bg-yellow-500/20 px-4 py-2 text-xs font-bold text-yellow-200 transition hover:bg-yellow-500/30"
+                      >
+                        {mentorNav.label} →
+                      </Link>
+                    </div>
+
+                    <p className="mt-3 text-sm leading-relaxed text-gray-300">
+                      {selectedMentor.lore}
+                    </p>
+
+                    {/* Dialogue speech banner */}
+                    <div className="mt-4 rounded-xl border border-yellow-700/30 bg-black/40 p-4">
+                      <p className="text-xs uppercase tracking-wider text-yellow-500 font-bold mb-1">
+                        ✦ Mentor Dialogue
+                      </p>
+                      <blockquote className="text-sm italic text-gray-100 font-serif leading-relaxed">
+                        "{selectedMentor.quote}"
+                      </blockquote>
+                      <p className="mt-2 text-xs text-yellow-200/90 font-medium">
+                        <strong className="text-yellow-400">Practical Guidance: </strong>
+                        {selectedMentor.tip}
+                      </p>
+                    </div>
+
+                    {/* Associated Milestone */}
+                    {selectedMilestone && (
+                      <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-yellow-700/20 bg-gray-950/70 p-3">
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm text-yellow-400">👑</span>
+                          <div>
+                            <p className="text-[10px] uppercase tracking-wider text-gray-400 font-bold">
+                              Milestone Accord: {selectedMilestone.summary}
+                            </p>
+                            <p className="text-xs font-bold text-white">
+                              {selectedMilestone.name}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="rounded bg-yellow-500/20 border border-yellow-500/40 px-2 py-0.5 text-[10px] font-bold text-yellow-300">
+                            +{selectedMilestone.rewardGold}g
+                          </span>
+                          <span className="rounded bg-blue-500/20 border border-blue-500/40 px-2 py-0.5 text-[10px] font-bold text-blue-300">
+                            +{selectedMilestone.rewardXp} XP
+                          </span>
+                          <span className="rounded bg-purple-500/20 border border-purple-500/40 px-2 py-0.5 text-[10px] font-bold text-purple-300">
+                            Title: {selectedMilestone.rewardTitle}
+                          </span>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
-              ))}
+              </div>
+
+              {/* Mentors Selection Grid */}
+              <div>
+                <p className="text-xs font-bold uppercase tracking-[0.25em] text-yellow-500 mb-4">
+                  Select a Mentor to Consult
+                </p>
+                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                  {estateMentors.map((mentor) => {
+                    const isSelected = mentor.id === selectedMentorId;
+                    return (
+                      <button
+                        key={mentor.id}
+                        type="button"
+                        onClick={() => setSelectedMentorId(mentor.id)}
+                        className={`court-card flex flex-col justify-between rounded-2xl border p-5 text-left transition ${
+                          isSelected
+                            ? 'border-yellow-500 bg-yellow-500/10 shadow-lg ring-1 ring-yellow-500/50'
+                            : 'border-yellow-700/30 bg-gray-950/85 hover:border-yellow-500/40 hover:bg-gray-900/60'
+                        }`}
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className={`h-12 w-12 shrink-0 overflow-hidden rounded-xl border bg-gray-900 shadow ${isSelected ? 'border-yellow-400' : 'border-yellow-700/40'}`}>
+                            <img
+                              src={mentor.avatar}
+                              alt={mentor.name}
+                              className="h-full w-full object-cover"
+                            />
+                          </div>
+                          <div>
+                            <h3 className="text-sm font-bold text-white">{mentor.name}</h3>
+                            <p className="text-[11px] text-yellow-500 font-semibold">{mentor.title}</p>
+                            <span className="inline-block mt-0.5 rounded bg-gray-800/80 px-2 py-0.5 text-[9px] text-gray-300">
+                              {mentor.domain}
+                            </span>
+                          </div>
+                        </div>
+                        <p className="mt-3 text-xs text-gray-400 line-clamp-2 italic">
+                          "{mentor.quote}"
+                        </p>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
             </div>
           )}
 

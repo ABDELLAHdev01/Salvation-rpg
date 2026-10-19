@@ -24,6 +24,8 @@ import ExpeditionStatusCard from './widgets/ExpeditionStatusCard';
 import MissionSpotlight from './widgets/MissionSpotlight';
 import SkillProgressGrid from './widgets/SkillProgressGrid';
 import ResidenceCard from './widgets/ResidenceCard';
+import MentorMilestoneModal from './widgets/MentorMilestoneModal';
+import MentorCounselWidget from './widgets/MentorCounselWidget';
 
 const MOCK_AUTH = import.meta.env.VITE_MOCK_AUTH === 'true';
 
@@ -135,6 +137,10 @@ export default function DashboardPlayer() {
     <section className="min-h-screen bg-page-primary lg:pl-64 dashboard-shell">
       <Sidebar />
       <DiscordModal />
+      <MentorMilestoneModal
+        profile={profile}
+        onMilestoneClaimed={(updated) => setProfile({ ...updated })}
+      />
       <div className="dashboard-orb orb-1" />
       <div className="dashboard-orb orb-2" />
       <div className="dashboard-orb orb-3" />
@@ -198,6 +204,7 @@ export default function DashboardPlayer() {
               activeHouse={activeHouse}
               estateAmenitiesCount={profile?.estateAmenities?.length || 0}
             />
+            <MentorCounselWidget profile={profile} />
           </div>
         </div>
       </div>
