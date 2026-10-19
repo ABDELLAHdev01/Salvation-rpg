@@ -8,6 +8,7 @@ import { getItemById } from '../../core/data/itemsCatalog';
 import { removeItems } from '../../core/services/inventoryService';
 import audioManager from '../../core/audio/AudioManager';
 import ItemInspectModal from './widgets/ItemInspectModal';
+import PaperDollDeck from './widgets/PaperDollDeck';
 
 const MOCK_AUTH = import.meta.env.VITE_MOCK_AUTH === 'true';
 
@@ -43,6 +44,7 @@ const getItemValue = (item) => item?.sellPrice ?? item?.price ?? item?.estimate 
 
 export default function Inventory() {
   const [profile, setProfile] = useState(null);
+  const [character, setCharacter] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [activeCategory, setActiveCategory] = useState('all');
   const [sortBy, setSortBy] = useState('name');
@@ -55,7 +57,9 @@ export default function Inventory() {
 
     const username = authService.getCurrentUsername();
     const nextProfile = characterService.getMockProfile(username);
+    const nextCharacter = characterService.getMockCharacter(username);
     setProfile(nextProfile);
+    setCharacter(nextCharacter);
   }, []);
 
   const inventory = useMemo(() => profile?.inventory || {}, [profile?.inventory]);
@@ -180,8 +184,14 @@ export default function Inventory() {
             </div>
           </div>
 
-          {/* Category Tabs */}
-          <div className="mt-6 flex flex-wrap gap-2 border-b border-yellow-700/20 pb-4">
+          <div className="mt-8 grid gap-6 lg:grid-cols-[280px_1fr]">
+            {/* Left: Paper Doll Equipment Deck */}
+            <PaperDollDeck profile={profile} character={character} />
+
+            {/* Right: Storehouse Ledger & Item Grid */}
+            <div className="space-y-6">
+              {/* Category Tabs */}
+              <div className="flex flex-wrap gap-2 border-b border-yellow-700/20 pb-4">
             {VAULT_CATEGORIES.map((cat) => {
               const isSelected = activeCategory === cat.id;
               return (
@@ -297,7 +307,9 @@ export default function Inventory() {
                 </div>
               ))
             )}
+            </div>
           </div>
+        </div>
 
           {/* Footer Navigation */}
           <div className="mt-10 flex flex-wrap gap-4 border-t border-yellow-700/20 pt-6">

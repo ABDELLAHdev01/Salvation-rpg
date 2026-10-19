@@ -90,3 +90,72 @@ describe('Vault Catalog & Valuation Logic', () => {
     expect(getItemCategoryLabel(null)).toBe('Misc');
   });
 });
+
+import {
+  gearStatsCatalog,
+  getPlayerEquippedGear,
+  getGearStatTotals,
+  getSlotDisplay,
+} from '../src/core/data/gearData';
+
+describe('Paper Doll Equipment Deck & Gear System', () => {
+  it('contains comprehensive combat gear and deciphered relics', () => {
+    expect(gearStatsCatalog['gear-embersteel-blade']).toBeDefined();
+    expect(gearStatsCatalog['gear-aegis-dawn']).toBeDefined();
+    expect(gearStatsCatalog['gear-ironfall-greaves']).toBeDefined();
+    expect(gearStatsCatalog['gem-amethyst']).toBeDefined();
+    expect(gearStatsCatalog['sunforge-codex']).toBeDefined();
+
+    expect(gearStatsCatalog['sunforge-codex'].slot).toBe('relic');
+    expect(gearStatsCatalog['sunforge-codex'].wisdom).toBe(18);
+    expect(gearStatsCatalog['gem-amethyst'].slot).toBe('trinket');
+  });
+
+  it('equips items dynamically from inventory and calculates aggregate stats', () => {
+    const profile = {
+      inventory: {
+        'gear-stormcaller-bow': 1,
+        'gear-shadowleaf-cloak': 1,
+        'sunforge-codex': 1,
+      },
+    };
+
+    const equipped = getPlayerEquippedGear(profile);
+    expect(equipped.length).toBe(3);
+
+    const equippedIds = equipped.map((item) => item.id);
+    expect(equippedIds).toContain('gear-stormcaller-bow');
+    expect(equippedIds).toContain('gear-shadowleaf-cloak');
+    expect(equippedIds).toContain('sunforge-codex');
+
+    const totals = getGearStatTotals(profile);
+    // stormcaller: atk 15, def 2, wis 6
+    // shadowleaf: atk 4, def 10, wis 6
+    // sunforge codex: atk 6, def 6, wis 18
+    expect(totals.attack).toBe(15 + 4 + 6);
+    expect(totals.defense).toBe(2 + 10 + 6);
+    expect(totals.wisdom).toBe(6 + 6 + 18);
+  });
+
+  it('falls back to default Vanguard kit when player owns no gear', () => {
+    const emptyProfile = { inventory: { iron: 10 } };
+    const equipped = getPlayerEquippedGear(emptyProfile);
+    expect(equipped.length).toBe(3);
+    expect(equipped.map((i) => i.id)).toEqual([
+      'gear-embersteel-blade',
+      'gear-aegis-dawn',
+      'gear-ironfall-greaves',
+    ]);
+  });
+
+  it('correctly maps slot labels with getSlotDisplay', () => {
+    expect(getSlotDisplay('weapon')).toBe('Weapon');
+    expect(getSlotDisplay('shield')).toBe('Offhand');
+    expect(getSlotDisplay('armor')).toBe('Chest');
+    expect(getSlotDisplay('boots')).toBe('Boots');
+    expect(getSlotDisplay('relic')).toBe('Relic');
+    expect(getSlotDisplay('trinket')).toBe('Trinket');
+    expect(getSlotDisplay('unknown')).toBe('Gear');
+  });
+});
+

@@ -57,6 +57,13 @@ export default function WorkshopFilters({
                 >
                     Crop ({tagCounts.crop})
                 </Button>
+                <Button
+                    variant={tagFilter === 'relic' ? 'primary' : 'secondary'}
+                    size="sm"
+                    onClick={() => setTagFilter('relic')}
+                >
+                    Relic ({tagCounts.relic || 0})
+                </Button>
                 <div className="ml-auto flex items-center gap-2">
                     <input
                         type="checkbox"

@@ -108,6 +108,28 @@ const gearCatalogItems = gearItems.map((item) => ({
   level: item.level,
 }));
 
+const extraSalvageItems = [
+  {
+    id: 'mystery-geode',
+    name: 'Uncracked Geode',
+    category: 'Ore',
+    type: 'ore',
+    sellPrice: 120,
+    description: 'A rough mineral nodule found deep underground. Take it to the Workshop Lapidary to crack for rare gems.',
+    image: defaultImage,
+  },
+  {
+    id: 'ancient-tablet',
+    name: 'Ancient Fragmented Tablet',
+    category: 'Relic',
+    type: 'token',
+    rarity: 'Epic',
+    sellPrice: 200,
+    description: 'Weathered stone tablet inscribed with pre-Emberfall runes. Can be deciphered in the Workshop Scriptorium.',
+    image: defaultImage,
+  },
+];
+
 export const itemsCatalog = [
   ...seedItems,
   ...farmGoodsItems,
@@ -117,6 +139,7 @@ export const itemsCatalog = [
   ...(miningTokenItem ? [miningTokenItem] : []),
   ...workshopCraftedItems,
   ...gearCatalogItems,
+  ...extraSalvageItems,
 ];
 
 export const itemsById = itemsCatalog.reduce((acc, item) => {

@@ -145,6 +145,11 @@ export const rollExpeditionRewards = (location) => {
     items['mystery-geode'] = 1;
   }
 
+  // 25% chance to discover an Ancient Fragmented Tablet on dangerous expeditions
+  if ((location.levelRequired || 1) >= 5 && Math.random() < 0.25) {
+    items['ancient-tablet'] = 1;
+  }
+
   // Biome-specific relic and mineral salvage
   if (location.id === 'sunken-ridge') {
     items['silver'] = roll(1, 3);

@@ -146,9 +146,11 @@ export default function Workshop() {
   }, [uiState]);
 
   const getInputName = (input) => {
+    if (input.id === 'mystery-geode') return 'Uncracked Geode';
+    if (input.id === 'ancient-tablet') return 'Ancient Tablet';
     if (input.source === 'mining') return miningNames[input.id] || input.id;
     if (input.source === 'farm') return farmNames[input.id] || input.id;
-    return input.id;
+    return input.id.replace(/[-_]/g, ' ');
   };
 
   const getOwnedForInput = React.useCallback((input) => getItemCount(inventory, input.id), [inventory]);
@@ -175,7 +177,9 @@ export default function Workshop() {
     recipe.inputs.forEach((input) => {
       if (input.source === 'mining') tags.add('ore');
       if (input.source === 'farm') tags.add('crop');
+      if (input.source === 'inventory' || recipe.station === 'scriptorium') tags.add('relic');
     });
+    if (recipe.station === 'scriptorium') tags.add('relic');
     return Array.from(tags);
   };
 
@@ -186,11 +190,12 @@ export default function Workshop() {
   }, [uiState, stationFilter]);
 
   const tagCounts = useMemo(() => {
-    const counts = { ore: 0, crop: 0 };
+    const counts = { ore: 0, crop: 0, relic: 0 };
     filteredRecipePool.forEach((recipe) => {
       const tags = getRecipeTags(recipe);
       if (tags.includes('ore')) counts.ore += 1;
       if (tags.includes('crop')) counts.crop += 1;
+      if (tags.includes('relic')) counts.relic += 1;
     });
     return counts;
   }, [filteredRecipePool]);

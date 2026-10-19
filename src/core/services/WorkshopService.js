@@ -161,19 +161,20 @@ const persistProfile = (profile) => {
   if (!profile) {
     return null;
   }
-  return characterService.updateMockProfile(profile);
+  const updated = characterService.updateMockProfile(profile);
+  return updated || profile;
 };
 
-const processWorkshopQueue = ({ now = Date.now() } = {}) => {
-  const profile = getProfile();
+const processWorkshopQueue = ({ profile: providedProfile, now = Date.now() } = {}) => {
+  const profile = providedProfile || getProfile();
   if (!profile) {
-    return { profile: null, completedJobs: [] };
+    return { profile: null, completedJobs: [], completedCount: 0 };
   }
 
   const workshopState = ensureWorkshopState(profile);
   let queue = [...workshopState.workshopQueue].sort((a, b) => a.startAt - b.startAt);
   if (queue.length === 0) {
-    return { profile, completedJobs: [] };
+    return { profile, completedJobs: [], completedCount: 0 };
   }
 
   let nextProfile = { ...profile, ...workshopState };
@@ -206,7 +207,7 @@ const processWorkshopQueue = ({ now = Date.now() } = {}) => {
   });
 
   if (completedJobs.length === 0) {
-    return { profile, completedJobs: [] };
+    return { profile, completedJobs: [], completedCount: 0 };
   }
 
   const remainingQueue = queue.filter((job) => !completedJobs.find((done) => done.id === job.id));
@@ -215,11 +216,11 @@ const processWorkshopQueue = ({ now = Date.now() } = {}) => {
     workshopQueue: remainingQueue,
   });
 
-  return { profile: updated, completedJobs };
+  return { profile: updated, completedJobs, completedCount: completedJobs.length };
 };
 
-const queueWorkshopJob = ({ recipeId, quantity = 1, now = Date.now() } = {}) => {
-  const profile = getProfile();
+const queueWorkshopJob = ({ profile: providedProfile, recipeId, quantity = 1, now = Date.now() } = {}) => {
+  const profile = providedProfile || getProfile();
   if (!profile) {
     return { ok: false, reason: 'No profile found.' };
   }
@@ -267,8 +268,8 @@ const queueWorkshopJob = ({ recipeId, quantity = 1, now = Date.now() } = {}) => 
   return { ok: true, profile: updated, job };
 };
 
-const upgradeWorkshop = () => {
-  const profile = getProfile();
+const upgradeWorkshop = ({ profile: providedProfile } = {}) => {
+  const profile = providedProfile || getProfile();
   if (!profile) {
     return { ok: false, reason: 'No profile found.' };
   }

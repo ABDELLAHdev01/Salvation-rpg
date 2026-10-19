@@ -90,6 +90,32 @@ export const gearStatsCatalog = {
     wisdom: 5,
     description: 'Conferred by the Grand Arbiter for valor in the Colosseum.',
   },
+  'gem-amethyst': {
+    id: 'gem-amethyst',
+    name: 'Polished Amethyst',
+    category: 'Relic',
+    slot: 'trinket',
+    level: 'Lv 3+',
+    rarity: 'Rare',
+    image: '/raceicon/noimage.webp',
+    attack: 2,
+    defense: 4,
+    wisdom: 8,
+    description: 'Cracked from subterranean geodes. Emits a resonant purple luminescence.',
+  },
+  'sunforge-codex': {
+    id: 'sunforge-codex',
+    name: 'Sunforge Codex',
+    category: 'Relic',
+    slot: 'relic',
+    level: 'Lv 5+',
+    rarity: 'Epic',
+    image: '/raceicon/noimage.webp',
+    attack: 6,
+    defense: 6,
+    wisdom: 18,
+    description: 'Ancient celestial blueprints deciphered in the Workshop Scriptorium.',
+  },
 };
 
 const defaultVanguardKit = [
@@ -114,7 +140,7 @@ export const getPlayerEquippedGear = (profile) => {
   );
 
   if (ownedGearIds.length > 0) {
-    const slots = ['weapon', 'shield', 'armor', 'boots', 'trinket'];
+    const slots = ['weapon', 'shield', 'armor', 'boots', 'relic', 'trinket'];
     slots.forEach((slot) => {
       const matching = ownedGearIds
         .map((id) => gearStatsCatalog[id])
@@ -169,6 +195,8 @@ export const getSlotDisplay = (slot) => {
       return 'Boots';
     case 'trinket':
       return 'Trinket';
+    case 'relic':
+      return 'Relic';
     default:
       return 'Gear';
   }

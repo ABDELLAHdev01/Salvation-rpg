@@ -12,7 +12,6 @@ const DashboardPlayer = lazy(() => import("./features/dashboard/DashboardPage"))
 const Adventure = lazy(() => import("./features/adventure/AdventurePage"));
 const ExpeditionActive = lazy(() => import("./features/adventure/ExpeditionActivePage"));
 const Inventory = lazy(() => import("./features/character/InventoryPage"));
-const QuestDetail = lazy(() => import("./features/quests/QuestDetailPage"));
 const Arena = lazy(() => import("./features/combat/ArenaPage"));
 const ArenaFight = lazy(() => import("./features/combat/ArenaFightPage"));
 const ArenaOpponent = lazy(() => import("./features/combat/ArenaOpponentPage"));
@@ -135,9 +134,7 @@ function App() {
           <Route
             path="/quests/:questId"
             element={
-              <ProtectedRoute>
-                <QuestDetail />
-              </ProtectedRoute>
+              <Navigate to="/missions?tab=chapters" replace />
             }
           />
           <Route

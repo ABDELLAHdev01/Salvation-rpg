@@ -23,6 +23,12 @@ export const workshopStations = [
     unlockLevel: 6,
     description: 'Brew potent botanical elixirs.',
   },
+  {
+    id: 'scriptorium',
+    name: 'Scriptorium & Lapidary',
+    unlockLevel: 3,
+    description: 'Decipher ancient tablets and crack geodes for relics.',
+  },
 ];
 
 export const workshopItems = [
@@ -37,6 +43,8 @@ export const workshopItems = [
   { id: 'moonweave', name: 'Moonweave', sellValue: 280 },
   { id: 'healing-tonic', name: 'Healing Tonic', sellValue: 200 },
   { id: 'sunroot-elixir', name: 'Sunroot Elixir', sellValue: 275 },
+  { id: 'gem-amethyst', name: 'Polished Amethyst', sellValue: 320 },
+  { id: 'sunforge-codex', name: 'Sunforge Codex', sellValue: 450 },
 ];
 
 const workshopItemValueMap = workshopItems.reduce((acc, item) => {
@@ -183,6 +191,29 @@ export const workshopRecipes = [
     ],
     outputs: [{ id: 'sunroot-elixir', amount: 1 }],
     xp: 40,
+  }),
+  buildRecipe({
+    id: 'crack-mystery-geode',
+    station: 'scriptorium',
+    levelRequired: 3,
+    durationMs: 15 * 60 * 1000,
+    inputs: [
+      { source: 'mining', id: 'mystery-geode', amount: 1 },
+    ],
+    outputs: [{ id: 'gem-amethyst', amount: 1 }],
+    xp: 22,
+  }),
+  buildRecipe({
+    id: 'decipher-ancient-tablet',
+    station: 'scriptorium',
+    levelRequired: 5,
+    durationMs: 30 * 60 * 1000,
+    inputs: [
+      { source: 'inventory', id: 'ancient-tablet', amount: 1 },
+      { source: 'farm', id: 'herb', amount: 2 },
+    ],
+    outputs: [{ id: 'sunforge-codex', amount: 1 }],
+    xp: 35,
   }),
 ];
 

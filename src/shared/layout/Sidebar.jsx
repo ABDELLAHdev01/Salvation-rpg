@@ -55,7 +55,7 @@ const HammerIcon = ({ className }) => (
 const navItems = [
   { name: 'Dashboard', href: '/dashboard', icon: Squares2X2Icon },
   { name: 'Inventory', href: '/inventory', icon: ArchiveBoxIcon },
-  { name: 'Missions', href: '/missions', icon: ClipboardDocumentListIcon },
+  { name: 'Chronicle', href: '/chronicle', icon: ClipboardDocumentListIcon },
   { name: 'Farm', href: '/farm', icon: PigIcon },
   { name: 'Mine', href: '/mining', icon: PickaxeIcon },
   { name: 'Market', href: '/market', icon: BriefcaseIcon },
@@ -88,7 +88,9 @@ export default function Sidebar() {
   const NavLinks = () => (
     <nav className="space-y-2">
       {items.map((item) => {
-        const isActive = location.pathname === item.href;
+        const isActive =
+          location.pathname === item.href ||
+          (item.href === '/chronicle' && location.pathname === '/missions');
         const linkClassName = `fantasy-navlink group flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-bold transition-all ${isActive
           ? 'fantasy-navlink-active pl-8 text-yellow-200'
           : 'text-gray-400 hover:text-yellow-100'

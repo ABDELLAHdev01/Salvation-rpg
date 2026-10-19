@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom';
 import Sidebar from '../../shared/layout/Sidebar';
 import authService from '../../core/services/AuthService';
 import characterService from '../../core/services/CharacterService';
-import { mockQuests } from '../../core/data/mockQuests';
 import { chronicleChapters } from '../../core/data/missionData';
 import { getHousingTierById } from '../../core/data/housingData';
 import { getCityById } from '../../core/data/citiesData';
@@ -43,9 +42,13 @@ export default function Profile() {
           .filter((c) => profile.claimedChapters.includes(c.id))
           .map((c) => `Chapter ${c.chapterNumber}: ${c.title} · «${c.titleReward}»`)
       : [];
-    const questAchievements = mockQuests.map((quest) => `${quest.title} · ${quest.region}`);
-    return [...chapterAchievements, ...questAchievements];
-  }, [profile?.claimedChapters]);
+    const orderAchievements = Array.isArray(profile?.generalMissions)
+      ? profile.generalMissions
+          .filter((m) => m.claimed)
+          .map((m) => `Warden Decree: ${m.title}`)
+      : [];
+    return [...chapterAchievements, ...orderAchievements];
+  }, [profile?.claimedChapters, profile?.generalMissions]);
   const activeHouse = getHousingTierById(profile?.houseId || 'starter-cottage');
   const cityId = character?.city || profile?.city;
   const cityData = cityId ? getCityById(String(cityId).toLowerCase()) : null;
