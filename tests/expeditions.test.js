@@ -4,6 +4,7 @@ import {
   getExpeditionLocation,
   rollExpeditionRewards,
 } from '../src/core/data/expeditionData';
+import { getActiveEstateBuffs } from '../src/core/data/housingData';
 
 describe('Expedition Domain Logic', () => {
   it('contains valid location configurations with consistent tiers and durations', () => {
@@ -65,5 +66,24 @@ describe('Expedition Domain Logic', () => {
     const reward = rollExpeditionRewards(location);
     expect(reward.items['mystery-geode']).toBe(1);
     spy.mockRestore();
+  });
+
+  it('correctly calculates amplified rewards with estate interior buffs', () => {
+    const location = getExpeditionLocation('sunken-ridge');
+    expect(location).toBeDefined();
+
+    const mockProfileWithAmenities = {
+      estateAmenities: ['hearth-fire', 'vault-coffer'],
+    };
+    const buffs = getActiveEstateBuffs(mockProfileWithAmenities);
+    expect(buffs.xpBonus).toBe(5);
+    expect(buffs.goldBonus).toBe(5);
+
+    const baseReward = { gold: 200, xp: 100 };
+    const adjustedGold = Math.round(baseReward.gold * (1 + buffs.goldBonus / 100));
+    const adjustedXp = Math.round(baseReward.xp * (1 + buffs.xpBonus / 100));
+
+    expect(adjustedGold).toBe(210);
+    expect(adjustedXp).toBe(105);
   });
 });

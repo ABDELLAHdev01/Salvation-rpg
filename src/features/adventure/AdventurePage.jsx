@@ -5,6 +5,7 @@ import Sidebar from '../../shared/layout/Sidebar';
 import authService from '../../core/services/AuthService';
 import characterService from '../../core/services/CharacterService';
 import { expeditionLocations, getExpeditionLocation, rollExpeditionRewards } from '../../core/data/expeditionData';
+import { getActiveEstateBuffs } from '../../core/data/housingData';
 import { formatDuration } from '../../core/data/miningData';
 import { getPlayerXpForLevel } from '../../core/data/playerData';
 import { addItems } from '../../core/services/inventoryService';
@@ -130,8 +131,11 @@ export default function Adventure() {
     }
 
     const reward = rollExpeditionRewards(activeLocation);
-    const adjustedGold = Math.max(0, Math.round(reward.gold));
-    const adjustedXp = Math.max(0, Math.round(reward.xp));
+    const estateBuffs = getActiveEstateBuffs(profile);
+    const goldMultiplier = 1 + (estateBuffs.goldBonus || 0) / 100;
+    const xpMultiplier = 1 + (estateBuffs.xpBonus || 0) / 100;
+    const adjustedGold = Math.max(0, Math.round(reward.gold * goldMultiplier));
+    const adjustedXp = Math.max(0, Math.round(reward.xp * xpMultiplier));
     const itemsGained = reward.items || {};
     const nextInventory = addItems(profile.inventory || {}, itemsGained);
     const currentLevel = profile.stats?.level ?? 1;

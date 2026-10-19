@@ -6,9 +6,11 @@ import { useRewardFloat } from '../../shared/feedback/RewardFloatProvider';
 import authService from '../../core/services/AuthService';
 import characterService from '../../core/services/CharacterService';
 import { getExpeditionLocation, rollExpeditionRewards } from '../../core/data/expeditionData';
+import { getActiveEstateBuffs } from '../../core/data/housingData';
 import { formatDuration } from '../../core/data/miningData';
 import { getPlayerXpForLevel } from '../../core/data/playerData';
 import { addItems } from '../../core/services/inventoryService';
+import audioManager from '../../core/audio/AudioManager';
 
 const MOCK_AUTH = import.meta.env.VITE_MOCK_AUTH === 'true';
 
@@ -94,8 +96,11 @@ export default function ExpeditionActive() {
     }
 
     const reward = rollExpeditionRewards(activeLocation);
-    const adjustedGold = Math.max(0, Math.round(reward.gold));
-    const adjustedXp = Math.max(0, Math.round(reward.xp));
+    const estateBuffs = getActiveEstateBuffs(profile);
+    const goldMultiplier = 1 + (estateBuffs.goldBonus || 0) / 100;
+    const xpMultiplier = 1 + (estateBuffs.xpBonus || 0) / 100;
+    const adjustedGold = Math.max(0, Math.round(reward.gold * goldMultiplier));
+    const adjustedXp = Math.max(0, Math.round(reward.xp * xpMultiplier));
     const itemsGained = reward.items || {};
     const nextInventory = addItems(profile.inventory || {}, itemsGained);
     const currentLevel = profile.stats?.level ?? 1;
@@ -119,6 +124,7 @@ export default function ExpeditionActive() {
     const username = authService.getCurrentUsername();
     localStorage.removeItem(getExpeditionKey(username));
     setSession(null);
+    audioManager.play(nextLevel > currentLevel ? 'levelup' : 'coin');
     const anchor = claimButtonRef.current;
     if (anchor) {
       pushReward(`+${adjustedGold}g`, { tone: 'gold', anchor });
