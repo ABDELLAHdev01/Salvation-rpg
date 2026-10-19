@@ -1,64 +1,143 @@
-import React, { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import Sidebar from '../../shared/layout/Sidebar';
+import React, { useEffect, useState, useCallback } from 'react';
 import authService from '../../core/services/AuthService';
 import characterService from '../../core/services/CharacterService';
 import PhaserWorldCanvas from '../../core/phaser/PhaserWorldCanvas';
-import WorldHUD from '../../core/world/WorldHUD';
 import gameEventBridge, { gameEvents } from '../../core/phaser/gameEventBridge';
-import { getItemById } from '../../core/data/itemsCatalog';
-import { getPlayerXpForLevel } from '../../core/data/playerData';
 import audioManager from '../../core/audio/AudioManager';
-import { EQUIPPED_TOOLS } from '../../core/phaser/characterCustomizationData';
-
-const MOCK_AUTH = import.meta.env.VITE_MOCK_AUTH === 'true';
+import { EQUIPPED_TOOLS, DEFAULT_CUSTOMIZATION, sanitizeCustomization } from '../../core/phaser/characterCustomizationData';
+import InGameInventoryModal from './modals/InGameInventoryModal';
+import InGameWardrobeModal from './modals/InGameWardrobeModal';
+import InGameForgeModal from './modals/InGameForgeModal';
+import InGameBazaarModal from './modals/InGameBazaarModal';
+import InGameSaveModal from './modals/InGameSaveModal';
+import InGameHelpModal from './modals/InGameHelpModal';
 
 const ZONES = [
-  { id: 'homestead', label: 'Homestead & Manor', icon: '🏡', kicker: 'Sunforge Estate' },
-  { id: 'mine', label: 'Deepforge Mine', icon: '⛏️', kicker: 'Subterranean Cavern' },
-  { id: 'forest', label: 'Enchanted Forest', icon: '🌲', kicker: 'Wild Whispering Grove' },
-  { id: 'village', label: 'Merchant Bazaar', icon: '🏛️', kicker: 'Imperial Plaza' },
+  { id: 'homestead', label: 'Homestead', icon: '🏡', kicker: 'Sunforge Estate' },
+  { id: 'mine', label: 'Deep Mine', icon: '⛏️', kicker: 'Cavern Seams' },
+  { id: 'forest', label: 'Whispering Forest', icon: '🌲', kicker: 'Enchanted Grove' },
+  { id: 'village', label: 'Valorian Bazaar', icon: '🏛️', kicker: 'Merchant Plaza' },
 ];
 
 export default function WorldPage() {
-  const navigate = useNavigate();
   const [character, setCharacter] = useState(null);
   const [profile, setProfile] = useState(null);
   const [currentZone, setCurrentZone] = useState('homestead');
+  const [isFullscreen, setIsFullscreen] = useState(false);
+
+  // In-Game Modal Overlays
   const [isInventoryOpen, setIsInventoryOpen] = useState(false);
+  const [isWardrobeOpen, setIsWardrobeOpen] = useState(false);
+  const [isForgeOpen, setIsForgeOpen] = useState(false);
+  const [isBazaarOpen, setIsBazaarOpen] = useState(false);
+  const [isSaveOpen, setIsSaveOpen] = useState(false);
+  const [isHelpOpen, setIsHelpOpen] = useState(false);
 
-  useEffect(() => {
-    if (!MOCK_AUTH) {
-      navigate('/login');
-      return;
-    }
+  // Load character & profile on mount
+  const loadActiveHero = useCallback(() => {
+    authService.ensureOfflineSession();
+    const username = authService.getCurrentUsername() || 'offline-hero';
+    let savedCharacter = characterService.getMockCharacter(username);
+    let savedProfile = characterService.getMockProfile(username);
 
-    const username = authService.getCurrentUsername();
-    if (!username) {
-      navigate('/login');
-      return;
-    }
-
-    const savedCharacter = characterService.getMockCharacter(username);
+    // Auto-initialize default Warden if none exists so game boots immediately
     if (!savedCharacter) {
-      navigate('/character');
-      return;
+      savedCharacter = {
+        characterName: 'Valen',
+        race: 'HUMAN',
+        raceKey: 'human',
+        className: 'Vanguard',
+        gender: 'Male',
+        city: 'eldoria',
+        customization: { ...DEFAULT_CUSTOMIZATION },
+        userId: username,
+      };
+      const characters = JSON.parse(localStorage.getItem('mockCharacters') || '{}');
+      characters[username] = savedCharacter;
+      localStorage.setItem('mockCharacters', JSON.stringify(characters));
     }
 
-    const savedProfile = characterService.getMockProfile(username);
+    if (!savedProfile) {
+      savedProfile = {
+        username,
+        stats: { level: 1, xp: 0, power: 120, gold: 350 },
+        inventory: { 'health-potion': 3, iron: 6, copper: 4, turnip: 5 },
+      };
+      const profiles = JSON.parse(localStorage.getItem('mockProfiles') || '{}');
+      profiles[username] = savedProfile;
+      localStorage.setItem('mockProfiles', JSON.stringify(profiles));
+    }
+
     setCharacter(savedCharacter);
     setProfile(savedProfile);
-  }, [navigate]);
-
-  useEffect(() => {
-    const unsub = gameEventBridge.on(gameEvents.ZONE_CHANGED, ({ zone }) => {
-      setCurrentZone(zone);
-    });
-    return unsub;
   }, []);
 
-  const handleProfileUpdate = (updatedProfile) => {
-    setProfile(updatedProfile);
+  useEffect(() => {
+    loadActiveHero();
+  }, [loadActiveHero]);
+
+  // Listen to zone changes and in-game modal triggers from Phaser
+  useEffect(() => {
+    const cleanups = [
+      gameEventBridge.on(gameEvents.ZONE_CHANGED, ({ zone }) => {
+        setCurrentZone(zone);
+      }),
+      gameEventBridge.on('OPEN_IN_GAME_INVENTORY', () => {
+        setIsInventoryOpen(true);
+      }),
+      gameEventBridge.on('OPEN_IN_GAME_FORGE', () => {
+        setIsForgeOpen(true);
+      }),
+      gameEventBridge.on('OPEN_IN_GAME_BAZAAR', () => {
+        setIsBazaarOpen(true);
+      }),
+    ];
+
+    const handleFullscreenChange = () => {
+      setIsFullscreen(Boolean(document.fullscreenElement));
+    };
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+
+    // Global in-game keyboard shortcuts
+    const handleKeyDown = (e) => {
+      // Don't trigger if typing in an input
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
+      if (e.key === 'Escape') {
+        setIsInventoryOpen(false);
+        setIsWardrobeOpen(false);
+        setIsForgeOpen(false);
+        setIsBazaarOpen(false);
+        setIsSaveOpen(false);
+        setIsHelpOpen(false);
+      } else if (e.key === 'i' || e.key === 'I' || e.key === 'b' || e.key === 'B') {
+        setIsInventoryOpen((prev) => !prev);
+        audioManager.play('tap');
+      } else if (e.key === 'c' || e.key === 'C') {
+        setIsWardrobeOpen((prev) => !prev);
+        audioManager.play('tap');
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      cleanups.forEach((unsub) => unsub());
+      document.removeEventListener('fullscreenchange', handleFullscreenChange);
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, []);
+
+  const toggleFullscreen = () => {
+    audioManager.play('tap');
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen().catch(() => {});
+      setIsFullscreen(true);
+    } else {
+      if (document.exitFullscreen) {
+        document.exitFullscreen().catch(() => {});
+        setIsFullscreen(false);
+      }
+    }
   };
 
   const handleSwitchZone = (zoneId) => {
@@ -68,60 +147,53 @@ export default function WorldPage() {
     gameEventBridge.emit(gameEvents.SWITCH_ZONE, { zone: zoneId });
   };
 
-  const playerLevel = profile?.stats?.level ?? 1;
-  const playerXp = profile?.stats?.xp ?? 0;
-  const playerXpTarget = getPlayerXpForLevel(playerLevel);
-
-  // Active Tool metadata
-  const currentToolId = character?.customization?.equippedTool || character?.customization?.tool || 'iron_pickaxe';
-  const equippedToolMeta = EQUIPPED_TOOLS.find((t) => t.id === currentToolId) || {
-    name: 'Iron Pickaxe',
-    icon: '⛏️',
+  const handleUseInventoryPotion = (itemId) => {
+    if (itemId.includes('potion') || itemId.includes('elixir')) {
+      gameEventBridge.emit(gameEvents.USE_HEALING_POTION);
+    }
   };
 
-  // Current zone metadata
   const activeZoneMeta = ZONES.find((z) => z.id === currentZone) || ZONES[0];
-
-  // Inventory entries for the vault modal
-  const inventoryItems = Object.entries(profile?.inventory || {})
-    .filter(([, count]) => Number(count) > 0)
-    .map(([itemId, count]) => {
-      const item = getItemById(itemId) || {
-        id: itemId,
-        name: itemId.replace(/[-_]/g, ' '),
-        category: 'Resource',
-      };
-      return { ...item, count };
-    });
+  const playerLevel = profile?.stats?.level ?? 1;
+  const playerGold = profile?.stats?.gold ?? 0;
+  const playerXp = profile?.stats?.xp ?? 0;
+  const currentToolId = character?.customization?.equippedTool || character?.customization?.tool || 'iron_pickaxe';
+  const toolMeta = EQUIPPED_TOOLS.find((t) => t.id === currentToolId) || { name: 'Iron Pickaxe', icon: '⛏️' };
 
   return (
-    <section className="min-h-screen bg-page-primary dashboard-shell text-gray-100">
-      <Sidebar />
-      <div className="dashboard-orb orb-1" />
-      <div className="dashboard-orb orb-2" />
-      <div className="dashboard-orb orb-3" />
+    <div className="fixed inset-0 w-screen h-screen overflow-hidden bg-black select-none z-0">
+      {/* 2D Interactive Phaser RPG Canvas filling 100% of viewport */}
+      <PhaserWorldCanvas
+        customization={sanitizeCustomization(character?.customization)}
+        profile={profile}
+        onProfileUpdate={setProfile}
+        initialZone={currentZone}
+        className="w-full h-full"
+      />
 
-      <main className="relative z-10 mx-auto max-w-6xl px-4 py-8 pt-20 sm:px-6">
-        {/* World HUD */}
-        <WorldHUD
-          title={activeZoneMeta.label}
-          zoneKicker={activeZoneMeta.kicker}
-          levelLabel="Warden Lvl"
-          level={playerLevel}
-          currentXp={playerXp}
-          targetXp={playerXpTarget}
-          gold={profile?.stats?.gold ?? 0}
-          weather={{ season: 'Spring', label: 'Sunforge Radiance' }}
-          tool={{ name: equippedToolMeta.name, icon: equippedToolMeta.icon }}
-          onOpenInventory={() => setIsInventoryOpen(true)}
-          className="mb-4"
-        />
+      {/* =========================================================================
+          TOP HUD OVERLAY
+          ========================================================================= */}
+      <header className="pointer-events-none fixed top-0 inset-x-0 z-20 flex items-start justify-between p-3 sm:p-4">
+        {/* Top Left: Region Title & Fast Travel Navigation */}
+        <div className="pointer-events-auto flex flex-col gap-2">
+          {/* Current Region Card */}
+          <div className="flex items-center gap-2 rounded-2xl border border-yellow-600/50 bg-gray-950/90 px-3.5 py-1.5 shadow-2xl backdrop-blur-md">
+            <span className="text-xl">{activeZoneMeta.icon}</span>
+            <div>
+              <span className="block text-[9px] font-bold uppercase tracking-wider text-yellow-400/80 leading-none">
+                {activeZoneMeta.kicker}
+              </span>
+              <span className="font-serif text-xs font-bold text-white sm:text-sm leading-tight">
+                {activeZoneMeta.label}
+              </span>
+            </div>
+          </div>
 
-        {/* Zone Fast-Travel Pills */}
-        <div className="mb-4 flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-yellow-700/30 bg-gray-950/70 p-2 backdrop-blur">
-          <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
-            <span className="hidden sm:inline-block px-2 text-[10px] font-bold uppercase tracking-widest text-yellow-500/80">
-              Fast Travel:
+          {/* Fast-Travel Quick Bar */}
+          <div className="hidden sm:flex items-center gap-1.5 rounded-2xl border border-yellow-700/30 bg-gray-950/80 p-1.5 shadow-xl backdrop-blur-md">
+            <span className="px-1.5 text-[9px] font-bold uppercase tracking-wider text-yellow-500/70">
+              Travel:
             </span>
             {ZONES.map((zone) => {
               const isActive = currentZone === zone.id;
@@ -130,181 +202,201 @@ export default function WorldPage() {
                   key={zone.id}
                   type="button"
                   onClick={() => handleSwitchZone(zone.id)}
-                  className={`flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-bold transition-all ${
+                  className={`flex items-center gap-1 rounded-xl px-2.5 py-1 text-xs font-bold transition-all ${
                     isActive
-                      ? 'border border-yellow-400 bg-yellow-500/20 text-yellow-200 shadow-md'
-                      : 'border border-yellow-700/20 bg-gray-900/60 text-gray-400 hover:border-yellow-600/40 hover:text-white'
+                      ? 'border border-yellow-400 bg-yellow-500/25 text-yellow-200 shadow'
+                      : 'border border-transparent text-gray-400 hover:text-white hover:bg-gray-900'
                   }`}
+                  title={`Fast-travel to ${zone.label}`}
                 >
                   <span>{zone.icon}</span>
-                  <span>{zone.label}</span>
+                  <span className="hidden md:inline">{zone.label}</span>
                 </button>
               );
             })}
           </div>
-
-          <div className="flex items-center gap-2">
-            <Link
-              to="/character/edit"
-              onClick={() => audioManager.play('tap')}
-              className="flex items-center gap-1.5 rounded-xl border border-yellow-700/40 bg-gray-900/80 px-3 py-1.5 text-xs font-bold text-yellow-300 hover:border-yellow-400 hover:bg-yellow-500/10 transition"
-              title="Re-customize character appearance"
-            >
-              <span>🎨</span>
-              <span className="hidden md:inline">Wardrobe</span>
-            </Link>
-            <button
-              type="button"
-              onClick={() => {
-                audioManager.play('tap');
-                setIsInventoryOpen(true);
-              }}
-              className="flex items-center gap-1.5 rounded-xl border border-yellow-700/40 bg-gray-900/80 px-3 py-1.5 text-xs font-bold text-yellow-300 hover:border-yellow-400 hover:bg-yellow-500/10 transition"
-            >
-              <span>🎒</span>
-              <span>Vault Pouch ({inventoryItems.length})</span>
-            </button>
-          </div>
         </div>
 
-        {/* 2D Phaser Interactive RPG Canvas */}
-        <div className="relative">
-          <PhaserWorldCanvas
-            customization={character?.customization}
-            profile={profile}
-            onProfileUpdate={handleProfileUpdate}
-            initialZone={currentZone}
-          />
+        {/* Top Right: Player Stats & In-Game Action Menus */}
+        <div className="pointer-events-auto flex flex-wrap items-center justify-end gap-1.5 sm:gap-2">
+          {/* Gold Counter */}
+          <div className="flex items-center gap-1.5 rounded-2xl border border-yellow-600/40 bg-gray-950/90 px-3 py-1.5 shadow-xl backdrop-blur-md">
+            <span className="text-sm">🪙</span>
+            <span className="font-mono text-xs font-bold text-yellow-300">
+              {playerGold}g
+            </span>
+          </div>
+
+          {/* Level & XP */}
+          <div className="hidden sm:flex items-center gap-1.5 rounded-2xl border border-yellow-600/40 bg-gray-950/90 px-3 py-1.5 shadow-xl backdrop-blur-md">
+            <span className="text-sm">⭐</span>
+            <span className="font-mono text-xs font-bold text-yellow-300">
+              Lvl {playerLevel} ({playerXp} XP)
+            </span>
+          </div>
+
+          {/* Equipped Weapon / Tool */}
+          <div
+            className="hidden md:flex items-center gap-1.5 rounded-2xl border border-yellow-600/40 bg-gray-950/90 px-3 py-1.5 shadow-xl backdrop-blur-md"
+            title={`Equipped Weapon/Tool: ${toolMeta.name}`}
+          >
+            <span className="text-sm">{toolMeta.icon}</span>
+            <span className="font-serif text-xs font-bold text-gray-200">
+              {toolMeta.name}
+            </span>
+          </div>
+
+          {/* Action Modals Buttons */}
+          <button
+            type="button"
+            onClick={() => {
+              audioManager.play('tap');
+              setIsInventoryOpen(true);
+            }}
+            className="flex items-center gap-1.5 rounded-2xl border border-yellow-600/40 bg-gray-950/90 px-3 py-1.5 text-xs font-bold text-yellow-300 shadow-xl backdrop-blur-md hover:border-yellow-400 hover:bg-yellow-500/15 transition active:scale-95"
+            title="Open Adventurer Pouch [I]"
+          >
+            <span>🎒</span>
+            <span className="hidden sm:inline">Pouch</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              audioManager.play('tap');
+              setIsWardrobeOpen(true);
+            }}
+            className="flex items-center gap-1.5 rounded-2xl border border-yellow-600/40 bg-gray-950/90 px-3 py-1.5 text-xs font-bold text-yellow-300 shadow-xl backdrop-blur-md hover:border-yellow-400 hover:bg-yellow-500/15 transition active:scale-95"
+            title="Warden's Wardrobe Customizer [C]"
+          >
+            <span>🎨</span>
+            <span className="hidden sm:inline">Wardrobe</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              audioManager.play('tap');
+              setIsForgeOpen(true);
+            }}
+            className="flex items-center gap-1.5 rounded-2xl border border-yellow-600/40 bg-gray-950/90 px-3 py-1.5 text-xs font-bold text-yellow-300 shadow-xl backdrop-blur-md hover:border-yellow-400 hover:bg-yellow-500/15 transition active:scale-95"
+            title="Artisan Forge & Smelter"
+          >
+            <span>⚒️</span>
+            <span className="hidden md:inline">Forge</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              audioManager.play('tap');
+              setIsBazaarOpen(true);
+            }}
+            className="flex items-center gap-1.5 rounded-2xl border border-yellow-600/40 bg-gray-950/90 px-3 py-1.5 text-xs font-bold text-yellow-300 shadow-xl backdrop-blur-md hover:border-yellow-400 hover:bg-yellow-500/15 transition active:scale-95"
+            title="Merchant Bazaar & Seed Shop"
+          >
+            <span>🏛️</span>
+            <span className="hidden md:inline">Bazaar</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              audioManager.play('tap');
+              setIsSaveOpen(true);
+            }}
+            className="flex items-center gap-1 rounded-2xl border border-yellow-600/40 bg-gray-950/90 px-2.5 py-1.5 text-xs font-bold text-yellow-300 shadow-xl backdrop-blur-md hover:border-yellow-400 hover:bg-yellow-500/15 transition active:scale-95"
+            title="Save / Load Game"
+          >
+            <span>💾</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              audioManager.play('tap');
+              setIsHelpOpen(true);
+            }}
+            className="flex items-center gap-1 rounded-2xl border border-yellow-600/40 bg-gray-950/90 px-2.5 py-1.5 text-xs font-bold text-yellow-300 shadow-xl backdrop-blur-md hover:border-yellow-400 hover:bg-yellow-500/15 transition active:scale-95"
+            title="Game Controls & Help [?]"
+          >
+            <span>❓</span>
+          </button>
+
+          {/* Fullscreen Toggle Button */}
+          <button
+            type="button"
+            onClick={toggleFullscreen}
+            className={`flex items-center gap-1 rounded-2xl border px-3 py-1.5 text-xs font-bold shadow-xl backdrop-blur-md transition active:scale-95 ${
+              isFullscreen
+                ? 'border-yellow-400 bg-yellow-500/30 text-yellow-200'
+                : 'border-yellow-600/40 bg-gray-950/90 text-yellow-300 hover:border-yellow-400 hover:bg-yellow-500/15'
+            }`}
+            title="Toggle Borderless Fullscreen Mode [F11]"
+          >
+            <span>{isFullscreen ? '↙️' : '⛶'}</span>
+            <span className="hidden sm:inline">{isFullscreen ? 'Window' : 'Fullscreen'}</span>
+          </button>
         </div>
+      </header>
 
-        {/* Exploration Guide & Hotkeys Reference */}
-        <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <div className="rounded-2xl border border-yellow-700/30 bg-gray-950/80 p-4 backdrop-blur">
-            <div className="flex items-center gap-2 text-yellow-400 font-bold text-sm mb-2">
-              <span>🎮</span>
-              <span>Movement &amp; Input</span>
-            </div>
-            <ul className="space-y-1 text-xs text-gray-300">
-              <li>• <span className="font-mono text-yellow-300 font-semibold">WASD / Arrows</span>: Walk</li>
-              <li>• <span className="font-mono text-yellow-300 font-semibold">Shift</span>: Hold to sprint</li>
-              <li>• <span className="font-mono text-yellow-300 font-semibold">[E]</span>: Interact with object</li>
-              <li>• Camera smoothly follows avatar</li>
-            </ul>
-          </div>
+      {/* =========================================================================
+          BOTTOM HUD CONTROLS HINT (MINIMAL & NON-INTRUSIVE)
+          ========================================================================= */}
+      <footer className="pointer-events-none fixed bottom-3 left-4 z-20 hidden md:flex items-center gap-2 rounded-2xl border border-yellow-700/30 bg-gray-950/80 px-3.5 py-1 text-[11px] font-mono text-gray-300 backdrop-blur-md shadow-xl">
+        <span className="text-yellow-400 font-bold">WASD</span> Walk ·
+        <span className="text-yellow-400 font-bold">Shift</span> Sprint ·
+        <span className="text-yellow-400 font-bold">Click/Space</span> Attack ·
+        <span className="text-yellow-400 font-bold">[E]</span> Interact ·
+        <span className="text-yellow-400 font-bold">[Q]</span> Heal ·
+        <span className="text-yellow-400 font-bold">[I]</span> Pouch ·
+        <span className="text-yellow-400 font-bold">[C]</span> Wardrobe
+      </footer>
 
-          <div className="rounded-2xl border border-yellow-700/30 bg-gray-950/80 p-4 backdrop-blur">
-            <div className="flex items-center gap-2 text-yellow-400 font-bold text-sm mb-2">
-              <span>⚔️</span>
-              <span>Real-Time PvE Combat</span>
-            </div>
-            <ul className="space-y-1 text-xs text-gray-300">
-              <li>• <span className="font-mono text-yellow-300 font-semibold">Space / Click</span>: Swing weapon</li>
-              <li>• <span className="font-mono text-yellow-300 font-semibold">[Q]</span>: Drink healing elixir</li>
-              <li>• Slay Emerald Slimes &amp; Shadow Wolves in Forest</li>
-              <li>• Defeat Skeletons &amp; Goblins in Mine</li>
-            </ul>
-          </div>
+      {/* =========================================================================
+          IN-GAME MODALS (RENDER DIRECTLY OVER 2D REALM)
+          ========================================================================= */}
+      <InGameInventoryModal
+        isOpen={isInventoryOpen}
+        onClose={() => setIsInventoryOpen(false)}
+        inventory={profile?.inventory || {}}
+        gold={playerGold}
+        onUseItem={handleUseInventoryPotion}
+      />
 
-          <div className="rounded-2xl border border-yellow-700/30 bg-gray-950/80 p-4 backdrop-blur">
-            <div className="flex items-center gap-2 text-yellow-400 font-bold text-sm mb-2">
-              <span>🌾</span>
-              <span>Farming &amp; Mining</span>
-            </div>
-            <ul className="space-y-1 text-xs text-gray-300">
-              <li>• <span className="text-emerald-300 font-semibold">Farm Plots</span>: Plant seeds &amp; harvest</li>
-              <li>• <span className="text-amber-300 font-semibold">Cavern Seams</span>: Mine iron, gold &amp; geodes</li>
-              <li>• <span className="text-sky-300 font-semibold">Vault Chest</span>: Open pouch inventory</li>
-            </ul>
-          </div>
+      <InGameWardrobeModal
+        isOpen={isWardrobeOpen}
+        onClose={() => setIsWardrobeOpen(false)}
+        character={character}
+        onCharacterUpdate={setCharacter}
+      />
 
-          <div className="rounded-2xl border border-yellow-700/30 bg-gray-950/80 p-4 backdrop-blur">
-            <div className="flex items-center gap-2 text-yellow-400 font-bold text-sm mb-2">
-              <span>🚪</span>
-              <span>Realm Destinations</span>
-            </div>
-            <ul className="space-y-1 text-xs text-gray-300">
-              <li>• Walk across stone roads to change zone</li>
-              <li>• Forge in Mine: Smelt ingots</li>
-              <li>• Bazaar: Trade goods &amp; gear</li>
-              <li>• Return to <Link to="/dashboard" className="text-yellow-400 underline hover:text-yellow-200">Citadel Hub</Link></li>
-            </ul>
-          </div>
-        </div>
+      <InGameForgeModal
+        isOpen={isForgeOpen}
+        onClose={() => setIsForgeOpen(false)}
+        profile={profile}
+        onProfileUpdate={setProfile}
+      />
 
-        {/* Vault Pouch Modal */}
-        {isInventoryOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm animate-fadeIn">
-            <div className="w-full max-w-lg rounded-3xl border-2 border-yellow-600/50 bg-gray-950 p-6 shadow-2xl">
-              <div className="flex items-center justify-between border-b border-yellow-700/30 pb-4">
-                <div className="flex items-center gap-2">
-                  <span className="text-2xl">🎒</span>
-                  <div>
-                    <h3 className="font-serif text-lg font-bold text-white">Adventurer&apos;s Vault Pouch</h3>
-                    <p className="text-xs text-gray-400">Items and harvested resources carried in your world pack</p>
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setIsInventoryOpen(false)}
-                  className="h-8 w-8 rounded-lg border border-yellow-700/30 bg-gray-900 text-sm font-bold text-gray-400 hover:text-white"
-                >
-                  ✕
-                </button>
-              </div>
+      <InGameBazaarModal
+        isOpen={isBazaarOpen}
+        onClose={() => setIsBazaarOpen(false)}
+        profile={profile}
+        onProfileUpdate={setProfile}
+      />
 
-              <div className="mt-4 max-h-80 overflow-y-auto space-y-2 pr-1 custom-scrollbar">
-                {inventoryItems.length === 0 ? (
-                  <div className="py-8 text-center text-sm text-gray-400">
-                    Your pouch is empty. Mine some ores or harvest crops in the world!
-                  </div>
-                ) : (
-                  inventoryItems.map((item) => (
-                    <div
-                      key={item.id}
-                      className="flex items-center justify-between rounded-xl border border-yellow-700/20 bg-gray-900/60 p-2.5 transition hover:border-yellow-600/40"
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-lg border border-yellow-700/30 bg-black/50 text-xl">
-                          {item.id.includes('iron') ? '⚙️' : item.id.includes('copper') ? '🪨' : item.id.includes('gold') ? '🪙' : item.id.includes('seed') ? '🌱' : '📦'}
-                        </div>
-                        <div>
-                          <p className="text-sm font-semibold text-white capitalize">{item.name}</p>
-                          <p className="text-[10px] text-yellow-400/80 uppercase font-mono tracking-wider">{item.category}</p>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <span className="font-mono text-sm font-bold text-yellow-300">×{item.count}</span>
-                      </div>
-                    </div>
-                  ))
-                )}
-              </div>
+      <InGameSaveModal
+        isOpen={isSaveOpen}
+        onClose={() => setIsSaveOpen(false)}
+        character={character}
+        profile={profile}
+        onReloadGame={loadActiveHero}
+      />
 
-              <div className="mt-5 flex items-center justify-between border-t border-yellow-700/30 pt-4">
-                <div className="flex items-center gap-1.5 font-mono text-sm font-bold text-yellow-300">
-                  <span>🪙</span>
-                  <span>{profile?.stats?.gold ?? 0} Gold</span>
-                </div>
-                <div className="flex gap-2">
-                  <Link
-                    to="/inventory"
-                    className="rounded-xl border border-yellow-700/40 bg-gray-900 px-3 py-1.5 text-xs font-semibold text-yellow-300 hover:border-yellow-400 transition"
-                  >
-                    Open Full Ledger
-                  </Link>
-                  <button
-                    type="button"
-                    onClick={() => setIsInventoryOpen(false)}
-                    className="rounded-xl bg-yellow-500 px-4 py-1.5 text-xs font-bold text-black hover:bg-yellow-400 transition"
-                  >
-                    Close
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-      </main>
-    </section>
+      <InGameHelpModal
+        isOpen={isHelpOpen}
+        onClose={() => setIsHelpOpen(false)}
+      />
+    </div>
   );
 }

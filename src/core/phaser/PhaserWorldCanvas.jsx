@@ -116,11 +116,14 @@ export default function PhaserWorldCanvas({
   useEffect(() => {
     if (!containerRef.current) return;
 
+    const w = window.innerWidth || 1280;
+    const h = window.innerHeight || 800;
+
     const config = {
       type: Phaser.AUTO,
       parent: containerRef.current,
-      width: containerRef.current.clientWidth || 960,
-      height: 600,
+      width: w,
+      height: h,
       backgroundColor: '#265c2b',
       pixelArt: true,
       input: {
@@ -132,6 +135,10 @@ export default function PhaserWorldCanvas({
           gravity: { y: 0 },
           debug: false,
         },
+      },
+      scale: {
+        mode: Phaser.Scale.RESIZE,
+        autoCenter: Phaser.Scale.CENTER_BOTH,
       },
     };
 
@@ -146,9 +153,8 @@ export default function PhaserWorldCanvas({
     });
 
     const handleResize = () => {
-      if (gameRef.current && containerRef.current) {
-        const w = containerRef.current.clientWidth;
-        gameRef.current.scale.resize(w, 600);
+      if (gameRef.current) {
+        gameRef.current.scale.resize(window.innerWidth, window.innerHeight);
       }
     };
     window.addEventListener('resize', handleResize);
@@ -188,13 +194,13 @@ export default function PhaserWorldCanvas({
         handleMineNode(ore);
       }),
       gameEventBridge.on(gameEvents.CHEST_OPEN, () => {
-        toast('Vault Pouch: Check top HUD for pouch inventory items.', { icon: '🎒' });
+        gameEventBridge.emit('OPEN_IN_GAME_INVENTORY');
       }),
       gameEventBridge.on(gameEvents.WORKBENCH_OPEN, () => {
-        toast('Crafting Forge: Visit the Artisan Workshop to smelt refined bars!', { icon: '⚒️' });
+        gameEventBridge.emit('OPEN_IN_GAME_FORGE');
       }),
-      gameEventBridge.on(gameEvents.NPC_TALK, ({ stall }) => {
-        toast(`Visiting ${stall.name}: Open Bazaar from Quick Access to trade wares.`, { icon: '🪙' });
+      gameEventBridge.on(gameEvents.NPC_TALK, () => {
+        gameEventBridge.emit('OPEN_IN_GAME_BAZAAR');
       }),
       gameEventBridge.on(gameEvents.COMBAT_PLAYER_DAMAGED, ({ hp, maxHp }) => {
         setPlayerHp(hp);
@@ -320,9 +326,9 @@ export default function PhaserWorldCanvas({
   };
 
   return (
-    <div className={`relative w-full overflow-hidden rounded-3xl border-2 border-yellow-700/50 bg-gray-950 shadow-2xl select-none ${className}`}>
+    <div className={`relative w-full h-full overflow-hidden bg-gray-950 select-none ${className}`}>
       {/* Phaser Canvas Host Container */}
-      <div ref={containerRef} className="relative w-full h-[600px] overflow-hidden" />
+      <div ref={containerRef} className="absolute inset-0 w-full h-full overflow-hidden" />
 
       {/* Zone Title Header Ribbon */}
       <div className="absolute top-4 left-4 z-20 flex items-center gap-2 rounded-2xl border border-yellow-600/40 bg-gray-950/85 px-4 py-2 shadow-xl backdrop-blur">

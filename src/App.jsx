@@ -1,291 +1,73 @@
-import React, { Suspense, lazy, useEffect } from "react";
+import React, { Suspense, lazy } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/react";
 import "./core/styles/App.css";
 import "./core/styles/styles.css";
-const Home = lazy(() => import("./pages/Home"));
-const Lore = lazy(() => import("./features/lore/LorePage"));
-const CreateCharacter = lazy(() => import("./features/character/CreateCharacterPage"));
-const DashboardPlayer = lazy(() => import("./features/dashboard/DashboardPage"));
-const Adventure = lazy(() => import("./features/adventure/AdventurePage"));
-const ExpeditionActive = lazy(() => import("./features/adventure/ExpeditionActivePage"));
-const Inventory = lazy(() => import("./features/character/InventoryPage"));
-const Arena = lazy(() => import("./features/combat/ArenaPage"));
-const ArenaFight = lazy(() => import("./features/combat/ArenaFightPage"));
-const ArenaOpponent = lazy(() => import("./features/combat/ArenaOpponentPage"));
-const Market = lazy(() => import("./features/market/MarketPage"));
-const Guild = lazy(() => import("./features/guild/GuildPage"));
-const Profile = lazy(() => import("./features/profile/ProfilePage"));
-const EditCharacter = lazy(() => import("./features/character/EditCharacterPage"));
-const ArenaResult = lazy(() => import("./features/combat/ArenaResultPage"));
-const Housing = lazy(() => import("./features/housing/HousingPage"));
-const Mining = lazy(() => import("./features/mining/MiningPage"));
-const MiningClick = lazy(() => import("./features/mining/MiningClickPage"));
-const Farm = lazy(() => import("./features/farm/FarmPage"));
-const FarmPlots = lazy(() => import("./features/farm/FarmPlotsPage"));
-const FarmAnimals = lazy(() => import("./features/farm/FarmAnimalsPage"));
-const FarmTasks = lazy(() => import("./features/farm/FarmTasksPage"));
-const Workshop = lazy(() => import("./features/workshop/WorkshopPage"));
-const DevCheats = lazy(() => import("./features/system/DevCheatsPage"));
-const Missions = lazy(() => import("./features/missions/MissionsPage"));
+
 const WorldPage = lazy(() => import("./features/world/WorldPage"));
-const LoadSave = lazy(() => import("./features/system/LoadSavePage"));
-const LoginPage = lazy(() => import("./features/auth/LoginPage"));
-const RegisterPage = lazy(() => import("./features/auth/RegisterPage"));
-const PageNotFound = lazy(() => import("./shared/layout/PageNotFound"));
-import ProtectedRoute from "./core/services/ProtectedRoute";
-import { RewardFloatProvider } from "./shared/feedback/RewardFloatProvider";
-import InteractionFeedbackLayer from "./shared/feedback/InteractionFeedbackLayer";
-import OnboardingGuide from "./features/onboarding/OnboardingGuide";
+const CreateCharacter = lazy(() => import("./features/character/CreateCharacterPage"));
 
-const prefetchCommonRoutes = () => {
-  import("./features/dashboard/DashboardPage");
-  import("./features/adventure/AdventurePage");
-  import("./features/market/MarketPage");
-  import("./features/character/InventoryPage");
-};
 function App() {
-  useEffect(() => {
-    const prefetch = () => prefetchCommonRoutes();
-    if (typeof window !== "undefined" && "requestIdleCallback" in window) {
-      const idleId = window.requestIdleCallback(prefetch);
-      return () => window.cancelIdleCallback(idleId);
-    }
-    const timeoutId = window.setTimeout(prefetch, 600);
-    return () => window.clearTimeout(timeoutId);
-  }, []);
-
   return (
-    <RewardFloatProvider>
-      <InteractionFeedbackLayer />
-      <OnboardingGuide />
-      <Toaster />
+    <>
+      <Toaster
+        position="top-center"
+        toastOptions={{
+          style: {
+            background: '#090a0f',
+            color: '#fef08a',
+            border: '1px solid rgba(234, 179, 8, 0.4)',
+            fontFamily: 'serif',
+          },
+        }}
+      />
       <Analytics />
       <SpeedInsights />
       <Suspense
         fallback={
-          <div className="min-h-screen bg-gray-900 text-gray-200 flex items-center justify-center">
-            Loading...
+          <div className="fixed inset-0 bg-gray-950 text-yellow-400 font-serif flex items-center justify-center text-lg">
+            Entering the 2D Fantasy World...
           </div>
         }
       >
         <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/register" element={<RegisterPage />} />
-          <Route path="/lore" element={<Lore />} />
-          <Route path="/load-save" element={<LoadSave />} />
+          {/* Main 2D World Game Application */}
+          <Route path="/" element={<WorldPage />} />
+          <Route path="/world" element={<WorldPage />} />
           <Route path="/character" element={<CreateCharacter />} />
-          <Route
-            path="/character/edit"
-            element={
-              <ProtectedRoute>
-                <EditCharacter />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/dashboard"
-            element={
-              <ProtectedRoute>
-                <DashboardPlayer />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/world"
-            element={
-              <ProtectedRoute>
-                <WorldPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/adventure"
-            element={
-              <ProtectedRoute>
-                <Adventure />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/expedition-active"
-            element={
-              <ProtectedRoute>
-                <ExpeditionActive />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/inventory"
-            element={
-              <ProtectedRoute>
-                <Inventory />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/quests"
-            element={
-              <Navigate to="/missions?tab=chapters" replace />
-            }
-          />
-          <Route
-            path="/chronicle"
-            element={
-              <ProtectedRoute>
-                <Missions />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/quests/:questId"
-            element={
-              <Navigate to="/missions?tab=chapters" replace />
-            }
-          />
-          <Route
-            path="/arena"
-            element={
-              <ProtectedRoute>
-                <Arena />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/arena/fight"
-            element={
-              <ProtectedRoute>
-                <ArenaFight />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/arena/fight/opponent"
-            element={
-              <ProtectedRoute>
-                <ArenaOpponent />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/arena/fight/result"
-            element={
-              <ProtectedRoute>
-                <ArenaResult />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/market"
-            element={
-              <ProtectedRoute>
-                <Market />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/guild"
-            element={
-              <ProtectedRoute>
-                <Guild />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/profile"
-            element={
-              <ProtectedRoute>
-                <Profile />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/housing"
-            element={
-              <ProtectedRoute>
-                <Housing />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/mining"
-            element={
-              <ProtectedRoute>
-                <Mining />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/mining/click"
-            element={
-              <ProtectedRoute>
-                <MiningClick />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/farm"
-            element={
-              <ProtectedRoute>
-                <Farm />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/farm/plots"
-            element={
-              <ProtectedRoute>
-                <FarmPlots />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/farm/animals"
-            element={
-              <ProtectedRoute>
-                <FarmAnimals />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/farm/tasks"
-            element={
-              <ProtectedRoute>
-                <FarmTasks />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/workshop"
-            element={
-              <ProtectedRoute>
-                <Workshop />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/dev-cheats"
-            element={
-              <ProtectedRoute>
-                <DevCheats />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/missions"
-            element={
-              <ProtectedRoute>
-                <Missions />
-              </ProtectedRoute>
-            }
-          />
-          <Route path="*" element={<PageNotFound />} />
+
+          {/* All legacy web-card routes redirect directly into the 2D World */}
+          <Route path="/dashboard" element={<Navigate to="/" replace />} />
+          <Route path="/adventure" element={<Navigate to="/" replace />} />
+          <Route path="/expedition-active" element={<Navigate to="/" replace />} />
+          <Route path="/inventory" element={<Navigate to="/" replace />} />
+          <Route path="/character/edit" element={<Navigate to="/" replace />} />
+          <Route path="/quests" element={<Navigate to="/" replace />} />
+          <Route path="/quests/*" element={<Navigate to="/" replace />} />
+          <Route path="/chronicle" element={<Navigate to="/" replace />} />
+          <Route path="/arena" element={<Navigate to="/" replace />} />
+          <Route path="/arena/*" element={<Navigate to="/" replace />} />
+          <Route path="/market" element={<Navigate to="/" replace />} />
+          <Route path="/guild" element={<Navigate to="/" replace />} />
+          <Route path="/profile" element={<Navigate to="/" replace />} />
+          <Route path="/housing" element={<Navigate to="/" replace />} />
+          <Route path="/mining" element={<Navigate to="/" replace />} />
+          <Route path="/mining/*" element={<Navigate to="/" replace />} />
+          <Route path="/farm" element={<Navigate to="/" replace />} />
+          <Route path="/farm/*" element={<Navigate to="/" replace />} />
+          <Route path="/workshop" element={<Navigate to="/" replace />} />
+          <Route path="/dev-cheats" element={<Navigate to="/" replace />} />
+          <Route path="/missions" element={<Navigate to="/" replace />} />
+          <Route path="/load-save" element={<Navigate to="/" replace />} />
+          <Route path="/login" element={<Navigate to="/" replace />} />
+          <Route path="/register" element={<Navigate to="/" replace />} />
+          <Route path="/lore" element={<Navigate to="/" replace />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Suspense>
-    </RewardFloatProvider>
+    </>
   );
 }
 

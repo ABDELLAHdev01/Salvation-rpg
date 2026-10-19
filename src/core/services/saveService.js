@@ -229,4 +229,35 @@ class SaveService {
 }
 
 export const saveService = new SaveService();
+
+export function exportSavePayloadJSON(username) {
+  try {
+    const rawChars = localStorage.getItem(MOCK_CHARACTERS_KEY);
+    const rawProfiles = localStorage.getItem(MOCK_PROFILES_KEY);
+    const characters = rawChars ? JSON.parse(rawChars) : {};
+    const profiles = rawProfiles ? JSON.parse(rawProfiles) : {};
+
+    const targetUser = username || Object.keys(characters)[0] || 'Warden';
+    const character = characters[targetUser] || Object.values(characters)[0] || {};
+    const profile = profiles[targetUser] || Object.values(profiles)[0] || {};
+
+    const payload = {
+      app: 'Salvation-RPG',
+      schemaVersion: CURRENT_SAVE_SCHEMA_VERSION,
+      exportedAt: new Date().toISOString(),
+      username: targetUser,
+      character,
+      profile,
+    };
+    return JSON.stringify(payload, null, 2);
+  } catch (err) {
+    console.error('[SaveService] exportSavePayloadJSON failed:', err);
+    return null;
+  }
+}
+
+export function importSavePayloadJSON(jsonString) {
+  return saveService.importSave(jsonString);
+}
+
 export default saveService;
