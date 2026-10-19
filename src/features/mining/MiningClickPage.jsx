@@ -28,6 +28,10 @@ import MiningClickInfoPanel from './MiningClickInfoPanel';
 import MiningClickHeader from './widgets/MiningClickHeader';
 import MiningClickStats from './widgets/MiningClickStats';
 
+import { useRewardFloat } from '../../shared/feedback/RewardFloatProvider';
+import WorldHUD from '../../core/world/WorldHUD';
+import MiningWorldView from './MiningWorldView';
+
 // Standard UI Components
 import Panel from '../../shared/ui/Panel';
 import Button from '../../shared/ui/Button';
@@ -37,6 +41,8 @@ const MOCK_AUTH = import.meta.env.VITE_MOCK_AUTH === 'true';
 export default function MiningClick() {
   const [profile, setProfile] = useState(null);
   const [now, setNow] = useState(Date.now());
+  const [viewMode, setViewMode] = useState('world');
+  const pushReward = useRewardFloat();
 
   useEffect(() => {
     if (!MOCK_AUTH) return;
@@ -220,6 +226,99 @@ export default function MiningClick() {
     handleUpdateProfile(finalUpdates);
   };
 
+  const handleWorldMineDeposit = ({ oreId, isShattered }) => {
+    if (!profile) return;
+
+    audioManager.play('mine_strike');
+
+    const hitResult = rollMiningTick({
+      miningLevel,
+      pickaxeLevel,
+      forgeLevel: miningForgeLevel,
+      dailyVein: dailyVeinBonus,
+      weeklySurge: weeklySurgeBonus,
+      prestigeLevel: miningPrestigeLevel,
+    });
+
+    const hitYieldMap = hitResult.yieldMap || {};
+    if (!hitYieldMap[oreId]) {
+      hitYieldMap[oreId] = 1;
+    }
+
+    const oreGains = {};
+    Object.entries(hitYieldMap).forEach(([id, amount]) => {
+      oreGains[id] = Math.max(1, Math.round(amount * factionYieldMultiplier));
+    });
+
+    const clickXpGain = Math.max(2, Math.floor(clickBaseXp * (hitResult.xpMultiplier || 1)));
+
+    if (isShattered) {
+      audioManager.play('node_shatter');
+      const bonusCount = Math.floor(Math.random() * 3) + 2;
+      oreGains[oreId] = (oreGains[oreId] || 0) + bonusCount;
+
+      let foundGeode = false;
+      if (Math.random() < 0.25) {
+        oreGains['mystery-geode'] = (oreGains['mystery-geode'] || 0) + 1;
+        foundGeode = true;
+      }
+
+      const totalXpGain = clickXpGain + clickBaseXp * 6;
+      let nextLevel = miningLevel;
+      let nextXp = miningXp + totalXpGain;
+      let xpNeeded = getMiningXpForLevel(nextLevel);
+      let leveledUp = false;
+
+      while (nextXp >= xpNeeded) {
+        nextXp -= xpNeeded;
+        nextLevel += 1;
+        xpNeeded = getMiningXpForLevel(nextLevel);
+        leveledUp = true;
+      }
+
+      const nextInventory = addItems(profile.inventory || {}, oreGains);
+      const updated = characterService.updateMockProfile({
+        inventory: nextInventory,
+        miningLevel: nextLevel,
+        miningXp: nextXp,
+      });
+
+      setProfile(updated);
+      if (leveledUp) {
+        audioManager.play('level_up');
+        toast.success(`Mining Level Up! Reached Level ${nextLevel}!`);
+      }
+      toast.success(
+        `Vein shattered! Harvested ${oreGains[oreId]}x ${oreId.toUpperCase()} & +${totalXpGain} XP!${foundGeode ? ' 💎 Found an Uncracked Geode!' : ''}`
+      );
+    } else {
+      const nextInventory = addItems(profile.inventory || {}, oreGains);
+      let nextLevel = miningLevel;
+      let nextXp = miningXp + clickXpGain;
+      let xpNeeded = getMiningXpForLevel(nextLevel);
+      let leveledUp = false;
+
+      while (nextXp >= xpNeeded) {
+        nextXp -= xpNeeded;
+        nextLevel += 1;
+        xpNeeded = getMiningXpForLevel(nextLevel);
+        leveledUp = true;
+      }
+
+      const updated = characterService.updateMockProfile({
+        inventory: nextInventory,
+        miningLevel: nextLevel,
+        miningXp: nextXp,
+      });
+
+      setProfile(updated);
+      if (leveledUp) {
+        audioManager.play('level_up');
+        toast.success(`Mining Level Up! Reached Level ${nextLevel}!`);
+      }
+    }
+  };
+
   const handleSpawnNode = () => {
     const tier = getTierByMiningLevel(miningLevel);
     const possibleOres = getOresForTier(tier);
@@ -293,8 +392,21 @@ export default function MiningClick() {
   return (
     <section className="min-h-screen bg-page-primary lg:pl-64 dashboard-shell">
       <Sidebar />
-      <div className="relative z-10 mx-auto max-w-6xl px-6 py-16 pt-24">
-        <MiningClickHeader miningLevel={miningLevel} />
+      <div className="relative z-10 mx-auto max-w-6xl px-4 py-16 pt-20 sm:px-6">
+        {/* Fantasy RPG Game HUD */}
+        <WorldHUD
+          title="The Abyssal Seam"
+          zoneKicker={`Cavern Strata · Depth Tier ${getTierByMiningLevel(miningLevel)}`}
+          levelLabel="Mining Level"
+          level={miningLevel}
+          currentXp={miningXp}
+          targetXp={miningXpTarget}
+          gold={profile?.stats?.gold || 0}
+          tool={{ name: pickaxeUpgrade?.name || 'Pickaxe', icon: '⛏️' }}
+          viewMode={viewMode}
+          onToggleViewMode={() => setViewMode((prev) => (prev === 'world' ? 'console' : 'world'))}
+          className="mb-6"
+        />
 
         {isDrakmor && (
           <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-red-700/50 bg-red-950/70 px-4 py-1.5 text-xs text-red-300">
@@ -303,78 +415,111 @@ export default function MiningClick() {
           </div>
         )}
 
-        <div className="mb-6 flex items-center gap-3.5 rounded-xl border border-yellow-700/30 bg-gray-950/70 p-3.5 backdrop-blur text-xs">
-          <div className="h-10 w-10 shrink-0 overflow-hidden rounded-lg border border-yellow-700/40 bg-gray-900">
+        <div className="mb-6 flex items-center gap-3.5 rounded-2xl border border-yellow-700/30 bg-gray-950/70 p-3.5 backdrop-blur text-xs">
+          <div className="h-10 w-10 shrink-0 overflow-hidden rounded-xl border border-yellow-700/40 bg-gray-900 shadow-md">
             <img src="/raceicon/dwarfmale.webp" alt="Old Bran the Delver" className="h-full w-full object-cover" />
           </div>
           <div>
             <p className="font-bold text-yellow-400">Old Bran the Delver <span className="font-normal text-gray-400 text-[11px]">· Scout of the Sunken Shafts</span></p>
-            <p className="text-gray-300 italic">"Hear that deep hum beneath the seam? That's not rock settling, lad—that's the mountain breathing. Keep your pickaxe sharp and listen for crystalline geode pockets!"</p>
+            <p className="text-gray-300 italic">"Hear that deep hum beneath the seam? That's not rock settling, lad—that's the mountain breathing. Strike the veins directly, watch the cracks spread, and harvest the crystals!"</p>
           </div>
         </div>
 
-        <MiningClickStats
-          miningXp={miningXp}
-          miningXpTarget={miningXpTarget}
-          pickaxeLevel={pickaxeLevel}
-          miningForgeLevel={miningForgeLevel}
-          miningPrestigeLevel={miningPrestigeLevel}
-          dailyVeinBonus={dailyVeinBonus}
-          weeklySurgeBonus={weeklySurgeBonus}
-          activeBoost={activeBoost}
-        />
-
-        <div className="grid gap-8 lg:grid-cols-[1fr_0.8fr]">
-          <div className="space-y-8">
-            <Panel variant="card" className="flex flex-col items-center justify-center py-16 min-h-[400px] relative">
-              {miningClickState?.node ? (
-                <MiningClickNode
-                  node={miningClickState.node}
-                  momentum={miningClickState.momentum}
-                  canClick={canClick}
-                  handleClickMine={handleClickMine}
-                  lastClickReward={miningClickState.lastClickFeedback}
-                />
-              ) : (
-                <div className="text-center group">
-                  <div className="mb-8 inline-flex h-24 w-24 items-center justify-center rounded-full border-2 border-dashed border-gray-700 bg-gray-900/40 text-gray-600 transition-all group-hover:border-cyan-500/50 group-hover:text-cyan-500/50">
-                    <svg viewBox="0 0 24 24" className="h-12 w-12" fill="none" stroke="currentColor" strokeWidth="1.2">
-                      <path d="M12 4v16m8-8H4" strokeLinecap="round" />
-                    </svg>
-                  </div>
-                  <h3 className="text-2xl font-bold text-white">No active vein</h3>
-                  <p className="mt-2 text-gray-400 max-w-sm">Scout the current layer for a new deposit to exploit.</p>
-                  <Button variant="ornate" onClick={handleSpawnNode} className="mt-8">
-                    Spawn New Node
-                  </Button>
-                </div>
-              )}
-            </Panel>
-
-            {miningClickState?.node && (
-              <MiningNodeLoot
-                pendingItems={formattedPendingItems}
-                breakPool={miningClickState.breakPool}
-                nodeBreakMultiplier={zoneMiningXmMods.break}
-              />
-            )}
-          </div>
-
-          <div>
-            <MiningClickInfoPanel
-              clickPreview={clickPreview}
-              momentum={miningClickState?.momentum || 0}
-              clickEfficiency={clickEfficiency}
-              clickBaseXp={clickBaseXp}
+        {/* 2D Interactive Cavern World vs Console Telemetry */}
+        {viewMode === 'world' ? (
+          <div className="space-y-6">
+            <MiningWorldView
+              miningLevel={miningLevel}
+              pickaxeLevel={pickaxeLevel}
+              pickaxeUpgrade={pickaxeUpgrade}
+              forgeUpgrade={forgeUpgrade}
               clickDamage={clickDamage}
               clickCooldownMs={clickCooldownMs}
-              nodeBreakMultiplier={zoneMiningXmMods.break}
+              canClick={canClick}
+              momentum={miningClickState?.momentum || 0}
+              dailyVein={dailyVeinBonus}
+              weeklySurge={weeklySurgeBonus}
+              onMineDeposit={handleWorldMineDeposit}
+              pushReward={pushReward}
+            />
+
+            <MiningClickStats
+              miningXp={miningXp}
+              miningXpTarget={miningXpTarget}
+              pickaxeLevel={pickaxeLevel}
+              miningForgeLevel={miningForgeLevel}
+              miningPrestigeLevel={miningPrestigeLevel}
               dailyVeinBonus={dailyVeinBonus}
               weeklySurgeBonus={weeklySurgeBonus}
               activeBoost={activeBoost}
             />
           </div>
-        </div>
+        ) : (
+          <div className="space-y-8">
+            <MiningClickStats
+              miningXp={miningXp}
+              miningXpTarget={miningXpTarget}
+              pickaxeLevel={pickaxeLevel}
+              miningForgeLevel={miningForgeLevel}
+              miningPrestigeLevel={miningPrestigeLevel}
+              dailyVeinBonus={dailyVeinBonus}
+              weeklySurgeBonus={weeklySurgeBonus}
+              activeBoost={activeBoost}
+            />
+
+            <div className="grid gap-8 lg:grid-cols-[1fr_0.8fr]">
+              <div className="space-y-8">
+                <Panel variant="card" className="flex flex-col items-center justify-center py-16 min-h-[400px] relative">
+                  {miningClickState?.node ? (
+                    <MiningClickNode
+                      node={miningClickState.node}
+                      momentum={miningClickState.momentum}
+                      canClick={canClick}
+                      handleClickMine={handleClickMine}
+                      lastClickReward={miningClickState.lastClickFeedback}
+                    />
+                  ) : (
+                    <div className="text-center group">
+                      <div className="mb-8 inline-flex h-24 w-24 items-center justify-center rounded-full border-2 border-dashed border-gray-700 bg-gray-900/40 text-gray-600 transition-all group-hover:border-cyan-500/50 group-hover:text-cyan-500/50">
+                        <svg viewBox="0 0 24 24" className="h-12 w-12" fill="none" stroke="currentColor" strokeWidth="1.2">
+                          <path d="M12 4v16m8-8H4" strokeLinecap="round" />
+                        </svg>
+                      </div>
+                      <h3 className="text-2xl font-bold text-white">No active vein</h3>
+                      <p className="mt-2 text-gray-400 max-w-sm">Scout the current layer for a new deposit to exploit.</p>
+                      <Button variant="ornate" onClick={handleSpawnNode} className="mt-8">
+                        Spawn New Node
+                      </Button>
+                    </div>
+                  )}
+                </Panel>
+
+                {miningClickState?.node && (
+                  <MiningNodeLoot
+                    pendingItems={formattedPendingItems}
+                    breakPool={miningClickState.breakPool}
+                    nodeBreakMultiplier={zoneMiningXmMods.break}
+                  />
+                )}
+              </div>
+
+              <div>
+                <MiningClickInfoPanel
+                  clickPreview={clickPreview}
+                  momentum={miningClickState?.momentum || 0}
+                  clickEfficiency={clickEfficiency}
+                  clickBaseXp={clickBaseXp}
+                  clickDamage={clickDamage}
+                  clickCooldownMs={clickCooldownMs}
+                  nodeBreakMultiplier={zoneMiningXmMods.break}
+                  dailyVeinBonus={dailyVeinBonus}
+                  weeklySurgeBonus={weeklySurgeBonus}
+                  activeBoost={activeBoost}
+                />
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </section>
   );
