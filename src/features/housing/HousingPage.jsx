@@ -7,6 +7,8 @@ import characterService from '../../core/services/CharacterService';
 import { getHousingTierById, housingTiers, estateAmenities } from '../../core/data/housingData';
 import { audioManager } from '../../core/audio/AudioManager';
 import EstateAmenitiesPanel from './widgets/EstateAmenitiesPanel';
+import WorldHUD from '../../core/world/WorldHUD';
+import HousingWorldView from './HousingWorldView';
 
 const MOCK_AUTH = import.meta.env.VITE_MOCK_AUTH === 'true';
 
@@ -15,6 +17,7 @@ export default function Housing() {
   const [ownedHouses, setOwnedHouses] = useState([]);
   const [activeHouseId, setActiveHouseId] = useState('starter-cottage');
   const [activeTab, setActiveTab] = useState('residences');
+  const [viewMode, setViewMode] = useState('world');
 
   useEffect(() => {
     if (!MOCK_AUTH) {
@@ -149,10 +152,59 @@ export default function Housing() {
       <div className="dashboard-orb orb-1" />
       <div className="dashboard-orb orb-2" />
       <div className="dashboard-orb orb-3" />
-      <div className="relative z-10 mx-auto max-w-6xl px-6 py-16 pt-24">
-        <div className="rounded-2xl p-8 shadow-xl backdrop-blur court-reveal glass-panel">
-          {currentHouse && (
-            <div className="rounded-2xl border border-yellow-400/70 bg-gray-900/80 p-6 shadow-[0_0_22px_rgba(250,204,21,0.25)]">
+      <div className="relative z-10 mx-auto max-w-6xl px-4 py-8 pt-20 sm:px-6">
+        {/* Fantasy RPG World HUD */}
+        <WorldHUD
+          title="Warden's Estate & Manor"
+          zoneKicker="Private Domain"
+          levelLabel="Warden Lvl"
+          level={level}
+          currentXp={profile?.stats?.xp ?? 0}
+          targetXp={100}
+          gold={gold}
+          viewMode={viewMode}
+          onToggleViewMode={() => setViewMode(viewMode === 'world' ? 'ledger' : 'world')}
+          className="mb-6"
+        />
+
+        {viewMode === 'world' ? (
+          <div className="space-y-6">
+            <HousingWorldView
+              profile={profile}
+              activeHouse={currentHouse}
+              ownedHouses={ownedHouses}
+              gold={gold}
+              level={level}
+              onSetActiveHouse={handleSetActive}
+              onPurchaseAmenity={handlePurchaseAmenity}
+            />
+
+            {/* Active Estate Blessings Strip */}
+            <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-yellow-700/30 bg-gray-950/80 p-4 backdrop-blur shadow-xl">
+              <div className="flex items-center gap-3">
+                <span className="text-2xl">🏰</span>
+                <div>
+                  <p className="font-bold text-white text-sm">{currentHouse?.name || 'Estate Residence'}</p>
+                  <p className="text-xs text-yellow-300">+{currentHouse?.effect?.percent}% {currentHouse?.effect?.stat} ({currentHouse?.effect?.name})</p>
+                </div>
+              </div>
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="text-xs text-gray-400 font-semibold">Commissioned Relics:</span>
+                {(profile?.estateAmenities || []).map((id) => {
+                  const am = estateAmenities.find((a) => a.id === id);
+                  return am ? (
+                    <span key={id} className="rounded-lg border border-emerald-600/40 bg-emerald-950/40 px-2 py-0.5 text-[11px] font-bold text-emerald-300">
+                      {am.icon} {am.buff}
+                    </span>
+                  ) : null;
+                })}
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="rounded-2xl p-8 shadow-xl backdrop-blur court-reveal glass-panel">
+            {currentHouse && (
+              <div className="rounded-2xl border border-yellow-400/70 bg-gray-900/80 p-6 shadow-[0_0_22px_rgba(250,204,21,0.25)]">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
                   <p className="text-xs uppercase tracking-[0.3em] text-gray-400">Current Residence</p>
@@ -440,6 +492,7 @@ export default function Housing() {
             </Link>
           </div>
         </div>
+      )}
       </div>
     </section>
   );

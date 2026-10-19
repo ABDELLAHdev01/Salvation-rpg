@@ -10,6 +10,8 @@ import { farmAnimals, farmGoods, getFarmXpForLevel } from '../../core/data/farmD
 import { formatDuration } from '../../core/data/miningData';
 import { addItems, removeItems } from '../../core/services/inventoryService';
 import audioManager from '../../core/audio/AudioManager';
+import WorldHUD from '../../core/world/WorldHUD';
+import AnimalPastureWorldView from './AnimalPastureWorldView';
 
 const MOCK_AUTH = import.meta.env.VITE_MOCK_AUTH === 'true';
 const UI_TICK_MS = 3000;
@@ -29,6 +31,7 @@ const normalizeAnimals = (animals) => {
 export default function FarmAnimals() {
   const [profile, setProfile] = useState(null);
   const [now, setNow] = useState(Date.now());
+  const [viewMode, setViewMode] = useState('world');
   const animalRefs = useRef(new Map());
   const pushReward = useRewardFloat();
 
@@ -229,33 +232,79 @@ export default function FarmAnimals() {
       <div className="dashboard-orb orb-1" />
       <div className="dashboard-orb orb-2" />
       <div className="dashboard-orb orb-3" />
-      <div className="relative z-10 mx-auto max-w-5xl px-6 py-16 pt-24">
-        <div className="rounded-2xl p-8 shadow-xl backdrop-blur court-reveal glass-panel">
-          <div className="flex flex-wrap items-center justify-between gap-4">
-            <div>
-              <p className="section-kicker text-xs uppercase tracking-[0.4em] text-yellow-500">Harvestlands</p>
-              <h1 className="mt-3 text-4xl font-extrabold text-white hero-title">Animal Pens & Pasture</h1>
-              <p className="mt-3 text-base text-gray-300">
-                Raise livestock, feed with crops, and harvest valuable artisan produce over time.
-              </p>
-            </div>
-            <Link
-              to="/farm"
-              className="inline-flex items-center rounded-full px-4 py-2 text-xs font-semibold text-yellow-200 action-ghost"
-            >
-              Back to Farm
-            </Link>
-          </div>
+      <div className="relative z-10 mx-auto max-w-5xl px-4 py-8 pt-20 sm:px-6">
+        {/* Fantasy RPG World HUD */}
+        <WorldHUD
+          title="Pastures of the Sunforge"
+          zoneKicker="Livestock & Husbandry"
+          levelLabel="Farm Lvl"
+          level={farmLevel}
+          currentXp={farmXp}
+          targetXp={farmXpTarget}
+          gold={gold}
+          weather={{ season: 'Spring', label: 'Breezy Grasslands' }}
+          viewMode={viewMode}
+          onToggleViewMode={() => setViewMode(viewMode === 'world' ? 'ledger' : 'world')}
+          className="mb-6"
+        />
 
-          <div className="mt-6 flex items-center gap-3.5 rounded-xl border border-yellow-700/30 bg-gray-950/70 p-3.5 backdrop-blur text-xs">
-            <div className="h-10 w-10 shrink-0 overflow-hidden rounded-lg border border-yellow-700/40 bg-gray-900">
-              <img src="/raceicon/dwarffemale.webp" alt="Moira Ironhoof" className="h-full w-full object-cover" />
-            </div>
-            <div>
-              <p className="font-bold text-yellow-400">Moira Ironhoof <span className="font-normal text-gray-400 text-[11px]">· Mistress of the Pastures</span></p>
-              <p className="text-gray-300 italic">"Give a beast warm straw and honest grain, and it'll give you more loyalty than any noble in Valoria. Feed your flock regularly to cut collection cycles in half!"</p>
+        {viewMode === 'world' ? (
+          <div className="space-y-6">
+            <AnimalPastureWorldView
+              animals={animals}
+              inventory={inventory}
+              gold={gold}
+              farmLevel={farmLevel}
+              now={now}
+              onCollect={handleCollectAnimals}
+              onFeed={handleFeedAnimal}
+              onBuy={handleBuyAnimal}
+            />
+
+            {/* In-World Pasture Master Counsel */}
+            <div className="flex items-center gap-3.5 rounded-2xl border border-yellow-700/30 bg-gray-950/80 p-4 backdrop-blur text-xs shadow-xl">
+              <div className="h-10 w-10 shrink-0 overflow-hidden rounded-xl border border-yellow-700/40 bg-gray-900">
+                <img src="/raceicon/dwarffemale.webp" alt="Moira Ironhoof" className="h-full w-full object-cover" />
+              </div>
+              <div className="flex-1">
+                <p className="font-bold text-yellow-400">Moira Ironhoof <span className="font-normal text-gray-400 text-[11px]">· Mistress of the Pastures</span></p>
+                <p className="text-gray-300 italic">"Give a beast warm straw and honest grain, and it'll cut collection cycles in half! Pet your animals and keep the feeding troughs full."</p>
+              </div>
+              <div className="hidden sm:flex items-center gap-2 text-xs text-amber-300">
+                <span>🌾 Feed Stock:</span>
+                <span className="font-mono font-bold">{inventory.wheat || 0} Wheat</span>
+                <span>·</span>
+                <span className="font-mono font-bold">{inventory.turnip || 0} Turnip</span>
+              </div>
             </div>
           </div>
+        ) : (
+          <div className="rounded-2xl p-8 shadow-xl backdrop-blur court-reveal glass-panel">
+            <div className="flex flex-wrap items-center justify-between gap-4">
+              <div>
+                <p className="section-kicker text-xs uppercase tracking-[0.4em] text-yellow-500">Harvestlands</p>
+                <h1 className="mt-3 text-4xl font-extrabold text-white hero-title">Animal Pens & Pasture</h1>
+                <p className="mt-3 text-base text-gray-300">
+                  Raise livestock, feed with crops, and harvest valuable artisan produce over time.
+                </p>
+              </div>
+              <Link
+                to="/farm"
+                className="inline-flex items-center rounded-full px-4 py-2 text-xs font-semibold text-yellow-200 action-ghost"
+              >
+                Back to Farm
+              </Link>
+            </div>
+
+            <div className="mt-6 flex items-center gap-3.5 rounded-xl border border-yellow-700/30 bg-gray-950/70 p-3.5 backdrop-blur text-xs">
+              <div className="h-10 w-10 shrink-0 overflow-hidden rounded-lg border border-yellow-700/40 bg-gray-900">
+                <img src="/raceicon/dwarffemale.webp" alt="Moira Ironhoof" className="h-full w-full object-cover" />
+              </div>
+              <div>
+                <p className="font-bold text-yellow-400">Moira Ironhoof <span className="font-normal text-gray-400 text-[11px]">· Mistress of the Pastures</span></p>
+                <p className="text-gray-300 italic">"Give a beast warm straw and honest grain, and it'll give you more loyalty than any noble in Valoria. Feed your flock regularly to cut collection cycles in half!"</p>
+              </div>
+            </div>
 
           <div className="mt-6 grid gap-4 sm:grid-cols-3">
             <div className="court-card rounded-xl p-4">
@@ -427,6 +476,7 @@ export default function FarmAnimals() {
             </div>
           </div>
         </div>
+      )}
       </div>
     </section>
   );

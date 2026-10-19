@@ -30,6 +30,8 @@ import WorkshopRecipeCard from './widgets/WorkshopRecipeCard';
 import WorkshopQueue from './widgets/WorkshopQueue';
 import WorkshopInventory from './widgets/WorkshopInventory';
 import WorkshopUpgradePanel from './widgets/WorkshopUpgradePanel';
+import WorldHUD from '../../core/world/WorldHUD';
+import WorkshopWorldView from './WorkshopWorldView';
 
 const MOCK_AUTH = import.meta.env.VITE_MOCK_AUTH === 'true';
 const FILTER_STORAGE_KEY = 'workshopFilters';
@@ -51,6 +53,7 @@ const clampQuantity = (value, fallback = 1) => {
 export default function Workshop() {
   const [profile, setProfile] = useState(null);
   const [now, setNow] = useState(Date.now());
+  const [viewMode, setViewMode] = useState('world');
   const [quantities, setQuantities] = useState({});
   const [stationFilter, setStationFilter] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
@@ -297,118 +300,185 @@ export default function Workshop() {
   return (
     <section className="min-h-screen bg-page-primary dashboard-shell lg:pl-64">
       <Sidebar />
-      <div className="relative z-10 mx-auto max-w-6xl px-6 py-16 pt-24">
-        <WorkshopHeader
-          workshopLevel={workshopLevel}
-          workshopXp={workshopXp}
-          workshopXpTarget={workshopXpTarget}
-          activeJobsCount={uiState.jobs.length}
+      <div className="relative z-10 mx-auto max-w-6xl px-4 py-8 pt-20 sm:px-6">
+        {/* Fantasy RPG World HUD */}
+        <WorldHUD
+          title="Sunforge Artisan Workshop"
+          zoneKicker="Guild Crafting Hall"
+          levelLabel="Workshop Lvl"
+          level={workshopLevel}
+          currentXp={workshopXp}
+          targetXp={workshopXpTarget}
           gold={gold}
-          upgradeName={upgrade?.name}
+          tool={{ name: upgrade?.name || 'Artisan Tools', icon: '⚒️' }}
+          viewMode={viewMode}
+          onToggleViewMode={() => setViewMode(viewMode === 'world' ? 'ledger' : 'world')}
+          className="mb-6"
         />
 
-        <div className="mb-6 flex items-center gap-3.5 rounded-xl border border-yellow-700/30 bg-gray-950/70 p-3.5 backdrop-blur text-xs">
-          <div className="h-10 w-10 shrink-0 overflow-hidden rounded-lg border border-yellow-700/40 bg-gray-900">
-            <img src="/raceicon/humanmale.webp" alt="Elric the Hearthsmith" className="h-full w-full object-cover" />
-          </div>
-          <div>
-            <p className="font-bold text-yellow-400">Elric the Hearthsmith <span className="font-normal text-gray-400 text-[11px]">· Master of the Smelter</span></p>
-            <p className="text-gray-300 italic">"Cold iron doesn't lie to you, Warden. Craft refined bars and textiles—never settle for raw vendor pennies."</p>
-          </div>
-        </div>
-
-        <div className="mb-8 grid gap-8 lg:grid-cols-[1.3fr_0.7fr]">
-          <div className="space-y-8">
-            <Panel variant="card">
-              <WorkshopFilters
-                stationFilter={stationFilter} setStationFilter={setStationFilter} stations={uiState.stations}
-                searchTerm={searchTerm} setSearchTerm={setSearchTerm}
-                tagFilter={tagFilter} setTagFilter={setTagFilter} tagCounts={tagCounts}
-                showCraftableOnly={showCraftableOnly} setShowCraftableOnly={setShowCraftableOnly}
-                handleClearFilters={() => {
-                  setStationFilter('all'); setTagFilter('all'); setSearchTerm(''); setShowCraftableOnly(false);
-                }}
-              />
-
-              <div className="space-y-12">
-                {unlockedStations.map((station) => (
-                  stationFilter !== 'all' && stationFilter !== station.id ? null : (
-                    <div key={station.id} className="space-y-4">
-                      <div className="flex items-center justify-between border-b border-yellow-700/10 pb-4">
-                        <div>
-                          <h3 className="text-xl font-bold text-white uppercase tracking-wider">{station.name}</h3>
-                          <p className="mt-1 text-sm text-gray-400">{station.description}</p>
-                        </div>
-                        {!station.unlocked && (
-                          <Badge variant="danger">Locked (Lvl {station.unlockLevel})</Badge>
-                        )}
-                      </div>
-
-                      {station.unlocked ? (
-                        <div className="grid gap-4 sm:grid-cols-2">
-                          {(uiState.recipes[station.id] || []).map((recipe) => {
-                            const q = quantities[recipe.id] || 1;
-                            if (!shouldShowRecipe(recipe, q)) return null;
-                            return (
-                              <WorkshopRecipeCard
-                                key={recipe.id}
-                                recipe={recipe}
-                                quantity={q}
-                                setQuantity={setQuantity}
-                                craftable={canCraft(recipe, q)}
-                                getOutputName={getOutputName}
-                                getRecipeTags={getRecipeTags}
-                                getOwnedForInput={getOwnedForInput}
-                                getInputName={getInputName}
-                                formatDuration={formatDuration}
-                                upgrade={upgrade}
-                                handleQueue={handleQueue}
-                                canCraft={canCraft}
-                              />
-                            );
-                          })}
-                        </div>
-                      ) : (
-                        <Panel variant="subtle" className="py-10 text-center text-gray-500 italic">
-                          Master the workshop to unlock this station at Level {station.unlockLevel}.
-                        </Panel>
-                      )}
-                    </div>
-                  )
-                ))}
-              </div>
-            </Panel>
-          </div>
-
-          <div className="space-y-8">
-            <WorkshopUpgradePanel
-              upgrade={upgrade}
-              nextUpgrade={nextUpgrade}
-              gold={gold}
-              handleUpgrade={handleUpgrade}
-            />
-            <WorkshopQueue
+        {viewMode === 'world' ? (
+          <div className="space-y-6">
+            {/* 2D Interactive Workshop Hall */}
+            <WorkshopWorldView
+              stations={unlockedStations}
+              recipes={uiState.recipes}
               jobs={uiState.jobs}
-              getRecipeOutputName={getRecipeOutputName}
-              formatDuration={formatDuration}
-              upgrade={upgrade}
-              getWorkshopRecipe={getWorkshopRecipe}
+              workshopLevel={workshopLevel}
+              onQueue={handleQueue}
+              getOwnedForInput={getOwnedForInput}
+              getInputName={getInputName}
             />
-            <WorkshopInventory
-              workshopInventory={workshopInventory}
-              workshopInventoryTotal={workshopInventoryTotal}
-              getWorkshopItem={getWorkshopItem}
-              handleSell={handleSell}
-              handleSellAllCrafted={handleSellAllCrafted}
-            />
-          </div>
-        </div>
 
-        <div className="mt-12 flex justify-center">
-          <Button variant="ornate" to="/dashboard">
-            Return to Command Deck
-          </Button>
-        </div>
+            {/* In-World Mentor Advice & Auxiliary Workshop Controls */}
+            <div className="flex items-center gap-3.5 rounded-2xl border border-yellow-700/30 bg-gray-950/80 p-4 backdrop-blur text-xs shadow-xl">
+              <div className="h-10 w-10 shrink-0 overflow-hidden rounded-xl border border-yellow-700/40 bg-gray-900">
+                <img src="/raceicon/humanmale.webp" alt="Elric the Hearthsmith" className="h-full w-full object-cover" />
+              </div>
+              <div className="flex-1">
+                <p className="font-bold text-yellow-400">Elric the Hearthsmith <span className="font-normal text-gray-400 text-[11px]">· Master of the Smelter</span></p>
+                <p className="text-gray-300 italic">"Cold iron doesn't lie to you, Warden. Craft refined bars, crack geodes, and weave textiles—never settle for raw vendor pennies."</p>
+              </div>
+            </div>
+
+            {/* Auxiliary Workshop Panels: Live Queue, Upgrades, Inventory Drawer */}
+            <div className="grid gap-6 lg:grid-cols-3">
+              <WorkshopQueue
+                jobs={uiState.jobs}
+                getRecipeOutputName={getRecipeOutputName}
+                formatDuration={formatDuration}
+                upgrade={upgrade}
+                getWorkshopRecipe={getWorkshopRecipe}
+              />
+              <WorkshopUpgradePanel
+                upgrade={upgrade}
+                nextUpgrade={nextUpgrade}
+                gold={gold}
+                handleUpgrade={handleUpgrade}
+              />
+              <WorkshopInventory
+                workshopInventory={workshopInventory}
+                workshopInventoryTotal={workshopInventoryTotal}
+                getWorkshopItem={getWorkshopItem}
+                handleSell={handleSell}
+                handleSellAllCrafted={handleSellAllCrafted}
+              />
+            </div>
+          </div>
+        ) : (
+          <div>
+            <WorkshopHeader
+              workshopLevel={workshopLevel}
+              workshopXp={workshopXp}
+              workshopXpTarget={workshopXpTarget}
+              activeJobsCount={uiState.jobs.length}
+              gold={gold}
+              upgradeName={upgrade?.name}
+            />
+
+            <div className="mb-6 flex items-center gap-3.5 rounded-xl border border-yellow-700/30 bg-gray-950/70 p-3.5 backdrop-blur text-xs">
+              <div className="h-10 w-10 shrink-0 overflow-hidden rounded-lg border border-yellow-700/40 bg-gray-900">
+                <img src="/raceicon/humanmale.webp" alt="Elric the Hearthsmith" className="h-full w-full object-cover" />
+              </div>
+              <div>
+                <p className="font-bold text-yellow-400">Elric the Hearthsmith <span className="font-normal text-gray-400 text-[11px]">· Master of the Smelter</span></p>
+                <p className="text-gray-300 italic">"Cold iron doesn't lie to you, Warden. Craft refined bars and textiles—never settle for raw vendor pennies."</p>
+              </div>
+            </div>
+
+            <div className="mb-8 grid gap-8 lg:grid-cols-[1.3fr_0.7fr]">
+              <div className="space-y-8">
+                <Panel variant="card">
+                  <WorkshopFilters
+                    stationFilter={stationFilter} setStationFilter={setStationFilter} stations={uiState.stations}
+                    searchTerm={searchTerm} setSearchTerm={setSearchTerm}
+                    tagFilter={tagFilter} setTagFilter={setTagFilter} tagCounts={tagCounts}
+                    showCraftableOnly={showCraftableOnly} setShowCraftableOnly={setShowCraftableOnly}
+                    handleClearFilters={() => {
+                      setStationFilter('all'); setTagFilter('all'); setSearchTerm(''); setShowCraftableOnly(false);
+                    }}
+                  />
+
+                  <div className="space-y-12">
+                    {unlockedStations.map((station) => (
+                      stationFilter !== 'all' && stationFilter !== station.id ? null : (
+                        <div key={station.id} className="space-y-4">
+                          <div className="flex items-center justify-between border-b border-yellow-700/10 pb-4">
+                            <div>
+                              <h3 className="text-xl font-bold text-white uppercase tracking-wider">{station.name}</h3>
+                              <p className="mt-1 text-sm text-gray-400">{station.description}</p>
+                            </div>
+                            {!station.unlocked && (
+                              <Badge variant="danger">Locked (Lvl {station.unlockLevel})</Badge>
+                            )}
+                          </div>
+
+                          {station.unlocked ? (
+                            <div className="grid gap-4 sm:grid-cols-2">
+                              {(uiState.recipes[station.id] || []).map((recipe) => {
+                                const q = quantities[recipe.id] || 1;
+                                if (!shouldShowRecipe(recipe, q)) return null;
+                                return (
+                                  <WorkshopRecipeCard
+                                    key={recipe.id}
+                                    recipe={recipe}
+                                    quantity={q}
+                                    setQuantity={setQuantity}
+                                    craftable={canCraft(recipe, q)}
+                                    getOutputName={getOutputName}
+                                    getRecipeTags={getRecipeTags}
+                                    getOwnedForInput={getOwnedForInput}
+                                    getInputName={getInputName}
+                                    formatDuration={formatDuration}
+                                    upgrade={upgrade}
+                                    handleQueue={handleQueue}
+                                    canCraft={canCraft}
+                                  />
+                                );
+                              })}
+                            </div>
+                          ) : (
+                            <Panel variant="subtle" className="py-10 text-center text-gray-500 italic">
+                              Master the workshop to unlock this station at Level {station.unlockLevel}.
+                            </Panel>
+                          )}
+                        </div>
+                      )
+                    ))}
+                  </div>
+                </Panel>
+              </div>
+
+              <div className="space-y-8">
+                <WorkshopUpgradePanel
+                  upgrade={upgrade}
+                  nextUpgrade={nextUpgrade}
+                  gold={gold}
+                  handleUpgrade={handleUpgrade}
+                />
+                <WorkshopQueue
+                  jobs={uiState.jobs}
+                  getRecipeOutputName={getRecipeOutputName}
+                  formatDuration={formatDuration}
+                  upgrade={upgrade}
+                  getWorkshopRecipe={getWorkshopRecipe}
+                />
+                <WorkshopInventory
+                  workshopInventory={workshopInventory}
+                  workshopInventoryTotal={workshopInventoryTotal}
+                  getWorkshopItem={getWorkshopItem}
+                  handleSell={handleSell}
+                  handleSellAllCrafted={handleSellAllCrafted}
+                />
+              </div>
+            </div>
+
+            <div className="mt-12 flex justify-center">
+              <Button variant="ornate" to="/dashboard">
+                Return to Command Deck
+              </Button>
+            </div>
+          </div>
+        )}
       </div>
     </section>
   );

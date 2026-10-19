@@ -15,6 +15,8 @@ import { marketFilters, groupedFilters, rarityRank } from './marketConstants';
 import MarketFilters from './MarketFilters';
 import MarketList from './MarketList';
 import MarketBulkSaleModal from './MarketBulkSaleModal';
+import WorldHUD from '../../core/world/WorldHUD';
+import MarketWorldView from './MarketWorldView';
 
 const MOCK_AUTH = import.meta.env.VITE_MOCK_AUTH === 'true';
 
@@ -74,6 +76,7 @@ export default function Market() {
   const [showOwnedOnly, setShowOwnedOnly] = useState(false);
   const [pendingBulkSale, setPendingBulkSale] = useState(null);
   const [skipBulkConfirm, setSkipBulkConfirm] = useState(false);
+  const [viewMode, setViewMode] = useState('world');
 
   useEffect(() => {
     if (!MOCK_AUTH) {
@@ -478,67 +481,104 @@ export default function Market() {
       <div className="dashboard-orb orb-1" />
       <div className="dashboard-orb orb-2" />
       <div className="dashboard-orb orb-3" />
-      <div className="relative z-10 mx-auto max-w-6xl px-6 py-16 pt-24">
-        <div className="rounded-2xl p-8 shadow-xl backdrop-blur court-reveal glass-panel">
-          <div className="flex flex-wrap items-center justify-between gap-4">
-            <div>
-              <p className="section-kicker text-xs uppercase tracking-[0.4em] text-yellow-500">World Exchange</p>
-              <h1 className="mt-3 text-4xl font-extrabold text-white hero-title">Global Market</h1>
-              <p className="mt-3 max-w-2xl text-base text-gray-300">
-                One hub for trading every resource, relic, and crafted good across the realm.
-              </p>
-              {isValoria && (
-                <div className="mt-3 inline-flex items-center gap-2 rounded-full border border-green-600/50 bg-green-950/70 px-3.5 py-1 text-xs text-green-300">
-                  <span className="h-1.5 w-1.5 rounded-full bg-green-400 animate-pulse" />
-                  <span><strong>Valoria Gilded Trade:</strong> +12% gold bonus automatically applied to all item sales</span>
-                </div>
-              )}
-            </div>
-            <div className="flex flex-wrap items-center gap-3">
-              <div className="rounded-full border border-yellow-700/40 bg-gray-950/70 px-4 py-2 text-xs text-yellow-200">
-                Gold: {formatGold(gold)}
+      <div className="relative z-10 mx-auto max-w-6xl px-4 py-8 pt-20 sm:px-6">
+        {/* Fantasy RPG World HUD */}
+        <WorldHUD
+          title="The Merchant Bazaar of Valoria"
+          zoneKicker="Grand Market Square"
+          levelLabel="Warden Lvl"
+          level={playerLevel}
+          currentXp={profile?.stats?.xp ?? 0}
+          targetXp={100}
+          gold={gold}
+          viewMode={viewMode}
+          onToggleViewMode={() => setViewMode(viewMode === 'world' ? 'ledger' : 'world')}
+          className="mb-6"
+        />
+
+        {viewMode === 'world' ? (
+          <div className="space-y-6">
+            <MarketWorldView
+              marketItems={marketItems}
+              gold={gold}
+              onBuy={handleBuy}
+              onSell={handleSell}
+              onSellAllGoods={handleSellAllGoods}
+              onSellAllOres={handleSellAllOres}
+              sellAllGoods={sellAllGoods}
+              sellAllOres={sellAllOres}
+              formatGold={formatGold}
+            />
+
+            {isValoria && (
+              <div className="flex items-center gap-2 rounded-2xl border border-green-600/50 bg-green-950/70 p-4 backdrop-blur text-xs text-green-300 shadow-xl">
+                <span className="h-2 w-2 rounded-full bg-green-400 animate-pulse" />
+                <span><strong>Valoria Gilded Trade Perk:</strong> +12% gold bonus automatically credited upon all marketplace transactions!</span>
               </div>
-              <Link
-                to="/inventory"
-                className="inline-flex items-center rounded-full px-4 py-2 text-xs font-semibold text-yellow-200 action-ghost"
-              >
-                Open Inventory
-              </Link>
-            </div>
+            )}
           </div>
+        ) : (
+          <div className="rounded-2xl p-8 shadow-xl backdrop-blur court-reveal glass-panel">
+            <div className="flex flex-wrap items-center justify-between gap-4">
+              <div>
+                <p className="section-kicker text-xs uppercase tracking-[0.4em] text-yellow-500">World Exchange</p>
+                <h1 className="mt-3 text-4xl font-extrabold text-white hero-title">Global Market</h1>
+                <p className="mt-3 max-w-2xl text-base text-gray-300">
+                  One hub for trading every resource, relic, and crafted good across the realm.
+                </p>
+                {isValoria && (
+                  <div className="mt-3 inline-flex items-center gap-2 rounded-full border border-green-600/50 bg-green-950/70 px-3.5 py-1 text-xs text-green-300">
+                    <span className="h-1.5 w-1.5 rounded-full bg-green-400 animate-pulse" />
+                    <span><strong>Valoria Gilded Trade:</strong> +12% gold bonus automatically applied to all item sales</span>
+                  </div>
+                )}
+              </div>
+              <div className="flex flex-wrap items-center gap-3">
+                <div className="rounded-full border border-yellow-700/40 bg-gray-950/70 px-4 py-2 text-xs text-yellow-200">
+                  Gold: {formatGold(gold)}
+                </div>
+                <Link
+                  to="/inventory"
+                  className="inline-flex items-center rounded-full px-4 py-2 text-xs font-semibold text-yellow-200 action-ghost"
+                >
+                  Open Inventory
+                </Link>
+              </div>
+            </div>
 
-          <MarketFilters
-            searchTerm={searchTerm}
-            setSearchTerm={setSearchTerm}
-            sortBy={sortBy}
-            setSortBy={setSortBy}
-            filterId={filterId}
-            setFilterId={setFilterId}
-            filterCounts={filterCounts}
-            showOwnedOnly={showOwnedOnly}
-            setShowOwnedOnly={setShowOwnedOnly}
-            handleToggleAllSections={handleToggleAllSections}
-            allSectionsCollapsed={allSectionsCollapsed}
-            hasGroupedSections={groupedSections.length > 0}
-          />
+            <MarketFilters
+              searchTerm={searchTerm}
+              setSearchTerm={setSearchTerm}
+              sortBy={sortBy}
+              setSortBy={setSortBy}
+              filterId={filterId}
+              setFilterId={setFilterId}
+              filterCounts={filterCounts}
+              showOwnedOnly={showOwnedOnly}
+              setShowOwnedOnly={setShowOwnedOnly}
+              handleToggleAllSections={handleToggleAllSections}
+              allSectionsCollapsed={allSectionsCollapsed}
+              hasGroupedSections={groupedSections.length > 0}
+            />
 
-          <MarketList
-            filterId={filterId}
-            groupedSections={groupedSections}
-            sortedItems={sortedItems}
-            collapsedSections={collapsedSections}
-            handleToggleSection={handleToggleSection}
-            quantities={quantities}
-            handleQuantityChange={handleQuantityChange}
-            handleBuy={handleBuy}
-            handleSell={handleSell}
-            sellAllGoods={sellAllGoods}
-            sellAllOres={sellAllOres}
-            handleSellAllGoods={handleSellAllGoods}
-            handleSellAllOres={handleSellAllOres}
-            formatGold={formatGold}
-          />
-        </div>
+            <MarketList
+              filterId={filterId}
+              groupedSections={groupedSections}
+              sortedItems={sortedItems}
+              collapsedSections={collapsedSections}
+              handleToggleSection={handleToggleSection}
+              quantities={quantities}
+              handleQuantityChange={handleQuantityChange}
+              handleBuy={handleBuy}
+              handleSell={handleSell}
+              sellAllGoods={sellAllGoods}
+              sellAllOres={sellAllOres}
+              handleSellAllGoods={handleSellAllGoods}
+              handleSellAllOres={handleSellAllOres}
+              formatGold={formatGold}
+            />
+          </div>
+        )}
       </div>
 
       {/* Modal rendered outside the z-10 container */}

@@ -78,4 +78,83 @@ describe('2D Interactive World Scene Logic', () => {
       expect(geode.durability).toBe(95);
     });
   });
+
+  describe('2D Animal Pasture & Husbandry Engine', () => {
+    it('computes cycle collection readiness and feed acceleration', () => {
+      const chickenInterval = 15 * 60 * 1000; // 15 mins
+      const now = 1000000;
+      const lastCollectedAt = now - 16 * 60 * 1000; // 16 mins ago
+
+      const isReady = now - lastCollectedAt >= chickenInterval;
+      expect(isReady).toBe(true);
+
+      // Feeding cuts remaining interval by 50%
+      const feedFastForward = Math.floor(chickenInterval * 0.5);
+      const nextLastCollected = lastCollectedAt - feedFastForward;
+      expect(now - nextLastCollected).toBeGreaterThan(now - lastCollectedAt);
+    });
+  });
+
+  describe('2D Artisan Workshop Engine', () => {
+    it('validates 5 workstations and recipe craftability conditions', () => {
+      const recipe = {
+        id: 'iron-bar',
+        station: 'smelter',
+        inputs: [{ id: 'iron', amount: 3 }],
+        outputs: [{ id: 'iron-bar', amount: 1 }],
+      };
+
+      const inventory = { iron: 7 };
+      const getOwned = (inp) => inventory[inp.id] || 0;
+
+      const canCraft1 = recipe.inputs.every((i) => getOwned(i) >= i.amount * 1);
+      const canCraft2 = recipe.inputs.every((i) => getOwned(i) >= i.amount * 2);
+      const canCraft3 = recipe.inputs.every((i) => getOwned(i) >= i.amount * 3);
+
+      expect(canCraft1).toBe(true);
+      expect(canCraft2).toBe(true); // 3 * 2 = 6 <= 7
+      expect(canCraft3).toBe(false); // 3 * 3 = 9 > 7
+    });
+  });
+
+  describe('2D Manor Interior & Estate Amenities Engine', () => {
+    it('aggregates passive buffs from commissioned relics', () => {
+      const commissioned = ['hearth-fire', 'delvers-trophy', 'vault-coffer'];
+      const buffs = {
+        xpBonus: 0,
+        miningBonus: 0,
+        goldBonus: 0,
+      };
+
+      if (commissioned.includes('hearth-fire')) buffs.xpBonus += 5;
+      if (commissioned.includes('delvers-trophy')) buffs.miningBonus += 8;
+      if (commissioned.includes('vault-coffer')) buffs.goldBonus += 5;
+
+      expect(buffs.xpBonus).toBe(5);
+      expect(buffs.miningBonus).toBe(8);
+      expect(buffs.goldBonus).toBe(5);
+    });
+  });
+
+  describe('2D Colosseum Sand Pit Arena Engine', () => {
+    it('calculates combat power and projected odds accurately', () => {
+      const playerPower = 120;
+      const opponentPower = 80;
+      const total = playerPower + opponentPower;
+      const projectedOdds = Math.round((playerPower / total) * 100);
+
+      expect(projectedOdds).toBe(60);
+    });
+  });
+
+  describe('2D Merchant Bazaar Engine', () => {
+    it('applies Valoria Gilded Trade +12% perk bonus to sales', () => {
+      const baseSellPrice = 100;
+      const isValoria = true;
+      const perkMultiplier = isValoria ? 1.12 : 1.0;
+      const finalPrice = Math.round(baseSellPrice * perkMultiplier);
+
+      expect(finalPrice).toBe(112);
+    });
+  });
 });

@@ -397,6 +397,45 @@ export const PixelAnimalSprite = ({ type = 'chicken', className = '' }) => {
         </PixelSvg>
       );
 
+    case 'goat':
+      return (
+        <PixelSvg width="100%" height="100%" viewBox="0 0 36 32" className={className}>
+          <ellipse cx="18" cy="27" rx="12" ry="3" fill="#000" opacity="0.3" />
+          {/* Slender Hooves */}
+          <rect x="9" y="21" width="2" height="7" fill="#78350f" />
+          <rect x="13" y="21" width="2" height="7" fill="#78350f" />
+          <rect x="22" y="21" width="2" height="7" fill="#78350f" />
+          <rect x="26" y="21" width="2" height="7" fill="#78350f" />
+          {/* Tan/Brown Body */}
+          <rect x="8" y="10" width="22" height="12" fill="#d97706" rx="2" />
+          <rect x="12" y="12" width="12" height="8" fill="#b45309" />
+          {/* Goat Head, Curved Horns & Beard */}
+          <polygon points="6,9 12,9 10,18 5,16" fill="#d97706" />
+          <path d="M8 8 Q5 2 2 3" stroke="#fef08a" strokeWidth="1.5" fill="none" />
+          <path d="M11 8 Q9 2 6 3" stroke="#fef08a" strokeWidth="1.5" fill="none" />
+          <polygon points="5,16 4,21 7,17" fill="#fef3c7" /> {/* Beard */}
+          <circle cx="7" cy="11" r="0.75" fill="#000" />
+        </PixelSvg>
+      );
+
+    case 'bee':
+      return (
+        <PixelSvg width="100%" height="100%" viewBox="0 0 32 32" className={className}>
+          <ellipse cx="16" cy="28" rx="10" ry="3" fill="#000" opacity="0.3" />
+          {/* Wooden Hive Stand */}
+          <rect x="14" y="22" width="4" height="6" fill="#78350f" />
+          <rect x="8" y="27" width="16" height="2" fill="#451a03" />
+          {/* Honeycomb Domed Hive */}
+          <ellipse cx="16" cy="16" rx="11" ry="9" fill="#d97706" />
+          <ellipse cx="16" cy="16" rx="9" ry="7" fill="#f59e0b" />
+          <rect x="12" y="14" width="8" height="4" fill="#78350f" rx="1" /> {/* Hive Entrance */}
+          {/* Golden Buzzing Bees */}
+          <circle cx="9" cy="8" r="1.5" fill="#fde047" className="animate-bounce" />
+          <circle cx="23" cy="10" r="1.5" fill="#fde047" className="animate-pulse" />
+          <circle cx="18" cy="6" r="1.5" fill="#fde047" className="animate-bounce" />
+        </PixelSvg>
+      );
+
     case 'chicken':
     default:
       return (
@@ -486,3 +525,205 @@ export const PixelLantern = ({ isFlickering = true, className = '' }) => (
     <circle cx="12" cy="11.5" r="2.5" fill="#fef08a" className={isFlickering ? 'animate-pulse' : ''} />
   </PixelSvg>
 );
+
+/* =========================================================================
+   CITADEL PLAZA BUILDINGS & DISTRICT HUBS
+   Sunforge Beacon, Farm Gate, Mine Headframe, Smithy, Colosseum, Market, Manor
+   ========================================================================= */
+
+export const PixelCitadelMonument = ({ className = '' }) => (
+  <PixelSvg width="80" height="96" viewBox="0 0 80 96" className={className}>
+    {/* Ground Shadow */}
+    <ellipse cx="40" cy="90" rx="36" ry="6" fill="#000" opacity="0.45" />
+    {/* Tiered Marble Steps */}
+    <rect x="10" y="80" width="60" height="8" fill="#3f3f46" rx="2" />
+    <rect x="16" y="74" width="48" height="6" fill="#52525b" rx="1" />
+    <rect x="22" y="68" width="36" height="6" fill="#71717a" rx="1" />
+    {/* Golden Obelisk Base & Pillars */}
+    <rect x="28" y="32" width="24" height="36" fill="#854d0e" />
+    <rect x="32" y="30" width="16" height="38" fill="#ca8a04" />
+    <rect x="36" y="28" width="8" height="40" fill="#facc15" />
+    {/* Sunforge Crystal Core */}
+    <polygon points="40,8 30,28 50,28" fill="#eab308" />
+    <polygon points="40,12 34,26 46,26" fill="#fef08a" />
+    {/* Pulsing Sun Rays */}
+    <line x1="40" y1="2" x2="40" y2="7" stroke="#fef08a" strokeWidth="2" className="animate-pulse" />
+    <line x1="28" y1="12" x2="24" y2="9" stroke="#fde047" strokeWidth="2" className="animate-pulse" />
+    <line x1="52" y1="12" x2="56" y2="9" stroke="#fde047" strokeWidth="2" className="animate-pulse" />
+  </PixelSvg>
+);
+
+export const PixelDistrictBuilding = ({ type = 'farm', className = '' }) => {
+  switch (type) {
+    case 'mining':
+      return (
+        <PixelSvg width="64" height="64" viewBox="0 0 64 64" className={className}>
+          <ellipse cx="32" cy="58" rx="28" ry="4" fill="#000" opacity="0.4" />
+          {/* Cave Arch */}
+          <polygon points="32,4 6,36 10,60 54,60 58,36" fill="#18181b" />
+          <polygon points="32,8 12,38 16,56 48,56 52,38" fill="#27272a" />
+          {/* Timber Support Frame */}
+          <rect x="16" y="24" width="4" height="34" fill="#78350f" />
+          <rect x="44" y="24" width="4" height="34" fill="#78350f" />
+          <rect x="14" y="20" width="36" height="6" fill="#92400e" />
+          {/* Ore Cart with Gold & Iron */}
+          <rect x="24" y="44" width="16" height="10" fill="#3f3f46" rx="1" />
+          <circle cx="28" cy="56" r="2.5" fill="#71717a" />
+          <circle cx="36" cy="56" r="2.5" fill="#71717a" />
+          <circle cx="28" cy="42" r="2" fill="#eab308" />
+          <circle cx="33" cy="41" r="2.5" fill="#f59e0b" />
+          <circle cx="37" cy="42" r="2" fill="#a1a1aa" />
+        </PixelSvg>
+      );
+
+    case 'workshop':
+      return (
+        <PixelSvg width="64" height="64" viewBox="0 0 64 64" className={className}>
+          <ellipse cx="32" cy="58" rx="28" ry="4" fill="#000" opacity="0.4" />
+          {/* Forge House */}
+          <rect x="10" y="22" width="44" height="36" fill="#451a03" rx="2" />
+          <polygon points="32,6 4,24 60,24" fill="#7f1d1d" />
+          {/* Chimney with Smoke */}
+          <rect x="42" y="8" width="8" height="14" fill="#27272a" />
+          <circle cx="46" cy="4" r="2.5" fill="#71717a" opacity="0.6" className="animate-ping" />
+          {/* Anvil & Hearth Door */}
+          <rect x="22" y="36" width="20" height="22" fill="#18181b" />
+          <rect x="26" y="42" width="12" height="14" fill="#ea580c" />
+          <circle cx="32" cy="48" r="3" fill="#fef08a" className="animate-pulse" />
+        </PixelSvg>
+      );
+
+    case 'arena':
+      return (
+        <PixelSvg width="64" height="64" viewBox="0 0 64 64" className={className}>
+          <ellipse cx="32" cy="58" rx="28" ry="4" fill="#000" opacity="0.4" />
+          {/* Colosseum Wall Tier */}
+          <rect x="8" y="24" width="48" height="34" fill="#71717a" rx="3" />
+          <polygon points="32,8 6,24 58,24" fill="#a1a1aa" />
+          {/* Colonnade Arches */}
+          <rect x="14" y="36" width="8" height="18" fill="#18181b" rx="2" />
+          <rect x="28" y="32" width="8" height="22" fill="#18181b" rx="2" />
+          <rect x="42" y="36" width="8" height="18" fill="#18181b" rx="2" />
+          {/* Crossed Swords Sigil */}
+          <line x1="26" y1="16" x2="38" y2="28" stroke="#facc15" strokeWidth="2" />
+          <line x1="38" y1="16" x2="26" y2="28" stroke="#facc15" strokeWidth="2" />
+        </PixelSvg>
+      );
+
+    case 'market':
+      return (
+        <PixelSvg width="64" height="64" viewBox="0 0 64 64" className={className}>
+          <ellipse cx="32" cy="58" rx="28" ry="4" fill="#000" opacity="0.4" />
+          {/* Striped Canopy Awning */}
+          <polygon points="6,24 16,12 48,12 58,24" fill="#dc2626" />
+          <polygon points="12,24 20,12 28,12 20,24" fill="#fef08a" />
+          <polygon points="36,24 44,12 52,12 44,24" fill="#fef08a" />
+          {/* Wooden Counter */}
+          <rect x="10" y="34" width="44" height="24" fill="#78350f" rx="1" />
+          <rect x="14" y="24" width="4" height="12" fill="#451a03" />
+          <rect x="46" y="24" width="4" height="12" fill="#451a03" />
+          {/* Display Crates with Fruit & Scales */}
+          <rect x="16" y="38" width="12" height="10" fill="#92400e" />
+          <circle cx="20" cy="36" r="2" fill="#ef4444" />
+          <circle cx="24" cy="35" r="2.5" fill="#f97316" />
+          <rect x="34" y="38" width="14" height="8" fill="#eab308" />
+        </PixelSvg>
+      );
+
+    case 'housing':
+      return (
+        <PixelSvg width="64" height="64" viewBox="0 0 64 64" className={className}>
+          <ellipse cx="32" cy="58" rx="28" ry="4" fill="#000" opacity="0.4" />
+          {/* Manor Stone Walls */}
+          <rect x="12" y="24" width="40" height="34" fill="#3f3f46" rx="2" />
+          <polygon points="32,6 8,24 56,24" fill="#1e293b" />
+          {/* Timber Framing */}
+          <rect x="16" y="24" width="3" height="32" fill="#78350f" />
+          <rect x="45" y="24" width="3" height="32" fill="#78350f" />
+          {/* Arched Door & Warm Window */}
+          <rect x="26" y="38" width="12" height="18" fill="#451a03" rx="3" />
+          <rect x="18" y="28" width="6" height="6" fill="#fef08a" opacity="0.9" />
+          <rect x="40" y="28" width="6" height="6" fill="#fef08a" opacity="0.9" />
+        </PixelSvg>
+      );
+
+    case 'adventure':
+      return (
+        <PixelSvg width="64" height="64" viewBox="0 0 64 64" className={className}>
+          <ellipse cx="32" cy="58" rx="28" ry="4" fill="#000" opacity="0.4" />
+          {/* Ancient Dolmen Gate */}
+          <rect x="14" y="18" width="8" height="40" fill="#52525b" rx="1" />
+          <rect x="42" y="18" width="8" height="40" fill="#52525b" rx="1" />
+          <rect x="10" y="12" width="44" height="10" fill="#71717a" rx="2" />
+          {/* Ivy Vines */}
+          <path d="M14 18 Q18 28 16 40" stroke="#22c55e" strokeWidth="2" fill="none" />
+          <path d="M46 16 Q42 26 44 38" stroke="#16a34a" strokeWidth="2" fill="none" />
+          {/* Compass Rose Star Portal */}
+          <circle cx="32" cy="38" r="8" fill="#0284c7" opacity="0.75" className="animate-pulse" />
+          <polygon points="32,24 35,35 46,38 35,41 32,52 29,41 18,38 29,35" fill="#38bdf8" />
+        </PixelSvg>
+      );
+
+    case 'guild':
+      return (
+        <PixelSvg width="64" height="64" viewBox="0 0 64 64" className={className}>
+          <ellipse cx="32" cy="58" rx="28" ry="4" fill="#000" opacity="0.4" />
+          {/* Guild Hall Facade */}
+          <rect x="10" y="20" width="44" height="38" fill="#475569" rx="2" />
+          <polygon points="32,4 4,20 60,20" fill="#334155" />
+          {/* Lion Crest Shield */}
+          <polygon points="32,16 26,22 26,30 32,36 38,30 38,22" fill="#ca8a04" />
+          <polygon points="32,18 28,23 28,29 32,34 36,29 36,23" fill="#eab308" />
+          {/* Grand Double Doors */}
+          <rect x="24" y="38" width="16" height="20" fill="#1e293b" rx="1" />
+          <line x1="32" y1="38" x2="32" y2="58" stroke="#64748b" strokeWidth="1" />
+        </PixelSvg>
+      );
+
+    case 'farm':
+    default:
+      return (
+        <PixelSvg width="64" height="64" viewBox="0 0 64 64" className={className}>
+          <ellipse cx="32" cy="58" rx="28" ry="4" fill="#000" opacity="0.4" />
+          {/* Barn Silhouette & Silo */}
+          <rect x="8" y="24" width="14" height="34" fill="#71717a" rx="2" />
+          <ellipse cx="15" cy="24" rx="7" ry="4" fill="#52525b" />
+          <rect x="22" y="26" width="36" height="32" fill="#991b1b" rx="2" />
+          <polygon points="40,10 18,26 62,26" fill="#3f3f46" />
+          {/* White Barn Cross */}
+          <rect x="32" y="38" width="16" height="18" fill="#f8fafc" rx="1" />
+          <line x1="32" y1="38" x2="48" y2="56" stroke="#991b1b" strokeWidth="2" />
+          <line x1="48" y1="38" x2="32" y2="56" stroke="#991b1b" strokeWidth="2" />
+        </PixelSvg>
+      );
+  }
+};
+
+export const PixelPlayerAvatar = ({ className = '' }) => (
+  <PixelSvg width="36" height="48" viewBox="0 0 36 48" className={className}>
+    {/* Shadow */}
+    <ellipse cx="18" cy="45" rx="12" ry="3" fill="#000" opacity="0.4" />
+    {/* Boots */}
+    <rect x="12" y="38" width="4" height="7" fill="#451a03" />
+    <rect x="20" y="38" width="4" height="7" fill="#451a03" />
+    {/* Legs / Trousers */}
+    <rect x="13" y="30" width="3" height="10" fill="#1e293b" />
+    <rect x="20" y="30" width="3" height="10" fill="#1e293b" />
+    {/* Armor Tunic / Chestplate */}
+    <rect x="10" y="16" width="16" height="15" fill="#334155" rx="2" />
+    <rect x="12" y="18" width="12" height="11" fill="#475569" />
+    <polygon points="18,19 14,24 22,24" fill="#eab308" />
+    {/* Flowing Warden Cloak */}
+    <path d="M8 18 Q6 34 8 42 Q10 40 10 32" fill="#991b1b" />
+    <path d="M28 18 Q30 34 28 42 Q26 40 26 32" fill="#991b1b" />
+    {/* Head & Hair */}
+    <ellipse cx="18" cy="11" rx="6" ry="6" fill="#fbcfe8" />
+    <path d="M12 9 Q18 4 24 9 Q23 6 18 5 Q13 6 12 9" fill="#78350f" />
+    <circle cx="16" cy="11" r="1" fill="#0f172a" />
+    <circle cx="20" cy="11" r="1" fill="#0f172a" />
+    {/* Main Hand Blade */}
+    <line x1="28" y1="18" x2="33" y2="8" stroke="#cbd5e1" strokeWidth="2" />
+    <line x1="26" y1="18" x2="30" y2="18" stroke="#ca8a04" strokeWidth="2" />
+  </PixelSvg>
+);
+

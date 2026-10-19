@@ -26,6 +26,8 @@ import SkillProgressGrid from './widgets/SkillProgressGrid';
 import ResidenceCard from './widgets/ResidenceCard';
 import MentorMilestoneModal from './widgets/MentorMilestoneModal';
 import MentorCounselWidget from './widgets/MentorCounselWidget';
+import WorldHUD from '../../core/world/WorldHUD';
+import CitadelWorldView from '../../core/world/CitadelWorldView';
 
 const MOCK_AUTH = import.meta.env.VITE_MOCK_AUTH === 'true';
 
@@ -34,6 +36,7 @@ export default function DashboardPlayer() {
   const [profile, setProfile] = useState(null);
   const [expeditionSession, setExpeditionSession] = useState(null);
   const [now, setNow] = useState(Date.now());
+  const [viewMode, setViewMode] = useState('world');
 
   const missionSpotlight = useMemo(() => {
     if (!profile?.generalMissions?.length) {
@@ -144,69 +147,99 @@ export default function DashboardPlayer() {
       <div className="dashboard-orb orb-1" />
       <div className="dashboard-orb orb-2" />
       <div className="dashboard-orb orb-3" />
-      <div className="relative z-10 mx-auto max-w-6xl px-6 py-16 pt-24">
-        <div className="mb-10 grid gap-6 lg:grid-cols-[1.35fr_0.65fr]">
-          <Panel variant="glass" className="court-reveal">
-            <PlayerIdentityCard
-              character={character}
-              playerLevel={playerLevel}
-              cityId={character?.city || profile?.city}
-              title={profile?.title}
-            />
-            <PlayerStatsBar
-              playerXp={playerXp}
-              playerXpTarget={playerXpTarget}
-              gold={profile?.stats?.gold}
-              activeHouse={activeHouse}
-            />
-            <div className="mt-6">
-              <ExpeditionStatusCard
-                expeditionLocation={expeditionLocation}
-                expeditionReady={expeditionReady}
-                expeditionRemaining={expeditionRemaining}
-                formatDuration={formatDuration}
-              />
+      <div className="relative z-10 mx-auto max-w-6xl px-4 py-8 pt-20 sm:px-6">
+        {/* Fantasy RPG World HUD */}
+        <WorldHUD
+          title="Citadel of Salvation"
+          zoneKicker="Capital Realm"
+          levelLabel="Warden Lvl"
+          level={playerLevel}
+          currentXp={playerXp}
+          targetXp={playerXpTarget}
+          gold={profile?.stats?.gold ?? 0}
+          weather={{ season: 'Spring', label: 'Sunforge Radiance' }}
+          viewMode={viewMode}
+          onToggleViewMode={() => setViewMode(viewMode === 'world' ? 'ledger' : 'world')}
+          className="mb-6"
+        />
+
+        {viewMode === 'world' ? (
+          <div className="space-y-6">
+            {/* 2D Interactive Citadel Plaza */}
+            <CitadelWorldView profile={profile} character={character} />
+
+            {/* In-World Spotlights: Active Missions & Mentor Guidance */}
+            <div className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
+              <MissionSpotlight missionSpotlight={missionSpotlight} />
+              <MentorCounselWidget profile={profile} />
             </div>
-          </Panel>
-
-          <MissionSpotlight missionSpotlight={missionSpotlight} />
-        </div>
-
-        <div className="grid gap-8 lg:grid-cols-[1fr_0.8fr]">
-          <div className="space-y-8">
-            <SkillProgressGrid
-              miningLevel={miningLevel} miningXp={miningXp} miningXpTarget={miningXpTarget} miningInProgress={miningInProgress}
-              farmLevel={farmLevel} farmXp={farmXp} farmXpTarget={farmXpTarget} farmLandSize={profile?.farmLandSize}
-              workshopLevel={workshopLevel} workshopXp={workshopXp} workshopXpTarget={workshopXpTarget} workshopQueueLength={workshopQueue.length}
-            />
-
-            <Panel variant="glass" className="hover-lift">
-              <div className="flex flex-col gap-1 mb-6">
-                <p className="section-kicker text-xs uppercase tracking-[0.35em] text-yellow-500">Navigation</p>
-                <h2 className="text-2xl font-black text-white hero-title">Quick Access</h2>
-                <p className="text-sm text-gray-400">Central hub for all major systems.</p>
-              </div>
-              <div className="mt-6 grid gap-3 grid-cols-2 sm:grid-cols-3 md:grid-cols-4">
-                <Button variant="secondary" to="/adventure">Expeditions</Button>
-                <Button variant="secondary" to="/arena">Colosseum</Button>
-                <Button variant="secondary" to="/missions">Missions</Button>
-                <Button variant="secondary" to="/guild">Fellowship</Button>
-                <Button variant="secondary" to="/housing">Housing</Button>
-                <Button variant="secondary" to="/inventory">Inventory</Button>
-                <Button variant="secondary" to="/market">Market</Button>
-                <Button variant="secondary" to="/workshop">Workshop</Button>
-              </div>
-            </Panel>
           </div>
+        ) : (
+          <div>
+            <div className="mb-10 grid gap-6 lg:grid-cols-[1.35fr_0.65fr]">
+              <Panel variant="glass" className="court-reveal">
+                <PlayerIdentityCard
+                  character={character}
+                  playerLevel={playerLevel}
+                  cityId={character?.city || profile?.city}
+                  title={profile?.title}
+                />
+                <PlayerStatsBar
+                  playerXp={playerXp}
+                  playerXpTarget={playerXpTarget}
+                  gold={profile?.stats?.gold}
+                  activeHouse={activeHouse}
+                />
+                <div className="mt-6">
+                  <ExpeditionStatusCard
+                    expeditionLocation={expeditionLocation}
+                    expeditionReady={expeditionReady}
+                    expeditionRemaining={expeditionRemaining}
+                    formatDuration={formatDuration}
+                  />
+                </div>
+              </Panel>
 
-          <div className="space-y-8">
-            <ResidenceCard
-              activeHouse={activeHouse}
-              estateAmenitiesCount={profile?.estateAmenities?.length || 0}
-            />
-            <MentorCounselWidget profile={profile} />
+              <MissionSpotlight missionSpotlight={missionSpotlight} />
+            </div>
+
+            <div className="grid gap-8 lg:grid-cols-[1fr_0.8fr]">
+              <div className="space-y-8">
+                <SkillProgressGrid
+                  miningLevel={miningLevel} miningXp={miningXp} miningXpTarget={miningXpTarget} miningInProgress={miningInProgress}
+                  farmLevel={farmLevel} farmXp={farmXp} farmXpTarget={farmXpTarget} farmLandSize={profile?.farmLandSize}
+                  workshopLevel={workshopLevel} workshopXp={workshopXp} workshopXpTarget={workshopXpTarget} workshopQueueLength={workshopQueue.length}
+                />
+
+                <Panel variant="glass" className="hover-lift">
+                  <div className="flex flex-col gap-1 mb-6">
+                    <p className="section-kicker text-xs uppercase tracking-[0.35em] text-yellow-500">Navigation</p>
+                    <h2 className="text-2xl font-black text-white hero-title">Quick Access</h2>
+                    <p className="text-sm text-gray-400">Central hub for all major systems.</p>
+                  </div>
+                  <div className="mt-6 grid gap-3 grid-cols-2 sm:grid-cols-3 md:grid-cols-4">
+                    <Button variant="secondary" to="/adventure">Expeditions</Button>
+                    <Button variant="secondary" to="/arena">Colosseum</Button>
+                    <Button variant="secondary" to="/missions">Missions</Button>
+                    <Button variant="secondary" to="/guild">Fellowship</Button>
+                    <Button variant="secondary" to="/housing">Housing</Button>
+                    <Button variant="secondary" to="/inventory">Inventory</Button>
+                    <Button variant="secondary" to="/market">Market</Button>
+                    <Button variant="secondary" to="/workshop">Workshop</Button>
+                  </div>
+                </Panel>
+              </div>
+
+              <div className="space-y-8">
+                <ResidenceCard
+                  activeHouse={activeHouse}
+                  estateAmenitiesCount={profile?.estateAmenities?.length || 0}
+                />
+                <MentorCounselWidget profile={profile} />
+              </div>
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </section>
   );

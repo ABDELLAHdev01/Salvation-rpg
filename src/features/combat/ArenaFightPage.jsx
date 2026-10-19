@@ -20,6 +20,8 @@ import {
 } from '../../core/data/arenaOpponents';
 import { audioManager } from '../../core/audio/AudioManager';
 import SparringModal from './widgets/SparringModal';
+import WorldHUD from '../../core/world/WorldHUD';
+import ArenaWorldView from './ArenaWorldView';
 
 const MOCK_AUTH = import.meta.env.VITE_MOCK_AUTH === 'true';
 
@@ -33,6 +35,7 @@ export default function ArenaFight() {
   const [equippedGear, setEquippedGear] = useState([]);
   const [showSparModal, setShowSparModal] = useState(false);
   const [timerSeconds, setTimerSeconds] = useState(268);
+  const [viewMode, setViewMode] = useState('world');
 
   useEffect(() => {
     const nextOpponent = getOrCreateOpponent();
@@ -131,16 +134,76 @@ export default function ArenaFight() {
       <div className="dashboard-orb orb-1" />
       <div className="dashboard-orb orb-2" />
       <div className="dashboard-orb orb-3" />
-      <div className="relative z-10 mx-auto max-w-6xl px-6 py-16 pt-24">
-        <div className="rounded-2xl p-8 shadow-xl backdrop-blur court-reveal glass-panel">
-          <div className="flex flex-wrap items-center justify-between gap-4">
-            <div>
-              <p className="section-kicker text-xs uppercase tracking-[0.4em] text-yellow-500">Arena Clash</p>
-              <h1 className="mt-3 text-4xl font-extrabold text-white hero-title">Colosseum Duel Deck</h1>
-              <p className="mt-3 text-base text-gray-300">
-                Tune your battle stance, equip vault gear, and challenge the weekly champions.
-              </p>
+      <div className="relative z-10 mx-auto max-w-6xl px-4 py-8 pt-20 sm:px-6">
+        {/* Fantasy RPG World HUD */}
+        <WorldHUD
+          title="Colosseum of Valoria"
+          zoneKicker="Rank IV Arena"
+          levelLabel="Trial Rank"
+          level={4}
+          currentXp={projectedOdds}
+          targetXp={100}
+          gold={availableGold}
+          tool={{ name: currentStanceObj?.name || 'Assault Stance', icon: '⚔️' }}
+          viewMode={viewMode}
+          onToggleViewMode={() => setViewMode(viewMode === 'world' ? 'ledger' : 'world')}
+          className="mb-6"
+        />
+
+        {viewMode === 'world' ? (
+          <div className="space-y-6">
+            <ArenaWorldView
+              opponent={opponent}
+              hazard={hazard}
+              activeStance={activeStance}
+              playerPower={playerPower}
+              opponentPower={opponentPower}
+              projectedOdds={projectedOdds}
+              wager={wager}
+              availableGold={availableGold}
+              onStanceChange={handleStanceChange}
+              onWagerChange={handleWagerChange}
+            />
+
+            {/* Tactical Loadout and Stance Moves Deck */}
+            <div className="grid gap-6 sm:grid-cols-2">
+              <div className="rounded-2xl border border-yellow-700/30 bg-gray-950/80 p-5 backdrop-blur shadow-xl">
+                <div className="flex items-center justify-between">
+                  <p className="text-xs uppercase tracking-wider text-yellow-400 font-bold">Equipped Vault Loadout</p>
+                  <Link to="/inventory" className="text-xs text-yellow-400 underline font-semibold">Vault</Link>
+                </div>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {equippedGear.map((item) => (
+                    <span key={item.id} className="rounded-lg border border-yellow-700/40 bg-gray-900 px-2.5 py-1 text-xs text-gray-200">
+                      <span className="text-yellow-400 font-bold text-[10px] uppercase mr-1">{item.slot}:</span>
+                      {item.name}
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              <div className="rounded-2xl border border-yellow-700/30 bg-gray-950/80 p-5 backdrop-blur shadow-xl">
+                <p className="text-xs uppercase tracking-wider text-yellow-400 font-bold">Active Discipline Moves</p>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {currentStanceObj?.moves.map((move) => (
+                    <span key={move} className="rounded-lg border border-yellow-600/30 bg-yellow-950/40 px-3 py-1 text-xs font-semibold text-yellow-200">
+                      ⚔️ {move}
+                    </span>
+                  ))}
+                </div>
+              </div>
             </div>
+          </div>
+        ) : (
+          <div className="rounded-2xl p-8 shadow-xl backdrop-blur court-reveal glass-panel">
+            <div className="flex flex-wrap items-center justify-between gap-4">
+              <div>
+                <p className="section-kicker text-xs uppercase tracking-[0.4em] text-yellow-500">Arena Clash</p>
+                <h1 className="mt-3 text-4xl font-extrabold text-white hero-title">Colosseum Duel Deck</h1>
+                <p className="mt-3 text-base text-gray-300">
+                  Tune your battle stance, equip vault gear, and challenge the weekly champions.
+                </p>
+              </div>
             <div className="flex flex-wrap gap-2 text-xs text-gray-300">
               <span className="court-chip rounded-full px-3 py-2">Rank IV Trials</span>
               <span className="court-chip rounded-full px-3 py-2">Hazard: {hazard?.name || 'Unknown'}</span>
@@ -353,6 +416,7 @@ export default function ArenaFight() {
             </Link>
           </div>
         </div>
+      )}
       </div>
 
       <SparringModal
