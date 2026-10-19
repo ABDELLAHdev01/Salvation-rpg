@@ -17,20 +17,20 @@ export default function MarketFilters({
 }) {
     return (
         <div className="mt-8 rounded-2xl border border-yellow-700/30 bg-gray-900/80 p-6">
-            <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+            <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                 <div>
                     <p className="text-xs uppercase tracking-[0.3em] text-yellow-500">Market Controls</p>
                     <h2 className="mt-2 text-2xl font-semibold text-white">Trade Ledger</h2>
                 </div>
-                <div className="flex flex-wrap gap-3 text-xs text-gray-300">
-                    <label className="flex items-center gap-2">
+                <div className="flex flex-col sm:flex-row flex-wrap gap-3 text-xs text-gray-300 w-full lg:w-auto">
+                    <label className="flex flex-1 sm:flex-initial items-center gap-2">
                         <span className="uppercase tracking-[0.3em] text-gray-400">Search</span>
                         <input
                             type="text"
                             value={searchTerm}
                             onChange={(event) => setSearchTerm(event.target.value)}
                             placeholder="Item name or category"
-                            className="min-w-[180px] rounded-full border border-yellow-700/40 bg-gray-950/70 px-3 py-1 text-xs text-gray-200 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-yellow-400"
+                            className="w-full sm:min-w-[180px] rounded-full border border-yellow-700/40 bg-gray-950/70 px-3 py-1.5 text-xs text-gray-200 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-yellow-400"
                         />
                     </label>
                     <label className="flex items-center gap-2">
@@ -38,7 +38,7 @@ export default function MarketFilters({
                         <select
                             value={sortBy}
                             onChange={(event) => setSortBy(event.target.value)}
-                            className="rounded-full border border-yellow-700/40 bg-gray-950/70 px-3 py-1 text-xs text-gray-200"
+                            className="w-full sm:w-auto rounded-full border border-yellow-700/40 bg-gray-950/70 px-3 py-1.5 text-xs text-gray-200"
                         >
                             <option value="name" className="text-gray-900">Name</option>
                             <option value="buy" className="text-gray-900">Buy Price</option>
@@ -56,9 +56,9 @@ export default function MarketFilters({
                         key={filter.id}
                         type="button"
                         onClick={() => setFilterId(filter.id)}
-                        className={`rounded-full px-3 py-1 text-xs font-semibold ${filterId === filter.id
+                        className={`min-h-[38px] sm:min-h-[32px] rounded-full px-3 py-1.5 text-xs font-semibold ${filterId === filter.id
                             ? 'action-primary text-white'
-                            : 'border border-yellow-700/40 text-yellow-200'
+                            : 'border border-yellow-700/40 text-yellow-200 hover:bg-yellow-950/20'
                             }`}
                     >
                         {filter.label} ({filterCounts[filter.id] || 0})
@@ -69,7 +69,7 @@ export default function MarketFilters({
                 <button
                     type="button"
                     onClick={() => setShowOwnedOnly((prev) => !prev)}
-                    className={`rounded-full px-3 py-1 text-xs font-semibold ${showOwnedOnly ? 'action-primary text-white' : 'border border-yellow-700/40 text-yellow-200'
+                    className={`min-h-[38px] sm:min-h-[32px] rounded-full px-3 py-1.5 text-xs font-semibold ${showOwnedOnly ? 'action-primary text-white' : 'border border-yellow-700/40 text-yellow-200 hover:bg-yellow-950/20'
                         }`}
                 >
                     Show owned only

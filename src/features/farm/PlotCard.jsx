@@ -71,7 +71,7 @@ export default function PlotCard({
                         <Button
                             variant={isReady ? 'primary' : 'secondary'}
                             size="sm"
-                            className="w-full h-8"
+                            className="w-full min-h-[44px] sm:min-h-[36px]"
                             onClick={(event) => {
                                 event.stopPropagation();
                                 handleHarvest(plot.id);
@@ -87,7 +87,7 @@ export default function PlotCard({
                         <Button
                             variant="ornate"
                             size="sm"
-                            className="w-full h-8"
+                            className="w-full min-h-[44px] sm:min-h-[36px]"
                             onClick={(event) => {
                                 event.stopPropagation();
                                 openPlantModal(plot.id, 'single');

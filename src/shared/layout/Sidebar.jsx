@@ -141,7 +141,7 @@ export default function Sidebar() {
           <button
             type="button"
             onClick={handleToggleAudio}
-            className={`rounded-lg border p-2 transition-colors ${
+            className={`min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg border p-2 transition-colors ${
               isMuted
                 ? 'border-red-800/60 bg-red-950/40 text-red-400'
                 : 'border-yellow-700/40 bg-gray-900 text-yellow-300'
@@ -154,7 +154,7 @@ export default function Sidebar() {
           <button
             type="button"
             onClick={handleToggle}
-            className="rounded-lg border border-yellow-700/40 p-2 text-yellow-200 bg-gray-900"
+            className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg border border-yellow-700/40 p-2 text-yellow-200 bg-gray-900"
             aria-label="Toggle navigation menu"
           >
             {isOpen ? <XMarkIcon className="h-5 w-5" /> : <Bars3Icon className="h-5 w-5" />}
