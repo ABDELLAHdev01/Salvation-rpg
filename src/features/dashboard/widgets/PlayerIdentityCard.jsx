@@ -1,9 +1,8 @@
 import React, { memo } from 'react';
 import Panel from '../../../shared/ui/Panel';
-import SectionHeader from '../../../shared/ui/SectionHeader';
 import { getCityById } from '../../../core/data/citiesData';
 
-const PlayerIdentityCard = ({ character, playerLevel, cityId }) => {
+const PlayerIdentityCard = ({ character, playerLevel, cityId, title }) => {
     const avatarSrc = (() => {
         const raw = character?.avatarUrl || '/raceicon/noimage.webp';
         return raw.startsWith('/') ? raw : `/${raw}`;
@@ -26,11 +25,18 @@ const PlayerIdentityCard = ({ character, playerLevel, cityId }) => {
                     />
                 </div>
                 <div className="text-center sm:text-left">
-                    <SectionHeader
-                        kicker="Command Deck"
-                        title={character?.name || 'Unbound Wanderer'}
-                        description={`${character?.race || 'Unknown'} · ${character?.className || 'Adventurer'}`}
-                    />
+                    <p className="text-[10px] uppercase tracking-[0.3em] text-yellow-500 font-bold mb-1">Command Deck</p>
+                    <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2">
+                        <h2 className="text-2xl sm:text-3xl font-black text-white hero-title">
+                            {character?.name || 'Unbound Wanderer'}
+                        </h2>
+                        <span className="rounded-md border border-yellow-700/40 bg-yellow-950/60 px-2.5 py-0.5 text-xs font-bold text-yellow-300">
+                            «{title || 'Warden Initiate'}»
+                        </span>
+                    </div>
+                    <p className="mt-1 text-xs text-gray-400">
+                        {character?.race || 'Unknown'} · {character?.className || 'Adventurer'}
+                    </p>
                     {cityData && (
                         <div className="mt-2 flex flex-wrap items-center gap-2 text-xs">
                             <span className="inline-flex items-center gap-1.5 rounded-full border border-yellow-700/40 bg-gray-950/70 px-2.5 py-0.5 text-yellow-300 font-medium">

@@ -4,7 +4,7 @@ import SectionHeader from '../../../shared/ui/SectionHeader';
 import Badge from '../../../shared/ui/Badge';
 import Button from '../../../shared/ui/Button';
 
-const ResidenceCard = ({ activeHouse }) => {
+const ResidenceCard = ({ activeHouse, estateAmenitiesCount = 0 }) => {
     return (
         <Panel variant="ornament" className="hover-lift">
             <SectionHeader kicker="Real Estate" title="Residence" />
@@ -24,6 +24,12 @@ const ResidenceCard = ({ activeHouse }) => {
                     <span className="text-[11px] font-bold text-gray-500 uppercase tracking-widest">Residence Perk</span>
                     <span className="text-xs font-bold text-yellow-400">+{activeHouse?.effect?.percent || 2}% {activeHouse?.effect?.stat || 'Defense'}</span>
                 </div>
+                {estateAmenitiesCount > 0 && (
+                    <div className="flex items-center justify-between border-t border-gray-800/80 pt-2 text-[11px]">
+                        <span className="text-gray-400">Furnishings</span>
+                        <span className="font-semibold text-emerald-400">+{estateAmenitiesCount} Relics Active</span>
+                    </div>
+                )}
             </div>
             <Button variant="ghost" to="/housing" className="mt-6 w-full text-[11px] uppercase tracking-widest">
                 Manage Property

@@ -145,6 +145,7 @@ export default function DashboardPlayer() {
               character={character}
               playerLevel={playerLevel}
               cityId={character?.city || profile?.city}
+              title={profile?.title}
             />
             <PlayerStatsBar
               playerXp={playerXp}
@@ -193,7 +194,10 @@ export default function DashboardPlayer() {
           </div>
 
           <div className="space-y-8">
-            <ResidenceCard activeHouse={activeHouse} />
+            <ResidenceCard
+              activeHouse={activeHouse}
+              estateAmenitiesCount={profile?.estateAmenities?.length || 0}
+            />
           </div>
         </div>
       </div>
