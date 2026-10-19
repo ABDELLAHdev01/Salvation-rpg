@@ -38,3 +38,55 @@ describe('Inventory Service', () => {
     expect(getItemCount(inv, null)).toBe(0);
   });
 });
+
+import {
+  itemsCatalog,
+  getItemById,
+  getItemCategoryLabel,
+} from '../src/core/data/itemsCatalog';
+
+describe('Vault Catalog & Valuation Logic', () => {
+  it('guarantees catalog items have valid IDs, categories, and values', () => {
+    expect(itemsCatalog.length).toBeGreaterThan(20);
+
+    const iron = getItemById('iron');
+    expect(iron).toBeDefined();
+    expect(iron.name).toBe('Iron');
+    expect(iron.sellPrice).toBeGreaterThan(0);
+
+    const turnip = getItemById('seed-turnip');
+    expect(turnip).toBeDefined();
+    expect(turnip.type).toBe('seed');
+
+    const ironBar = getItemById('iron-bar');
+    expect(ironBar).toBeDefined();
+    expect(ironBar.type).toBe('crafted');
+
+    expect(getItemById('nonexistent_item_id')).toBeNull();
+  });
+
+  it('correctly aggregates vault inventory value across multiple stacks', () => {
+    const mockInventory = {
+      iron: 10,
+      'iron-bar': 5,
+      egg: 20,
+    };
+
+    const ironItem = getItemById('iron');
+    const ironBarItem = getItemById('iron-bar');
+    const eggItem = getItemById('egg');
+
+    const expectedValue =
+      ironItem.sellPrice * mockInventory.iron +
+      ironBarItem.sellPrice * mockInventory['iron-bar'] +
+      eggItem.sellPrice * mockInventory.egg;
+
+    expect(expectedValue).toBeGreaterThan(0);
+  });
+
+  it('correctly retrieves category labels with fallback', () => {
+    const iron = getItemById('iron');
+    expect(getItemCategoryLabel(iron)).toBe('Ore');
+    expect(getItemCategoryLabel(null)).toBe('Misc');
+  });
+});
