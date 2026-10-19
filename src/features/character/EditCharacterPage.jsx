@@ -136,7 +136,7 @@ export default function EditCharacter() {
   };
 
   return (
-    <section className="min-h-screen bg-center bg-cover bg-no-repeat bg-[url('/jbm.webp')] bg-gray-900 bg-blend-multiply dashboard-shell">
+    <section className="min-h-screen bg-page-primary dashboard-shell">
       <Navbar />
       <div className="dashboard-orb orb-1" />
       <div className="dashboard-orb orb-2" />

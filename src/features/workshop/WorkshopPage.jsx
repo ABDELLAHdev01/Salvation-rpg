@@ -277,7 +277,7 @@ export default function Workshop() {
 
   if (!uiState) {
     return (
-      <section className="min-h-screen bg-center bg-cover bg-no-repeat bg-[url('/jbm.webp')] bg-gray-900 bg-blend-multiply dashboard-shell lg:pl-64">
+      <section className="min-h-screen bg-page-primary dashboard-shell lg:pl-64">
         <Sidebar />
         <div className="relative z-10 mx-auto max-w-6xl px-6 py-16 pt-24 text-gray-200">
           <Panel variant="glass" className="text-center py-20">
@@ -290,7 +290,7 @@ export default function Workshop() {
   }
 
   return (
-    <section className="min-h-screen bg-center bg-cover bg-no-repeat bg-[url('/jbm.webp')] bg-gray-900 bg-blend-multiply dashboard-shell lg:pl-64">
+    <section className="min-h-screen bg-page-primary dashboard-shell lg:pl-64">
       <Sidebar />
       <div className="relative z-10 mx-auto max-w-6xl px-6 py-16 pt-24">
         <WorkshopHeader
