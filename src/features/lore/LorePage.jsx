@@ -1,60 +1,203 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import Navbar from '../../shared/layout/Navbar';
-
-const chapters = [
-  {
-    title: 'The Shattered Kingdoms',
-    text: 'Once united beneath a radiant banner, the kingdoms splintered after the Sunforge fell dark.',
-  },
-  {
-    title: 'The North Wall',
-    text: 'A fortress of iron and oathbound sentinels, holding back the shadow tide for a thousand winters.',
-  },
-  {
-    title: 'The Ember Oath',
-    text: 'A covenant sworn by the first heroes to rekindle the forge and bind fate to flame.',
-  },
-];
+import Sidebar from '../../shared/layout/Sidebar';
+import { worldHistory, estateMentors, factionLore, wardenOath } from '../../core/data/loreData';
 
 export default function Lore() {
+  const [activeTab, setActiveTab] = useState('history');
+
+  const tabs = [
+    { id: 'history', label: 'World Chronicles' },
+    { id: 'factions', label: 'The Three Bastions' },
+    { id: 'mentors', label: 'Estate Mentors' },
+    { id: 'creed', label: 'The Warden\'s Creed' },
+  ];
+
   return (
-    <section className="min-h-screen bg-center bg-cover bg-no-repeat bg-[url('./jbm.webp')] bg-gray-900 bg-blend-multiply dashboard-shell">
-      <Navbar />
+    <section className="min-h-screen bg-center bg-cover bg-no-repeat bg-[url('/jbm.webp')] bg-gray-900 bg-blend-multiply dashboard-shell lg:pl-64">
+      <Sidebar />
       <div className="dashboard-orb orb-1" />
       <div className="dashboard-orb orb-2" />
       <div className="dashboard-orb orb-3" />
-      <div className="relative z-10 mx-auto max-w-5xl px-6 py-16 pt-24">
-        <div className="rounded-2xl p-8 shadow-xl backdrop-blur reveal glass-panel">
-          <p className="section-kicker text-xs uppercase tracking-[0.4em] text-yellow-500">Chronicles</p>
-          <h1 className="mt-3 text-4xl font-extrabold text-white hero-title">Lore of SalVation</h1>
-          <p className="mt-4 text-base text-gray-300">
-            Trace the legends that shape the realm. Each chapter is a fragment of the world you now command.
-          </p>
+      <div className="relative z-10 mx-auto max-w-6xl px-6 py-16 pt-24">
+        <div className="rounded-2xl p-8 shadow-xl backdrop-blur court-reveal glass-panel">
+          
+          {/* Header */}
+          <div className="flex flex-wrap items-center justify-between gap-4 border-b border-yellow-700/30 pb-6">
+            <div>
+              <p className="section-kicker text-xs uppercase tracking-[0.4em] text-yellow-500">The Archivum of Aethelgard</p>
+              <h1 className="mt-2 text-4xl font-extrabold text-white hero-title">Chronicles of Salvation</h1>
+              <p className="mt-2 max-w-2xl text-base text-gray-300">
+                The ancient annals of the Sunforge, the surviving realms, and the guardians who tend the solitary hearth.
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-3">
+              <Link
+                to="/dashboard"
+                className="inline-flex items-center rounded-full px-5 py-2 text-xs font-semibold text-yellow-200 action-ghost"
+              >
+                Back to Dashboard
+              </Link>
+            </div>
+          </div>
 
-          <div className="mt-8 grid gap-4 md:grid-cols-3">
-            {chapters.map((chapter) => (
-              <div key={chapter.title} className="rounded-2xl border border-yellow-700/30 bg-gray-900/80 p-5 hover-lift">
-                <h2 className="text-lg font-semibold text-white">{chapter.title}</h2>
-                <p className="mt-2 text-sm text-gray-300">{chapter.text}</p>
-              </div>
+          {/* Navigation Tabs */}
+          <div className="mt-6 flex flex-wrap gap-2 border-b border-yellow-700/20 pb-4">
+            {tabs.map((tab) => (
+              <button
+                key={tab.id}
+                type="button"
+                onClick={() => setActiveTab(tab.id)}
+                className={`rounded-lg px-4 py-2 text-xs font-bold transition-all ${
+                  activeTab === tab.id
+                    ? 'bg-yellow-500/20 border border-yellow-500/60 text-yellow-300 shadow-md'
+                    : 'text-gray-400 hover:text-gray-200 hover:bg-gray-800/40 border border-transparent'
+                }`}
+              >
+                {tab.label}
+              </button>
             ))}
           </div>
 
-          <div className="mt-8 flex flex-wrap gap-3">
-            <Link
-              to="/character"
-              className="inline-flex items-center rounded-lg px-4 py-2 text-sm font-semibold text-white action-primary"
-            >
-              Begin Your Quest
-            </Link>
+          {/* Tab 1: World History */}
+          {activeTab === 'history' && (
+            <div className="mt-8 space-y-6">
+              <div className="grid gap-6 md:grid-cols-2">
+                {worldHistory.map((item) => (
+                  <div
+                    key={item.id}
+                    className="court-card rounded-2xl border border-yellow-700/30 bg-gray-950/80 p-6 transition hover:border-yellow-500/50"
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-[11px] font-bold uppercase tracking-[0.25em] text-yellow-500/90">
+                        {item.era}
+                      </span>
+                    </div>
+                    <h2 className="mt-2 text-xl font-bold text-white">{item.title}</h2>
+                    <p className="mt-3 text-sm leading-relaxed text-gray-300">{item.text}</p>
+                    <blockquote className="mt-4 border-l-2 border-yellow-600/50 pl-3 text-xs italic text-yellow-200/80">
+                      "{item.quote}"
+                    </blockquote>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Tab 2: The Three Bastions */}
+          {activeTab === 'factions' && (
+            <div className="mt-8 space-y-6">
+              <div className="grid gap-6 lg:grid-cols-3">
+                {factionLore.map((faction) => (
+                  <div
+                    key={faction.id}
+                    className="court-card flex flex-col justify-between rounded-2xl border border-yellow-700/30 bg-gray-950/85 p-6 transition hover:border-yellow-500/50"
+                  >
+                    <div>
+                      <div className="flex items-center gap-3">
+                        <img
+                          src={faction.logo}
+                          alt={faction.name}
+                          className="h-10 w-10 object-contain drop-shadow"
+                        />
+                        <div>
+                          <p className="text-[10px] font-semibold uppercase tracking-[0.3em] text-yellow-500">
+                            {faction.kicker}
+                          </p>
+                          <h2 className="text-2xl font-bold text-white">{faction.name}</h2>
+                        </div>
+                      </div>
+                      <p className="mt-4 text-xs italic text-gray-400 font-medium">"{faction.philosophy}"</p>
+                      <p className="mt-3 text-sm leading-relaxed text-gray-300">{faction.description}</p>
+                    </div>
+
+                    <div className="mt-6 rounded-xl border border-yellow-700/30 bg-gray-900/90 p-3.5">
+                      <p className="text-[10px] uppercase tracking-wider text-yellow-400 font-bold">
+                        ✦ Faction Passive Trait
+                      </p>
+                      <p className="mt-1 text-xs font-semibold text-white">{faction.passiveName}</p>
+                      <p className="mt-0.5 text-xs text-yellow-200/90">{faction.passiveBonus}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Tab 3: Estate Mentors */}
+          {activeTab === 'mentors' && (
+            <div className="mt-8 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+              {estateMentors.map((mentor) => (
+                <div
+                  key={mentor.id}
+                  className="court-card flex flex-col justify-between rounded-2xl border border-yellow-700/30 bg-gray-950/85 p-6 transition hover:border-yellow-500/50"
+                >
+                  <div>
+                    <div className="flex items-center gap-3.5">
+                      <div className="h-14 w-14 shrink-0 overflow-hidden rounded-xl border border-yellow-700/40 bg-gray-900 shadow">
+                        <img
+                          src={mentor.avatar}
+                          alt={mentor.name}
+                          className="h-full w-full object-cover"
+                        />
+                      </div>
+                      <div>
+                        <h2 className="text-lg font-bold text-white">{mentor.name}</h2>
+                        <p className="text-xs text-yellow-500 font-semibold">{mentor.title}</p>
+                        <span className="inline-block mt-1 rounded bg-gray-800/80 px-2 py-0.5 text-[10px] text-gray-300">
+                          {mentor.domain}
+                        </span>
+                      </div>
+                    </div>
+                    <p className="mt-4 text-xs leading-relaxed text-gray-300">{mentor.lore}</p>
+                    <blockquote className="mt-3 border-l-2 border-yellow-600/50 pl-2.5 text-xs italic text-yellow-200/80">
+                      "{mentor.quote}"
+                    </blockquote>
+                  </div>
+
+                  <div className="mt-5 rounded-lg border border-yellow-700/20 bg-gray-900/60 p-2.5 text-[11px] text-gray-300">
+                    <span className="font-semibold text-yellow-400">Mentor Tip: </span>
+                    {mentor.tip}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Tab 4: The Warden's Creed */}
+          {activeTab === 'creed' && (
+            <div className="mt-8 space-y-6">
+              <div className="court-card rounded-2xl border border-yellow-700/40 bg-gray-950/90 p-8 text-center max-w-3xl mx-auto">
+                <span className="text-xs uppercase tracking-[0.4em] text-yellow-500 font-bold">The Sacred Vow</span>
+                <h2 className="mt-3 text-3xl font-extrabold text-white">{wardenOath.title}</h2>
+                <div className="my-6 mx-auto h-0.5 w-24 bg-gradient-to-r from-transparent via-yellow-500 to-transparent" />
+                <p className="text-base italic leading-relaxed text-gray-200 px-4">
+                  "{wardenOath.inscription}"
+                </p>
+                <div className="my-6 mx-auto h-0.5 w-24 bg-gradient-to-r from-transparent via-yellow-500 to-transparent" />
+                <p className="text-xs text-gray-400 max-w-xl mx-auto">
+                  Carved into the lintel of every ancestral homestead across the Hearthlands. Inscribed by the First Wardens who refused to let the darkness prevail.
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* Footer Navigation */}
+          <div className="mt-10 flex flex-wrap gap-4 border-t border-yellow-700/20 pt-6">
             <Link
               to="/dashboard"
-              className="inline-flex items-center rounded-lg px-4 py-2 text-sm font-semibold text-yellow-200 action-ghost"
+              className="inline-flex items-center rounded-lg px-5 py-2.5 text-sm font-semibold text-white action-primary"
             >
-              Return to Sanctuary
+              Command Deck
+            </Link>
+            <Link
+              to="/missions"
+              className="inline-flex items-center rounded-lg px-5 py-2.5 text-sm font-semibold text-yellow-200 action-ghost"
+            >
+              The Warden's Chronicle
             </Link>
           </div>
+
         </div>
       </div>
     </section>

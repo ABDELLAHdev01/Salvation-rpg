@@ -1,7 +1,7 @@
 import React, { useState, useEffect, memo } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import authService from '../services/AuthService';
-import characterService from '../services/CharacterService';
+import authService from '../../core/services/AuthService';
+import characterService from '../../core/services/CharacterService';
 
 const ONBOARDING_KEY = 'onboardingSeen';
 

@@ -42,7 +42,9 @@ const stripZoneFields = (profile) => {
   if (!profile) {
     return profile;
   }
-  const { activeZoneId, unlockedZones, ...rest } = profile;
+  const rest = { ...profile };
+  delete rest.activeZoneId;
+  delete rest.unlockedZones;
   return rest;
 };
 
@@ -136,6 +138,9 @@ class CharacterService {
           username,
           stats: { ...defaultStats },
           title: 'Warden Initiate',
+          unlockedTitles: ['Warden Initiate'],
+          claimedChapters: [],
+          estateAmenities: [],
           bio: 'A quiet traveler sworn to the Sunforge, seeking relics and renown.',
           houseId: 'starter-cottage',
           ownedHouses: ['starter-cottage'],
@@ -316,6 +321,10 @@ class CharacterService {
       profiles[username] = {
         username,
         stats: { ...defaultStats },
+        title: 'Warden Initiate',
+        unlockedTitles: ['Warden Initiate'],
+        claimedChapters: [],
+        estateAmenities: [],
         houseId: 'starter-cottage',
         ownedHouses: ['starter-cottage'],
         miningLevel: 1,
@@ -351,44 +360,53 @@ class CharacterService {
       const shouldResetSystems = !localStorage.getItem(resetKey);
 
       if (shouldResetSystems) {
-        const resetProfile = {
-          username,
-          stats: { ...defaultStats },
-          title: current.title || 'Warden Initiate',
-          bio: current.bio || 'A quiet traveler sworn to the Sunforge, seeking relics and renown.',
-          houseId: 'starter-cottage',
-          ownedHouses: ['starter-cottage'],
-          miningLevel: 1,
-          miningXp: 0,
-          pickaxeLevel: 1,
-          miningForgeLevel: 1,
-          miningPrestigeLevel: 0,
-          activeMiningBoost: null,
-          miningBoosterCooldowns: {},
-          miningAutoClaim: false,
-          miningCooldownUntil: 0,
-          miningContracts: null,
-          miningHirelings: [],
-          inventory: buildInventoryFromLegacy(current),
-          miningSession: null,
-          lastMiningResult: null,
-          farmLandSize: 3,
-          farmPlots: [],
-          farmAnimals: {},
-          farmLevel: 1,
-          farmXp: 0,
-          farmTasks: null,
-          farmWeather: null,
-          workshopLevel: 1,
-          workshopXp: 0,
-          workshopUpgradeLevel: 1,
-          workshopQueue: [],
-          generalMissions: [],
-          createdAt: current.createdAt || Date.now(),
-        };
-        resetProfile.generalMissionsMeta = buildGeneralMissionsMeta(resetProfile);
-        profiles[username] = stripZoneFields(resetProfile);
-        localStorage.removeItem(`expeditionSession:${username}`);
+        const hasExistingProgress =
+          (current.stats?.level != null && current.stats.level > 1) ||
+          (current.farmLevel != null && current.farmLevel > 1) ||
+          (current.miningLevel != null && current.miningLevel > 1) ||
+          (current.workshopLevel != null && current.workshopLevel > 1) ||
+          (current.stats?.gold != null && current.stats.gold > 250);
+
+        if (!hasExistingProgress) {
+          const resetProfile = {
+            username,
+            stats: { ...defaultStats },
+            title: current.title || 'Warden Initiate',
+            bio: current.bio || 'A quiet traveler sworn to the Sunforge, seeking relics and renown.',
+            houseId: 'starter-cottage',
+            ownedHouses: ['starter-cottage'],
+            miningLevel: 1,
+            miningXp: 0,
+            pickaxeLevel: 1,
+            miningForgeLevel: 1,
+            miningPrestigeLevel: 0,
+            activeMiningBoost: null,
+            miningBoosterCooldowns: {},
+            miningAutoClaim: false,
+            miningCooldownUntil: 0,
+            miningContracts: null,
+            miningHirelings: [],
+            inventory: buildInventoryFromLegacy(current),
+            miningSession: null,
+            lastMiningResult: null,
+            farmLandSize: 3,
+            farmPlots: [],
+            farmAnimals: {},
+            farmLevel: 1,
+            farmXp: 0,
+            farmTasks: null,
+            farmWeather: null,
+            workshopLevel: 1,
+            workshopXp: 0,
+            workshopUpgradeLevel: 1,
+            workshopQueue: [],
+            generalMissions: [],
+            createdAt: current.createdAt || Date.now(),
+          };
+          resetProfile.generalMissionsMeta = buildGeneralMissionsMeta(resetProfile);
+          profiles[username] = stripZoneFields(resetProfile);
+          localStorage.removeItem(`expeditionSession:${username}`);
+        }
         localStorage.setItem(resetKey, 'true');
         setMockProfiles(profiles);
       }
@@ -468,6 +486,9 @@ class CharacterService {
           workshopUpgradeLevel: current.workshopUpgradeLevel ?? 1,
           workshopQueue: Array.isArray(current.workshopQueue) ? current.workshopQueue : [],
           generalMissions: current.generalMissions || [],
+          unlockedTitles: Array.isArray(current.unlockedTitles) ? current.unlockedTitles : ['Warden Initiate'],
+          claimedChapters: Array.isArray(current.claimedChapters) ? current.claimedChapters : [],
+          estateAmenities: Array.isArray(current.estateAmenities) ? current.estateAmenities : [],
         };
         nextProfile.generalMissionsMeta =
           current.generalMissionsMeta || buildGeneralMissionsMeta(nextProfile);

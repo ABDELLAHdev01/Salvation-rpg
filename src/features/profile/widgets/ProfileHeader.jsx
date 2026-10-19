@@ -1,7 +1,12 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { getCityById } from '../../../core/data/citiesData';
 
 export default function ProfileHeader({ character, profile, favoriteAchievement, activeHouse }) {
+    const cityId = character?.city || profile?.city;
+    const cityData = cityId ? getCityById(String(cityId).toLowerCase()) : null;
+    const cityPerk = cityData?.perk;
+
     return (
         <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
@@ -24,8 +29,19 @@ export default function ProfileHeader({ character, profile, favoriteAchievement,
                         <span className="court-chip rounded-full px-3 py-1">
                             {character?.className || 'Adventurer'}
                         </span>
+                        {cityData && (
+                            <span className="court-chip rounded-full px-3 py-1 inline-flex items-center gap-1.5 border border-yellow-700/40 text-yellow-300">
+                                <img src={cityData.logo} alt={cityData.name} className="h-3.5 w-3.5 object-contain" />
+                                <span>{cityData.name}</span>
+                            </span>
+                        )}
                         <span className="court-chip rounded-full px-3 py-1">ID: {profile?.username || 'unknown'}</span>
                     </div>
+                    {cityPerk && (
+                        <p className="mt-2 text-xs text-yellow-300/90 font-medium">
+                            ✦ {cityPerk.name}: <span className="text-gray-300 font-normal">{cityPerk.description}</span>
+                        </p>
+                    )}
                     <p className="mt-3 text-xs text-gray-400">
                         Residence: {activeHouse?.name || 'Starter Cottage'}
                     </p>

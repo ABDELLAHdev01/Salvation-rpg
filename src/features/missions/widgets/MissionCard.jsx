@@ -3,7 +3,16 @@ import Panel from '../../../shared/ui/Panel';
 import Badge from '../../../shared/ui/Badge';
 import Button from '../../../shared/ui/Button';
 
+const mentorByType = {
+    'farm-level': { name: 'Selyse', role: 'Botanical Rite', icon: '🌱' },
+    'mining-level': { name: 'Old Bran', role: 'Delver Decree', icon: '⛏️' },
+    'expeditions': { name: 'Moira', role: 'Frontier Order', icon: '🐾' },
+    'house': { name: 'Gideon', role: 'Estate Charter', icon: '🏰' },
+    'player-level': { name: 'Elric', role: 'Hearthsmith Trial', icon: '🔥' },
+};
+
 export default function MissionCard({ mission, progress, isComplete, handleClaim }) {
+    const mentor = mentorByType[mission.type] || { name: 'Order of Wardens', role: 'Decree', icon: '📜' };
     const progressPct = mission.type === 'house'
         ? (isComplete ? 100 : 0)
         : Math.min(100, (progress / mission.target) * 100);
@@ -15,7 +24,10 @@ export default function MissionCard({ mission, progress, isComplete, handleClaim
         >
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
                 <div className="flex-1 w-full">
-                    <div className="flex items-center gap-2">
+                    <div className="flex flex-wrap items-center gap-2">
+                        <span className="rounded-full border border-yellow-700/30 bg-gray-900/80 px-2 py-0.5 text-[10px] text-yellow-300 font-semibold">
+                            {mentor.icon} {mentor.name} · {mentor.role}
+                        </span>
                         <h3 className="text-lg font-bold text-white">{mission.label}</h3>
                         {mission.claimed && <Badge variant="success">Claimed</Badge>}
                         {isComplete && !mission.claimed && <Badge variant="gold" className="animate-pulse">Ready</Badge>}

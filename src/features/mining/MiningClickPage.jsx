@@ -16,6 +16,8 @@ import {
   rollMiningTick,
 } from '../../core/data/miningData';
 import { addItems } from '../../core/services/inventoryService';
+import audioManager from '../../core/audio/AudioManager';
+import { getCityPerk } from '../../core/data/citiesData';
 
 // Extracted Features
 import MiningClickNode from './MiningClickNode';
@@ -64,21 +66,26 @@ export default function MiningClick() {
 
   const zoneMiningXmMods = { xp: 1, break: 1 };
 
-  const dailyVeinBonus = useMemo(() => getDailyVeinBonus(profile), [profile]);
-  const weeklySurgeBonus = useMemo(() => getWeeklySurgeBonus(profile), [profile]);
+  const cityPerk = useMemo(() => getCityPerk(profile?.city), [profile?.city]);
+  const isDrakmor = cityPerk?.type === 'mining-yield' || String(profile?.city || '').toLowerCase() === 'drakmor';
+  const factionDamageBonus = isDrakmor ? (cityPerk?.damageBonus || 5) : 0;
+  const factionYieldMultiplier = isDrakmor ? (1 + (cityPerk?.value || 0.15)) : 1.0;
+
+  const dailyVeinBonus = useMemo(() => getDailyVeinBonus(now), [now]);
+  const weeklySurgeBonus = useMemo(() => getWeeklySurgeBonus(now), [now]);
 
   const pickaxeUpgrade = getPickaxeUpgrade(pickaxeLevel);
   const forgeUpgrade = getForgeUpgrade(miningForgeLevel);
 
   const clickDamage = useMemo(() => {
-    const base = pickaxeUpgrade?.damage || 5;
+    const base = (pickaxeUpgrade?.damage || 5) + factionDamageBonus;
     const forgeMult = forgeUpgrade?.efficiency || 1;
     let boostMult = 1;
     if (activeBoost?.effect?.type === 'click-damage') {
       boostMult = activeBoost.effect.value;
     }
     return Math.floor(base * forgeMult * boostMult);
-  }, [pickaxeUpgrade, forgeUpgrade, activeBoost]);
+  }, [pickaxeUpgrade, forgeUpgrade, activeBoost, factionDamageBonus]);
 
   const clickCooldownMs = useMemo(() => {
     const base = pickaxeUpgrade?.cooldownMs || 1000;
@@ -109,44 +116,42 @@ export default function MiningClick() {
   const handleClickMine = () => {
     if (!profile || !miningClickState?.node) return;
 
+    audioManager.play('mine_strike');
+
     const damage = clickDamage;
     const newNode = { ...miningClickState.node };
     newNode.currentDurability = Math.max(0, newNode.currentDurability - damage);
 
-    const hitResult = rollMiningTick(miningLevel, clickEfficiency);
-    const reward = hitResult.reward || null;
+    const hitResult = rollMiningTick({
+      miningLevel,
+      pickaxeLevel,
+      forgeLevel: miningForgeLevel,
+      dailyVein: dailyVeinBonus,
+      weeklySurge: weeklySurgeBonus,
+      prestigeLevel: miningPrestigeLevel,
+    });
 
+    const hitYieldMap = hitResult.yieldMap || {};
     const newPendingItems = { ...(miningClickState.pendingItems || {}) };
-    if (reward) {
-      newPendingItems[reward.id] = (newPendingItems[reward.id] || 0) + 1;
-    }
+    Object.entries(hitYieldMap).forEach(([oreId, amount]) => {
+      const scaledAmount = Math.max(1, Math.round(amount * factionYieldMultiplier));
+      newPendingItems[oreId] = (newPendingItems[oreId] || 0) + scaledAmount;
+    });
 
-    const lastClickFeedback = {
-      reward,
-      damage,
-      isCrit: Math.random() < 0.1,
-      timestamp: Date.now(),
-    };
+    const isBroke = newNode.currentDurability <= 0;
+    const clickXpGain = Math.max(1, Math.floor(clickBaseXp * (hitResult.xpMultiplier || 1)));
 
     let momentum = (miningClickState.momentum || 0) + 0.05;
     if (momentum > 1.0) momentum = 1.0;
 
-    let finalUpdates = {
-      miningClickState: {
-        ...miningClickState,
-        node: newNode,
-        pendingItems: newPendingItems,
-        lastClickFeedback,
-        momentum,
-        lastClickAt: Date.now(),
-      },
-    };
+    let finalUpdates = {};
 
-    if (newNode.currentDurability <= 0) {
+    if (isBroke) {
+      audioManager.play('node_shatter');
       const breakPool = miningClickState.breakPool || [];
       const breakLoot = {};
       breakPool.forEach((item) => {
-        const count = Math.floor((item.amount || 1) * zoneMiningXmMods.break);
+        const count = Math.max(1, Math.round((item.amount || 1) * zoneMiningXmMods.break * factionYieldMultiplier));
         breakLoot[item.id] = (breakLoot[item.id] || 0) + count;
       });
 
@@ -155,17 +160,61 @@ export default function MiningClick() {
         totalItemsToSync[id] = (totalItemsToSync[id] || 0) + count;
       });
 
-      const xpEarned = clickBaseXp * 10 * zoneMiningXmMods.xp;
-      addItems(totalItemsToSync);
+      // 25% chance to discover an Uncracked Geode on shattering a node
+      let foundGeode = false;
+      if (Math.random() < 0.25) {
+        totalItemsToSync['mystery-geode'] = (totalItemsToSync['mystery-geode'] || 0) + 1;
+        foundGeode = true;
+      }
+
+      const breakXpEarned = clickBaseXp * 10 * zoneMiningXmMods.xp;
+      const totalXpGain = clickXpGain + breakXpEarned;
+
+      let nextLevel = miningLevel;
+      let nextXp = miningXp + totalXpGain;
+      let xpNeeded = getMiningXpForLevel(nextLevel);
+      while (nextXp >= xpNeeded) {
+        nextXp -= xpNeeded;
+        nextLevel += 1;
+        xpNeeded = getMiningXpForLevel(nextLevel);
+      }
+
+      const nextInventory = addItems(profile.inventory || {}, totalItemsToSync);
 
       finalUpdates = {
-        miningXp: miningXp + xpEarned,
+        inventory: nextInventory,
+        miningLevel: nextLevel,
+        miningXp: nextXp,
         miningClickState: null,
       };
 
+      if (nextLevel > miningLevel) {
+        audioManager.play('level_up');
+        toast.success(`Mining Level Up! You reached level ${nextLevel}!`);
+      }
       toast.success(
-        `Node shattered! Earned ${Math.floor(xpEarned)} XP and ${Object.keys(totalItemsToSync).length} items.`
+        `Node shattered! Earned ${Math.floor(totalXpGain)} XP and harvested deposits.${foundGeode ? ' 💎 Found an Uncracked Geode!' : ''}`
       );
+    } else {
+      const lastClickFeedback = {
+        yieldMap: hitYieldMap,
+        event: hitResult.event,
+        xpGained: clickXpGain,
+        damage,
+        brokeNode: false,
+        timestamp: Date.now(),
+      };
+
+      finalUpdates = {
+        miningClickState: {
+          ...miningClickState,
+          node: newNode,
+          pendingItems: newPendingItems,
+          lastClickFeedback,
+          momentum,
+          lastClickAt: Date.now(),
+        },
+      };
     }
 
     handleUpdateProfile(finalUpdates);
@@ -174,11 +223,12 @@ export default function MiningClick() {
   const handleSpawnNode = () => {
     const tier = getTierByMiningLevel(miningLevel);
     const possibleOres = getOresForTier(tier);
-    const ore = possibleOres[Math.floor(Math.random() * possibleOres.length)];
+    const ore = possibleOres[Math.floor(Math.random() * possibleOres.length)] || miningOres[0];
 
     const node = {
       id: `node-${Date.now()}`,
       oreId: ore.id,
+      tier: ore.tier || tier,
       maxDurability: ore.durability || 100,
       currentDurability: ore.durability || 100,
     };
@@ -198,12 +248,29 @@ export default function MiningClick() {
 
   const clickPreview = useMemo(() => {
     if (!miningClickState?.node) return null;
-    const ore = miningOres[miningClickState.node.oreId];
+    const ore = miningOres.find((o) => o.id === miningClickState.node.oreId);
+    const forge = forgeUpgrade || { rareChanceBonus: 0, mishapReduction: 0 };
+    const prestigeRareBonus = Math.min(0.06, miningPrestigeLevel * 0.01);
+    const prestigeCritBonus = Math.min(0.04, miningPrestigeLevel * 0.005);
+    const baseRareChance = 0.025 + pickaxeLevel * 0.004 + miningLevel * 0.0016 + (forge.rareChanceBonus || 0);
+    const rareChance = Math.min(0.2, baseRareChance + prestigeRareBonus);
+    const baseCritChance = 0.06 + pickaxeLevel * 0.008;
+    const critChance = Math.min(0.2, baseCritChance + prestigeCritBonus);
+    const bonusMultiplier = 1 + Math.min(0.2, pickaxeLevel * 0.015);
+    const baseScale = 0.6;
+    const minAmount = Math.max(1, Math.round(0.35 * bonusMultiplier * baseScale));
+    const maxAmount = Math.max(1, Math.round(1.3 * bonusMultiplier * baseScale));
+
     return {
       oreName: ore?.name || 'Unknown Vein',
       rarity: ore?.rarity || 'common',
+      tier: miningClickState.node.tier || getTierByMiningLevel(miningLevel),
+      minAmount,
+      maxAmount,
+      critChance,
+      rareChance,
     };
-  }, [miningClickState]);
+  }, [miningClickState, forgeUpgrade, miningPrestigeLevel, pickaxeLevel, miningLevel]);
 
   const canClick = useMemo(() => {
     if (!miningClickState?.node) return false;
@@ -228,6 +295,23 @@ export default function MiningClick() {
       <Sidebar />
       <div className="relative z-10 mx-auto max-w-6xl px-6 py-16 pt-24">
         <MiningClickHeader miningLevel={miningLevel} />
+
+        {isDrakmor && (
+          <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-red-700/50 bg-red-950/70 px-4 py-1.5 text-xs text-red-300">
+            <span className="h-2 w-2 rounded-full bg-red-500 animate-pulse" />
+            <span><strong>Drakmor Deep Vein Mastery:</strong> +5 pickaxe strike damage & +15% ore harvest yields active</span>
+          </div>
+        )}
+
+        <div className="mb-6 flex items-center gap-3.5 rounded-xl border border-yellow-700/30 bg-gray-950/70 p-3.5 backdrop-blur text-xs">
+          <div className="h-10 w-10 shrink-0 overflow-hidden rounded-lg border border-yellow-700/40 bg-gray-900">
+            <img src="/raceicon/dwarfmale.webp" alt="Old Bran the Delver" className="h-full w-full object-cover" />
+          </div>
+          <div>
+            <p className="font-bold text-yellow-400">Old Bran the Delver <span className="font-normal text-gray-400 text-[11px]">· Scout of the Sunken Shafts</span></p>
+            <p className="text-gray-300 italic">"Hear that deep hum beneath the seam? That's not rock settling, lad—that's the mountain breathing. Keep your pickaxe sharp and listen for crystalline geode pockets!"</p>
+          </div>
+        </div>
 
         <MiningClickStats
           miningXp={miningXp}

@@ -8,6 +8,7 @@ import characterService from '../../core/services/CharacterService';
 import { getExpeditionLocation, rollExpeditionRewards } from '../../core/data/expeditionData';
 import { formatDuration } from '../../core/data/miningData';
 import { getPlayerXpForLevel } from '../../core/data/playerData';
+import { addItems } from '../../core/services/inventoryService';
 
 const MOCK_AUTH = import.meta.env.VITE_MOCK_AUTH === 'true';
 
@@ -95,6 +96,8 @@ export default function ExpeditionActive() {
     const reward = rollExpeditionRewards(activeLocation);
     const adjustedGold = Math.max(0, Math.round(reward.gold));
     const adjustedXp = Math.max(0, Math.round(reward.xp));
+    const itemsGained = reward.items || {};
+    const nextInventory = addItems(profile.inventory || {}, itemsGained);
     const currentLevel = profile.stats?.level ?? 1;
     const currentXp = profile.stats?.xp ?? 0;
     const currentGold = profile.stats?.gold ?? 0;
@@ -102,6 +105,7 @@ export default function ExpeditionActive() {
     const { nextLevel, nextXp } = applyPlayerXp(currentLevel, currentXp, adjustedXp);
 
     const updated = characterService.updateMockProfile({
+      inventory: nextInventory,
       stats: {
         ...profile.stats,
         level: nextLevel,
@@ -119,12 +123,18 @@ export default function ExpeditionActive() {
     if (anchor) {
       pushReward(`+${adjustedGold}g`, { tone: 'gold', anchor });
       pushReward(`+${adjustedXp} XP`, { tone: 'xp', anchor, delay: 120 });
+      Object.entries(itemsGained).forEach(([itemId, amount], idx) => {
+        pushReward(`+${amount} ${itemId}`, { tone: 'item', anchor, delay: (idx + 2) * 120 });
+      });
     }
-    toast.success(`Expedition claimed +${adjustedGold}g +${adjustedXp} XP.`);
+    const itemsCount = Object.keys(itemsGained).length;
+    toast.success(
+      `Expedition claimed! +${adjustedGold}g, +${adjustedXp} XP${itemsCount > 0 ? ` & ${itemsCount} salvaged cache(s)` : ''}.`
+    );
   };
 
   return (
-    <section className="min-h-screen bg-center bg-cover bg-no-repeat bg-[url('./jbm.webp')] bg-gray-900 bg-blend-multiply dashboard-shell lg:pl-64">
+    <section className="min-h-screen bg-center bg-cover bg-no-repeat bg-[url('/jbm.webp')] bg-gray-900 bg-blend-multiply dashboard-shell lg:pl-64">
       <Sidebar />
       <div className="dashboard-orb orb-1" />
       <div className="dashboard-orb orb-2" />

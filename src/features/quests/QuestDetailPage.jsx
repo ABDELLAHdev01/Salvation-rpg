@@ -9,17 +9,17 @@ export default function QuestDetail() {
 
   if (!quest) {
     return (
-      <section className="min-h-screen bg-center bg-cover bg-no-repeat bg-[url('./jbm.webp')] bg-gray-900 bg-blend-multiply">
+      <section className="min-h-screen bg-center bg-cover bg-no-repeat bg-[url('/jbm.webp')] bg-gray-900 bg-blend-multiply">
         <Navbar />
         <div className="mx-auto max-w-4xl px-6 py-16 pt-24 text-center">
           <div className="rounded-2xl border border-yellow-700/40 bg-gray-950/70 p-8 shadow-xl backdrop-blur">
             <h1 className="text-3xl font-bold text-white">Quest not found</h1>
             <p className="mt-3 text-gray-300">The trail has gone cold. Return to the quest log.</p>
             <Link
-              to="/quests"
+              to="/missions"
               className="mt-6 inline-flex items-center rounded-lg border border-yellow-700/50 bg-gray-900/80 px-4 py-2 text-sm font-semibold text-yellow-200 hover:bg-gray-900"
             >
-              Back to Quest Log
+              Back to Missions
             </Link>
           </div>
         </div>
@@ -28,7 +28,7 @@ export default function QuestDetail() {
   }
 
   return (
-    <section className="min-h-screen bg-center bg-cover bg-no-repeat bg-[url('./jbm.webp')] bg-gray-900 bg-blend-multiply dashboard-shell">
+    <section className="min-h-screen bg-center bg-cover bg-no-repeat bg-[url('/jbm.webp')] bg-gray-900 bg-blend-multiply dashboard-shell">
       <Navbar />
       <div className="dashboard-orb orb-1" />
       <div className="dashboard-orb orb-2" />
@@ -88,10 +88,10 @@ export default function QuestDetail() {
               Continue Quest
             </button>
             <Link
-              to="/quests"
+              to="/missions"
               className="inline-flex items-center rounded-lg px-4 py-2 text-sm font-semibold text-yellow-200 action-ghost"
             >
-              Back to Quest Log
+              Back to Missions
             </Link>
           </div>
         </div>

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { cities } from '../../core/data/citiesData';
 
-export default function SelectCity({ selectedCity, onSelectCity, onContinue, onPrev }) {
+export default function SelectCity({ selectedCity, onSelectCity, onContinue }) {
   const [hoveredCity, setHoveredCity] = useState(null);
 
   const handleCitySelect = (cityId) => {
@@ -66,6 +66,11 @@ export default function SelectCity({ selectedCity, onSelectCity, onContinue, onP
                     >
                       {city.displayName}
                     </h2>
+                    {city.perk && (
+                      <p className="mt-1 text-xs text-yellow-200 font-semibold drop-shadow">
+                        ★ {city.perk.name}
+                      </p>
+                    )}
                   </div>
 
                   {/* Hover glow */}
@@ -181,6 +186,15 @@ export default function SelectCity({ selectedCity, onSelectCity, onContinue, onP
             color={selectedCityData.accentColor}
           />
         </div>
+
+        {/* Faction Passive Trait Banner */}
+        {selectedCityData.perk && (
+          <div className="rounded-xl border border-yellow-500/40 bg-yellow-500/10 p-4 mb-6 text-center">
+            <span className="text-xs uppercase tracking-[0.3em] text-yellow-400 font-semibold">Origin Passive Trait</span>
+            <h4 className="mt-1 text-lg font-bold text-white">{selectedCityData.perk.name}</h4>
+            <p className="mt-1 text-sm text-yellow-200">{selectedCityData.perk.description}</p>
+          </div>
+        )}
 
         {/* Navigation Buttons */}
         <div className="flex justify-center space-x-4 mt-6">

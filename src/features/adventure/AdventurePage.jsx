@@ -7,6 +7,8 @@ import characterService from '../../core/services/CharacterService';
 import { expeditionLocations, getExpeditionLocation, rollExpeditionRewards } from '../../core/data/expeditionData';
 import { formatDuration } from '../../core/data/miningData';
 import { getPlayerXpForLevel } from '../../core/data/playerData';
+import { addItems } from '../../core/services/inventoryService';
+import audioManager from '../../core/audio/AudioManager';
 
 const MOCK_AUTH = import.meta.env.VITE_MOCK_AUTH === 'true';
 
@@ -112,6 +114,7 @@ export default function Adventure() {
     const username = authService.getCurrentUsername();
     localStorage.setItem(getExpeditionKey(username), JSON.stringify(nextSession));
     setSession(nextSession);
+    audioManager.play('tap');
     toast.success(`${location.name} expedition dispatched.`);
     navigate('/expedition-active');
   };
@@ -129,6 +132,8 @@ export default function Adventure() {
     const reward = rollExpeditionRewards(activeLocation);
     const adjustedGold = Math.max(0, Math.round(reward.gold));
     const adjustedXp = Math.max(0, Math.round(reward.xp));
+    const itemsGained = reward.items || {};
+    const nextInventory = addItems(profile.inventory || {}, itemsGained);
     const currentLevel = profile.stats?.level ?? 1;
     const currentXp = profile.stats?.xp ?? 0;
     const currentGold = profile.stats?.gold ?? 0;
@@ -136,6 +141,7 @@ export default function Adventure() {
     const { nextLevel, nextXp } = applyPlayerXp(currentLevel, currentXp, adjustedXp);
 
     const updated = characterService.updateMockProfile({
+      inventory: nextInventory,
       stats: {
         ...profile.stats,
         level: nextLevel,
@@ -149,11 +155,15 @@ export default function Adventure() {
     const username = authService.getCurrentUsername();
     localStorage.removeItem(getExpeditionKey(username));
     setSession(null);
-    toast.success(`Expedition claimed +${adjustedGold}g +${adjustedXp} XP.`);
+    audioManager.play(nextLevel > currentLevel ? 'level_up' : 'coin');
+    const itemsCount = Object.keys(itemsGained).length;
+    toast.success(
+      `Expedition claimed! +${adjustedGold}g, +${adjustedXp} XP${itemsCount > 0 ? ` & ${itemsCount} salvaged cache(s)` : ''}.`
+    );
   };
 
   return (
-    <section className="min-h-screen bg-center bg-cover bg-no-repeat bg-[url('./jbm.webp')] bg-gray-900 bg-blend-multiply dashboard-shell lg:pl-64">
+    <section className="min-h-screen bg-center bg-cover bg-no-repeat bg-[url('/jbm.webp')] bg-gray-900 bg-blend-multiply dashboard-shell lg:pl-64">
       <Sidebar />
       <div className="dashboard-orb orb-1" />
       <div className="dashboard-orb orb-2" />

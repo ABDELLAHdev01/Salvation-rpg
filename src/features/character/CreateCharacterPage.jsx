@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import SelectRace from "./SelectRace";
+import SelectClass from "./SelectClass";
 import SelectSex from "./SelectSex";
 import ChooseName from "./ChooseName";
 import SelectCity from "./SelectCity";
@@ -11,6 +12,7 @@ import toast from "react-hot-toast";
 export default function CreateCharacter() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedRace, setSelectedRace] = useState(null);
+  const [selectedClass, setSelectedClass] = useState("Vanguard");
   const [selectedGender, setSelectedGender] = useState(null);
   const [selectedImage, setSelectedImage] = useState(null);
   const [characterName, setCharacterName] = useState("");
@@ -27,6 +29,8 @@ export default function CreateCharacter() {
       race: selectedRace?.toUpperCase() || null,
       raceKey: selectedRace?.toLowerCase() || null,
       sex: selectedGender,
+      className: selectedClass || "Vanguard",
+      characterClass: selectedClass || "Vanguard",
       imageKey: selectedImage || null,
       characterNumber: selectedImage?.match(/\d+/)?.[0] || null,
       city: selectedCity || null,
@@ -45,6 +49,7 @@ export default function CreateCharacter() {
   const stepLabels = [
     { title: "City" },
     { title: "Race" },
+    { title: "Class" },
     { title: "Gender" },
     { title: "Name" },
     { title: "Review" },
@@ -61,6 +66,13 @@ export default function CreateCharacter() {
       key="race"
       selectedRace={selectedRace}
       onSelectRace={setSelectedRace}
+      onContinue={next}
+      onPrev={prev}
+    />,
+    <SelectClass
+      key="class"
+      selectedClass={selectedClass}
+      onSelectClass={setSelectedClass}
       onContinue={next}
       onPrev={prev}
     />,
@@ -90,6 +102,7 @@ export default function CreateCharacter() {
       key="review"
       name={characterName}
       race={selectedRace}
+      characterClass={selectedClass}
       gender={selectedGender}
       selectedImage={selectedImage}
       selectedCity={selectedCity}
@@ -99,7 +112,7 @@ export default function CreateCharacter() {
   ];
 
   return (
-    <section className="min-h-screen bg-center bg-cover bg-no-repeat bg-[url('./jbm.webp')] bg-gray-900 bg-blend-multiply dashboard-shell">
+    <section className="min-h-screen bg-center bg-cover bg-no-repeat bg-[url('/jbm.webp')] bg-gray-900 bg-blend-multiply dashboard-shell">
       <div className="dashboard-orb orb-1" />
       <div className="dashboard-orb orb-2" />
       <div className="dashboard-orb orb-3" />

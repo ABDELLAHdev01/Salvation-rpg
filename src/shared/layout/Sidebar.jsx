@@ -6,9 +6,16 @@ import {
   Squares2X2Icon,
   BookOpenIcon,
   BriefcaseIcon,
+  ArchiveBoxIcon,
+  ClipboardDocumentListIcon,
   ArrowDownTrayIcon,
+  SpeakerWaveIcon,
+  SpeakerXMarkIcon,
+  TrophyIcon,
+  UserGroupIcon,
 } from '@heroicons/react/24/outline';
 import { Link, useLocation } from 'react-router-dom';
+import { audioManager } from '../../core/audio/AudioManager';
 
 const PickaxeIcon = ({ className }) => (
   <svg viewBox="0 0 24 24" className={className} fill="none" stroke="currentColor" strokeWidth="1.6">
@@ -47,21 +54,34 @@ const HammerIcon = ({ className }) => (
 
 const navItems = [
   { name: 'Dashboard', href: '/dashboard', icon: Squares2X2Icon },
+  { name: 'Inventory', href: '/inventory', icon: ArchiveBoxIcon },
+  { name: 'Missions', href: '/missions', icon: ClipboardDocumentListIcon },
   { name: 'Farm', href: '/farm', icon: PigIcon },
   { name: 'Mine', href: '/mining', icon: PickaxeIcon },
   { name: 'Market', href: '/market', icon: BriefcaseIcon },
   { name: 'Workshop', href: '/workshop', icon: HammerIcon },
   { name: 'Adventure', href: '/adventure', icon: BookOpenIcon },
-  { name: 'Residence', href: '/housing', icon: HomeIcon }
+  { name: 'Colosseum', href: '/arena', icon: TrophyIcon },
+  { name: 'Residence', href: '/housing', icon: HomeIcon },
+  { name: 'Fellowship', href: '/guild', icon: UserGroupIcon },
+  { name: 'Lore', href: '/lore', icon: BookOpenIcon },
 ];
 
 
 export default function Sidebar() {
   const location = useLocation();
   const [isOpen, setIsOpen] = useState(false);
+  const [isMuted, setIsMuted] = useState(() => audioManager.isMuted());
 
   const handleToggle = () => setIsOpen((prev) => !prev);
 
+  const handleToggleAudio = () => {
+    const nextMuted = audioManager.toggleMute();
+    setIsMuted(nextMuted);
+    if (!nextMuted) {
+      audioManager.play('tap');
+    }
+  };
 
   const items = [...navItems];
 
@@ -117,13 +137,29 @@ export default function Sidebar() {
             />
           </Link>
         </div>
-        <button
-          type="button"
-          onClick={handleToggle}
-          className="rounded-lg border border-yellow-700/40 p-2 text-yellow-200 bg-gray-900"
-        >
-          {isOpen ? <XMarkIcon className="h-5 w-5" /> : <Bars3Icon className="h-5 w-5" />}
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={handleToggleAudio}
+            className={`rounded-lg border p-2 transition-colors ${
+              isMuted
+                ? 'border-red-800/60 bg-red-950/40 text-red-400'
+                : 'border-yellow-700/40 bg-gray-900 text-yellow-300'
+            }`}
+            title={isMuted ? 'Unmute procedural soundscapes' : 'Mute soundscapes'}
+            aria-label={isMuted ? 'Unmute sound' : 'Mute sound'}
+          >
+            {isMuted ? <SpeakerXMarkIcon className="h-5 w-5" /> : <SpeakerWaveIcon className="h-5 w-5" />}
+          </button>
+          <button
+            type="button"
+            onClick={handleToggle}
+            className="rounded-lg border border-yellow-700/40 p-2 text-yellow-200 bg-gray-900"
+            aria-label="Toggle navigation menu"
+          >
+            {isOpen ? <XMarkIcon className="h-5 w-5" /> : <Bars3Icon className="h-5 w-5" />}
+          </button>
+        </div>
       </div>
 
       {isOpen && (
@@ -165,10 +201,36 @@ export default function Sidebar() {
           </div>
 
           <div className="mt-auto pt-6 border-t border-yellow-700/10">
-            <p className="px-4 text-[10px] uppercase tracking-[0.4em] text-gray-500 font-black mb-4">The Archive</p>
+            <div className="flex items-center justify-between px-2 mb-3">
+              <span className="text-[10px] uppercase tracking-[0.3em] text-gray-500 font-black">Audio Ambience</span>
+              <button
+                type="button"
+                onClick={handleToggleAudio}
+                className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-bold transition-all border ${
+                  isMuted
+                    ? 'border-red-900/50 bg-red-950/30 text-red-400 hover:bg-red-900/40'
+                    : 'border-yellow-700/40 bg-yellow-950/30 text-yellow-300 hover:bg-yellow-900/40'
+                }`}
+                title={isMuted ? 'Unmute procedural soundscapes' : 'Mute soundscapes'}
+                aria-label={isMuted ? 'Unmute audio ambience' : 'Mute audio ambience'}
+              >
+                {isMuted ? (
+                  <>
+                    <SpeakerXMarkIcon className="h-3.5 w-3.5" />
+                    <span>Muted</span>
+                  </>
+                ) : (
+                  <>
+                    <SpeakerWaveIcon className="h-3.5 w-3.5" />
+                    <span>Active</span>
+                  </>
+                )}
+              </button>
+            </div>
+            <p className="px-4 text-[10px] uppercase tracking-[0.4em] text-gray-500 font-black mb-3">The Archive</p>
             <Link
               to="/load-save"
-              className="group relative flex items-center justify-center gap-3 rounded-xl border border-yellow-700/30 bg-yellow-950/20 py-4 text-xs font-black text-yellow-200 hover:bg-yellow-900/30 transition-all overflow-hidden"
+              className="group relative flex items-center justify-center gap-3 rounded-xl border border-yellow-700/30 bg-yellow-950/20 py-3 text-xs font-black text-yellow-200 hover:bg-yellow-900/30 transition-all overflow-hidden"
             >
               <div className="absolute inset-0 bg-gradient-to-r from-yellow-500/0 via-yellow-500/10 to-yellow-500/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
               <ArrowDownTrayIcon className="h-5 w-5 text-yellow-500" />

@@ -13,6 +13,7 @@ import {
 } from '../../core/data/farmData';
 import { getSeedItemId } from '../../core/data/itemsCatalog';
 import { addItems, getItemCount, removeItems } from '../../core/services/inventoryService';
+import audioManager from '../../core/audio/AudioManager';
 
 import FarmUpgradePanel from './FarmUpgradePanel';
 import PlotCard from './PlotCard';
@@ -184,7 +185,8 @@ export default function FarmPlots() {
     const seedItemId = getSeedItemId(crop.id);
     const ownedSeeds = getItemCount(inventory, seedItemId);
     const seasonModifiers = getCropSeasonModifiers(crop.id, season);
-    const totalGrowMultiplier = growMultiplier * seasonModifiers.growMultiplier * zoneModifiers.grow;
+    const factionGrowMultiplier = String(profile?.city || '').toLowerCase() === 'eldoria' ? 0.85 : 1.0;
+    const totalGrowMultiplier = growMultiplier * seasonModifiers.growMultiplier * zoneModifiers.grow * factionGrowMultiplier;
 
     if (ownedSeeds <= 0) {
       toast.error('You need seeds for this crop.');
@@ -222,6 +224,7 @@ export default function FarmPlots() {
     });
 
     setProfile(updated);
+    audioManager.play('tap');
     toast.success(plantMode === 'bulk' ? `${crop.name} planted in ${plantCount} plots.` : `${crop.name} planted.`);
     closePlantModal();
   };
@@ -257,6 +260,7 @@ export default function FarmPlots() {
     });
 
     setProfile(updated);
+    audioManager.play(leveledUp ? 'level_up' : 'harvest');
     toast.success(`Harvested ${crop.name} +${adjustedYield} ${goodName}${leveledUp ? ' · Farm level up!' : ''}.`);
 
     const anchor = plotRefs.current.get(plotId);
@@ -320,10 +324,20 @@ export default function FarmPlots() {
   };
 
   return (
-    <section className="min-h-screen bg-center bg-cover bg-no-repeat bg-[url('./jbm2.webp')] bg-gray-900 bg-blend-multiply lg:pl-64 dashboard-shell">
+    <section className="min-h-screen bg-center bg-cover bg-no-repeat bg-[url('/jbm2.webp')] bg-gray-900 bg-blend-multiply lg:pl-64 dashboard-shell">
       <Sidebar />
       <div className="relative z-10 mx-auto max-w-6xl px-6 py-16 pt-24">
         <FarmHeader farmLevel={farmLevel} />
+
+        <div className="mb-6 flex items-center gap-3.5 rounded-xl border border-yellow-700/30 bg-gray-950/70 p-3.5 backdrop-blur text-xs">
+          <div className="h-10 w-10 shrink-0 overflow-hidden rounded-lg border border-yellow-700/40 bg-gray-900">
+            <img src="/raceicon/elfefemale.webp" alt="Selyse of the Sylvan Root" className="h-full w-full object-cover" />
+          </div>
+          <div>
+            <p className="font-bold text-yellow-400">Selyse of the Sylvan Root <span className="font-normal text-gray-400 text-[11px]">· Keeper of the Ancient Seed</span></p>
+            <p className="text-gray-300 italic">"The seeds remember the Sunforge even if our scholars have forgotten. Listen to the soil, match your crops to the season, and the hearth will bloom."</p>
+          </div>
+        </div>
 
         <div className="mb-8 grid gap-8 lg:grid-cols-[1.3fr_0.7fr]">
           <div className="space-y-8">

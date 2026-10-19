@@ -134,13 +134,38 @@ export const getExpeditionLocation = (locationId) =>
 
 export const rollExpeditionRewards = (location) => {
   if (!location) {
-    return { gold: 0, xp: 0 };
+    return { gold: 0, xp: 0, items: {} };
   }
 
   const roll = (min, max) => Math.floor(min + Math.random() * (max - min + 1));
+  const items = {};
+
+  // 35% chance to discover an Uncracked Geode on expeditions
+  if (Math.random() < 0.35) {
+    items['mystery-geode'] = 1;
+  }
+
+  // Biome-specific relic and mineral salvage
+  if (location.id === 'sunken-ridge') {
+    items['silver'] = roll(1, 3);
+  } else if (location.id === 'luminous-fen') {
+    items['turnip-stew'] = 1;
+  } else if (location.id === 'ember-hollows') {
+    items['gold'] = roll(1, 2);
+  } else if (location.id === 'gilded-morass') {
+    items['gold'] = roll(2, 4);
+    if (Math.random() < 0.25) items['contract-sigil'] = 1;
+  } else if (location.id === 'stormwatch-cliffs' || location.id === 'blackwind-span') {
+    items['mythril'] = roll(1, 2);
+    if (Math.random() < 0.35) items['contract-sigil'] = 1;
+  } else if (location.levelRequired >= 20) {
+    items['starforge'] = 1;
+    if (Math.random() < 0.5) items['contract-sigil'] = 1;
+  }
 
   return {
     gold: roll(location.minGold, location.maxGold),
     xp: roll(location.minXp, location.maxXp),
+    items,
   };
 };

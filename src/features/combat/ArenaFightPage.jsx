@@ -13,6 +13,7 @@ import {
   getPlayerStats,
   setStoredWager,
 } from '../../core/data/arenaOpponents';
+import { audioManager } from '../../core/audio/AudioManager';
 
 const MOCK_AUTH = import.meta.env.VITE_MOCK_AUTH === 'true';
 
@@ -72,10 +73,13 @@ export default function ArenaFight() {
     const next = Math.max(0, Math.min(value, maxGold));
     setWager(next);
     setStoredWager(next);
+    if (next > 0) {
+      audioManager.play('coin');
+    }
   };
 
   return (
-    <section className="min-h-screen bg-center bg-cover bg-no-repeat bg-[url('./jbm.webp')] bg-gray-900 bg-blend-multiply dashboard-shell lg:pl-64">
+    <section className="min-h-screen bg-center bg-cover bg-no-repeat bg-[url('/jbm.webp')] bg-gray-900 bg-blend-multiply dashboard-shell lg:pl-64">
       <Sidebar />
       <div className="dashboard-orb orb-1" />
       <div className="dashboard-orb orb-2" />
@@ -225,15 +229,21 @@ export default function ArenaFight() {
           <div className="mt-8 flex flex-wrap gap-3">
             <Link
               to="/arena/fight/opponent"
+              onClick={() => audioManager.play('strike')}
               className="inline-flex items-center rounded-lg px-4 py-2 text-sm font-semibold text-white action-primary"
             >
               Fight Now
             </Link>
-            <button className="inline-flex items-center rounded-lg px-4 py-2 text-sm font-semibold text-yellow-200 action-ghost">
+            <button
+              type="button"
+              onClick={() => audioManager.play('tap')}
+              className="inline-flex items-center rounded-lg px-4 py-2 text-sm font-semibold text-yellow-200 action-ghost"
+            >
               Spar Practice
             </button>
             <Link
               to="/arena"
+              onClick={() => audioManager.play('tap')}
               className="inline-flex items-center rounded-lg px-4 py-2 text-sm font-semibold text-yellow-200 action-ghost"
             >
               Back to Arena

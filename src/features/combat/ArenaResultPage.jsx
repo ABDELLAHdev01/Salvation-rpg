@@ -15,6 +15,7 @@ import {
   getStoredWager,
   incrementRivalRecord,
 } from '../../core/data/arenaOpponents';
+import { audioManager } from '../../core/audio/AudioManager';
 
 const MOCK_AUTH = import.meta.env.VITE_MOCK_AUTH === 'true';
 
@@ -62,24 +63,52 @@ export default function ArenaResult() {
   }, [hazard, opponent, result, wager]);
 
   useEffect(() => {
-    if (!MOCK_AUTH || hasAppliedWager.current || wager <= 0) {
+    if (!result || hasAppliedWager.current) {
       return;
     }
 
-    const username = authService.getCurrentUsername();
-    const profile = characterService.getMockProfile(username);
-    if (!profile?.stats) {
-      return;
+    const isWin = result.outcome === 'Victory';
+
+    // Trigger Audio Soundscape on match conclusion
+    if (isWin) {
+      audioManager.play('strike');
+      setTimeout(() => audioManager.play('coin'), 220);
+      setTimeout(() => audioManager.play('levelup'), 450);
+    } else {
+      audioManager.play('strike');
+      setTimeout(() => audioManager.play('error'), 250);
     }
-    const currentGold = profile?.stats?.gold ?? 0;
-    const delta = result.outcome === 'Victory' ? wager : -wager;
-    const nextGold = Math.max(0, currentGold + delta);
-    characterService.updateMockProfile({
-      stats: {
-        ...profile.stats,
-        gold: nextGold,
-      },
-    });
+
+    if (MOCK_AUTH) {
+      const username = authService.getCurrentUsername();
+      const profile = characterService.getMockProfile(username);
+      if (profile?.stats) {
+        const currentGold = profile?.stats?.gold ?? 0;
+        const currentXp = profile?.stats?.xp ?? 0;
+        const basePurse = isWin ? 240 : 25;
+        const wagerProfit = isWin ? wager : -wager;
+        const totalGoldDelta = basePurse + (wager > 0 ? wagerProfit : 0);
+        const nextGold = Math.max(0, currentGold + totalGoldDelta);
+        const xpDelta = isWin ? 180 : 40;
+        const nextXp = currentXp + xpDelta;
+
+        const currentInventory = profile.inventory || {};
+        const nextInventory = { ...currentInventory };
+        if (isWin) {
+          nextInventory['contract-sigil'] = (nextInventory['contract-sigil'] || 0) + 1;
+        }
+
+        characterService.updateMockProfile({
+          stats: {
+            ...profile.stats,
+            gold: nextGold,
+            xp: nextXp,
+          },
+          inventory: nextInventory,
+        });
+      }
+    }
+
     clearStoredWager();
     hasAppliedWager.current = true;
   }, [result, wager]);
@@ -144,7 +173,7 @@ export default function ArenaResult() {
   }, [opponent, result, playerStats]);
 
   return (
-    <section className="min-h-screen bg-center bg-cover bg-no-repeat bg-[url('./jbm.webp')] bg-gray-900 bg-blend-multiply dashboard-shell lg:pl-64">
+    <section className="min-h-screen bg-center bg-cover bg-no-repeat bg-[url('/jbm.webp')] bg-gray-900 bg-blend-multiply dashboard-shell lg:pl-64">
       <Sidebar />
       <div className="dashboard-orb orb-1" />
       <div className="dashboard-orb orb-2" />

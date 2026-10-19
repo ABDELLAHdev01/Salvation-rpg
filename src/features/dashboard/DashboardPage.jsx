@@ -141,7 +141,11 @@ export default function DashboardPlayer() {
       <div className="relative z-10 mx-auto max-w-6xl px-6 py-16 pt-24">
         <div className="mb-10 grid gap-6 lg:grid-cols-[1.35fr_0.65fr]">
           <Panel variant="glass" className="court-reveal">
-            <PlayerIdentityCard character={character} playerLevel={playerLevel} />
+            <PlayerIdentityCard
+              character={character}
+              playerLevel={playerLevel}
+              cityId={character?.city || profile?.city}
+            />
             <PlayerStatsBar
               playerXp={playerXp}
               playerXpTarget={playerXpTarget}
@@ -175,9 +179,11 @@ export default function DashboardPlayer() {
                 <h2 className="text-2xl font-black text-white hero-title">Quick Access</h2>
                 <p className="text-sm text-gray-400">Central hub for all major systems.</p>
               </div>
-              <div className="mt-6 grid gap-4 sm:grid-cols-3">
+              <div className="mt-6 grid gap-3 grid-cols-2 sm:grid-cols-3 md:grid-cols-4">
                 <Button variant="secondary" to="/adventure">Expeditions</Button>
+                <Button variant="secondary" to="/arena">Colosseum</Button>
                 <Button variant="secondary" to="/missions">Missions</Button>
+                <Button variant="secondary" to="/guild">Fellowship</Button>
                 <Button variant="secondary" to="/housing">Housing</Button>
                 <Button variant="secondary" to="/inventory">Inventory</Button>
                 <Button variant="secondary" to="/market">Market</Button>

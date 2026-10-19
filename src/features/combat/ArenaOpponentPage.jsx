@@ -10,6 +10,7 @@ import {
   getRivalRecord,
   getRivalTaunt,
 } from '../../core/data/arenaOpponents';
+import { audioManager } from '../../core/audio/AudioManager';
 
 const MOCK_AUTH = import.meta.env.VITE_MOCK_AUTH === 'true';
 
@@ -42,7 +43,7 @@ export default function ArenaOpponent() {
   }, []);
 
   return (
-    <section className="min-h-screen bg-center bg-cover bg-no-repeat bg-[url('./jbm.webp')] bg-gray-900 bg-blend-multiply dashboard-shell lg:pl-64">
+    <section className="min-h-screen bg-center bg-cover bg-no-repeat bg-[url('/jbm.webp')] bg-gray-900 bg-blend-multiply dashboard-shell lg:pl-64">
       <Sidebar />
       <div className="dashboard-orb orb-1" />
       <div className="dashboard-orb orb-2" />
@@ -175,18 +176,21 @@ export default function ArenaOpponent() {
           <div className="mt-8 flex flex-wrap gap-3">
             <Link
               to="/arena/fight/result"
+              onClick={() => audioManager.play('strike')}
               className="inline-flex items-center rounded-lg px-4 py-2 text-sm font-semibold text-white action-primary"
             >
               Fight
             </Link>
             <Link
               to="/arena"
+              onClick={() => audioManager.play('tap')}
               className="inline-flex items-center rounded-lg px-4 py-2 text-sm font-semibold text-yellow-200 action-ghost"
             >
               Run Away
             </Link>
             <Link
               to="/arena/fight"
+              onClick={() => audioManager.play('tap')}
               className="inline-flex items-center rounded-lg px-4 py-2 text-sm font-semibold text-yellow-200 action-ghost"
             >
               Back to Lobby

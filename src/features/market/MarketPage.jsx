@@ -8,6 +8,8 @@ import { itemsCatalog } from '../../core/data/itemsCatalog';
 import { farmAnimals, farmCrops } from '../../core/data/farmData';
 import { miningConsumables } from '../../core/data/miningData';
 import { addItems, getItemCount, removeItems } from '../../core/services/inventoryService';
+import audioManager from '../../core/audio/AudioManager';
+import { getCityPerk } from '../../core/data/citiesData';
 
 import { marketFilters, groupedFilters, rarityRank } from './marketConstants';
 import MarketFilters from './MarketFilters';
@@ -146,10 +148,15 @@ export default function Market() {
     return true;
   }, [farmLevel, miningLevel, playerLevel]);
 
+  const cityPerk = useMemo(() => getCityPerk(profile?.city), [profile?.city]);
+  const isValoria = cityPerk?.type === 'market-sell' || String(profile?.city || '').toLowerCase() === 'valoria';
+  const sellMultiplier = isValoria ? (1 + (cityPerk?.value || 0.12)) : 1.0;
+
   const marketItems = useMemo(() => {
     return itemsCatalog.map((item, index) => {
       const buyPrice = getBuyPrice(item);
-      const sellPrice = getSellPrice(item);
+      const baseSellPrice = getSellPrice(item);
+      const sellPrice = Math.round(baseSellPrice * sellMultiplier);
       return {
         ...item,
         index,
@@ -163,7 +170,7 @@ export default function Market() {
         rarityRank: rarityRank[item.rarity] || 0,
       };
     });
-  }, [inventory, farmAnimalsOwned]);
+  }, [inventory, farmAnimalsOwned, sellMultiplier]);
 
   const normalizedSearch = searchTerm.trim().toLowerCase();
   const filteredItems = useMemo(() => {
@@ -322,6 +329,7 @@ export default function Market() {
     }
 
     setProfile(updated);
+    audioManager.play('coin');
     toast.success(`Bought ${quantity} ${item.name}.`);
   };
 
@@ -372,6 +380,7 @@ export default function Market() {
     }
 
     setProfile(updated);
+    audioManager.play('coin');
     toast.success(`Sold ${quantity} ${item.name}.`);
   };
 
@@ -394,6 +403,7 @@ export default function Market() {
       });
 
       setProfile(updated);
+      audioManager.play('coin');
       toast.success(`Sold all farm goods for ${formatGold(sellAllGoods.totalValue)}g.`);
       return;
     }
@@ -425,6 +435,7 @@ export default function Market() {
       });
 
       setProfile(updated);
+      audioManager.play('coin');
       toast.success(`Sold all ores for ${formatGold(sellAllOres.totalValue)}g.`);
       return;
     }
@@ -452,6 +463,7 @@ export default function Market() {
     });
 
     setProfile(updated);
+    audioManager.play('coin');
     toast.success(`Sold all ${pendingBulkSale.label} for ${formatGold(pendingBulkSale.totalValue)}g.`);
     setPendingBulkSale(null);
   };
@@ -461,7 +473,7 @@ export default function Market() {
   };
 
   return (
-    <section className="min-h-screen bg-center bg-cover bg-no-repeat bg-[url('./jbm.webp')] bg-gray-900 bg-blend-multiply dashboard-shell lg:pl-64">
+    <section className="min-h-screen bg-center bg-cover bg-no-repeat bg-[url('/jbm.webp')] bg-gray-900 bg-blend-multiply dashboard-shell lg:pl-64">
       <Sidebar />
       <div className="dashboard-orb orb-1" />
       <div className="dashboard-orb orb-2" />
@@ -475,6 +487,12 @@ export default function Market() {
               <p className="mt-3 max-w-2xl text-base text-gray-300">
                 One hub for trading every resource, relic, and crafted good across the realm.
               </p>
+              {isValoria && (
+                <div className="mt-3 inline-flex items-center gap-2 rounded-full border border-green-600/50 bg-green-950/70 px-3.5 py-1 text-xs text-green-300">
+                  <span className="h-1.5 w-1.5 rounded-full bg-green-400 animate-pulse" />
+                  <span><strong>Valoria Gilded Trade:</strong> +12% gold bonus automatically applied to all item sales</span>
+                </div>
+              )}
             </div>
             <div className="flex flex-wrap items-center gap-3">
               <div className="rounded-full border border-yellow-700/40 bg-gray-950/70 px-4 py-2 text-xs text-yellow-200">

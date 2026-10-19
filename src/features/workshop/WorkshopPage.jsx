@@ -16,6 +16,7 @@ import {
 import { miningOres, formatDuration } from '../../core/data/miningData';
 import { farmGoods } from '../../core/data/farmData';
 import { getItemCount, removeItems } from '../../core/services/inventoryService';
+import audioManager from '../../core/audio/AudioManager';
 
 // Standard UI Components
 import Panel from '../../shared/ui/Panel';
@@ -213,6 +214,7 @@ export default function Workshop() {
       return;
     }
     setProfile(result.profile);
+    audioManager.play('craft');
     toast.success('Crafting started.');
   };
 
@@ -224,6 +226,7 @@ export default function Workshop() {
       return;
     }
     setProfile(result.profile);
+    audioManager.play('level_up');
     toast.success('Workshop upgraded.');
   };
 
@@ -242,6 +245,7 @@ export default function Workshop() {
     });
 
     setProfile(updated);
+    audioManager.play('coin');
     toast.success(`Sold ${scaled} ${item.name}.`);
   };
 
@@ -263,6 +267,7 @@ export default function Workshop() {
     });
 
     setProfile(updated);
+    audioManager.play('coin');
     toast.success('All crafted items sold.');
   };
 
@@ -272,7 +277,7 @@ export default function Workshop() {
 
   if (!uiState) {
     return (
-      <section className="min-h-screen bg-center bg-cover bg-no-repeat bg-[url('./jbm.webp')] bg-gray-900 bg-blend-multiply dashboard-shell lg:pl-64">
+      <section className="min-h-screen bg-center bg-cover bg-no-repeat bg-[url('/jbm.webp')] bg-gray-900 bg-blend-multiply dashboard-shell lg:pl-64">
         <Sidebar />
         <div className="relative z-10 mx-auto max-w-6xl px-6 py-16 pt-24 text-gray-200">
           <Panel variant="glass" className="text-center py-20">
@@ -285,7 +290,7 @@ export default function Workshop() {
   }
 
   return (
-    <section className="min-h-screen bg-center bg-cover bg-no-repeat bg-[url('./jbm.webp')] bg-gray-900 bg-blend-multiply dashboard-shell lg:pl-64">
+    <section className="min-h-screen bg-center bg-cover bg-no-repeat bg-[url('/jbm.webp')] bg-gray-900 bg-blend-multiply dashboard-shell lg:pl-64">
       <Sidebar />
       <div className="relative z-10 mx-auto max-w-6xl px-6 py-16 pt-24">
         <WorkshopHeader
@@ -296,6 +301,16 @@ export default function Workshop() {
           gold={gold}
           upgradeName={upgrade?.name}
         />
+
+        <div className="mb-6 flex items-center gap-3.5 rounded-xl border border-yellow-700/30 bg-gray-950/70 p-3.5 backdrop-blur text-xs">
+          <div className="h-10 w-10 shrink-0 overflow-hidden rounded-lg border border-yellow-700/40 bg-gray-900">
+            <img src="/raceicon/humanmale.webp" alt="Elric the Hearthsmith" className="h-full w-full object-cover" />
+          </div>
+          <div>
+            <p className="font-bold text-yellow-400">Elric the Hearthsmith <span className="font-normal text-gray-400 text-[11px]">· Master of the Smelter</span></p>
+            <p className="text-gray-300 italic">"Cold iron doesn't lie to you, Warden. Craft refined bars and textiles—never settle for raw vendor pennies."</p>
+          </div>
+        </div>
 
         <div className="mb-8 grid gap-8 lg:grid-cols-[1.3fr_0.7fr]">
           <div className="space-y-8">

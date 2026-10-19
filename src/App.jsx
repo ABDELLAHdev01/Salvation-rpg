@@ -12,7 +12,6 @@ const DashboardPlayer = lazy(() => import("./features/dashboard/DashboardPage"))
 const Adventure = lazy(() => import("./features/adventure/AdventurePage"));
 const ExpeditionActive = lazy(() => import("./features/adventure/ExpeditionActivePage"));
 const Inventory = lazy(() => import("./features/character/InventoryPage"));
-const Quests = lazy(() => import("./features/quests/QuestsPage"));
 const QuestDetail = lazy(() => import("./features/quests/QuestDetailPage"));
 const Arena = lazy(() => import("./features/combat/ArenaPage"));
 const ArenaFight = lazy(() => import("./features/combat/ArenaFightPage"));
@@ -33,10 +32,13 @@ const Workshop = lazy(() => import("./features/workshop/WorkshopPage"));
 const DevCheats = lazy(() => import("./features/system/DevCheatsPage"));
 const Missions = lazy(() => import("./features/missions/MissionsPage"));
 const LoadSave = lazy(() => import("./features/system/LoadSavePage"));
+const LoginPage = lazy(() => import("./features/auth/LoginPage"));
+const RegisterPage = lazy(() => import("./features/auth/RegisterPage"));
 const PageNotFound = lazy(() => import("./shared/layout/PageNotFound"));
 import ProtectedRoute from "./core/services/ProtectedRoute";
 import { RewardFloatProvider } from "./shared/feedback/RewardFloatProvider";
 import InteractionFeedbackLayer from "./shared/feedback/InteractionFeedbackLayer";
+import OnboardingGuide from "./features/onboarding/OnboardingGuide";
 
 const OFFLINE_MODE = import.meta.env.VITE_OFFLINE_MODE === "true";
 const prefetchCommonRoutes = () => {
@@ -59,6 +61,7 @@ function App() {
   return (
     <RewardFloatProvider>
       <InteractionFeedbackLayer />
+      <OnboardingGuide />
       <Toaster />
       <Analytics />
       <SpeedInsights />
@@ -71,9 +74,19 @@ function App() {
       >
         <Routes>
           <Route path="/" element={<Home />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
           <Route path="/lore" element={<Lore />} />
           <Route path="/load-save" element={<LoadSave />} />
           <Route path="/character" element={<CreateCharacter />} />
+          <Route
+            path="/character/edit"
+            element={
+              <ProtectedRoute>
+                <EditCharacter />
+              </ProtectedRoute>
+            }
+          />
           <Route
             path="/dashboard"
             element={
@@ -109,8 +122,14 @@ function App() {
           <Route
             path="/quests"
             element={
+              <Navigate to="/missions?tab=chapters" replace />
+            }
+          />
+          <Route
+            path="/chronicle"
+            element={
               <ProtectedRoute>
-                <Quests />
+                <Missions />
               </ProtectedRoute>
             }
           />

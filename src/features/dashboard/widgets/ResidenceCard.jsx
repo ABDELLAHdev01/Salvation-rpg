@@ -17,12 +17,12 @@ const ResidenceCard = ({ activeHouse }) => {
             </div>
             <div className="mt-5 space-y-3">
                 <div className="flex items-center justify-between">
-                    <span className="text-[11px] font-bold text-gray-500 uppercase tracking-widest">Vibe</span>
+                    <span className="text-[11px] font-bold text-gray-400 uppercase tracking-widest truncate max-w-[140px]">{activeHouse?.name || 'Starter Cottage'}</span>
                     <Badge variant="gold">{activeHouse?.tier || 'Tier 1'}</Badge>
                 </div>
                 <div className="flex items-center justify-between">
-                    <span className="text-[11px] font-bold text-gray-500 uppercase tracking-widest">Comfort</span>
-                    <Badge variant="info">{activeHouse?.effect?.name || 'Rested Comfort'}</Badge>
+                    <span className="text-[11px] font-bold text-gray-500 uppercase tracking-widest">Residence Perk</span>
+                    <span className="text-xs font-bold text-yellow-400">+{activeHouse?.effect?.percent || 2}% {activeHouse?.effect?.stat || 'Defense'}</span>
                 </div>
             </div>
             <Button variant="ghost" to="/housing" className="mt-6 w-full text-[11px] uppercase tracking-widest">

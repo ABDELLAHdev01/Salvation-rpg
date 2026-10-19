@@ -30,13 +30,13 @@ export const workshopItems = [
   { id: 'copper-bar', name: 'Copper Bar', sellValue: 135 },
   { id: 'silver-ingot', name: 'Silver Ingot', sellValue: 225 },
   { id: 'gold-ingot', name: 'Gold Ingot', sellValue: 345 },
-  { id: 'turnip-stew', name: 'Turnip Stew', sellValue: 175 },
-  { id: 'herb-tea', name: 'Herb Tea', sellValue: 170 },
-  { id: 'hearty-stew', name: 'Hearty Stew', sellValue: 180 },
-  { id: 'wool-cloth', name: 'Wool Cloth', sellValue: 95 },
-  { id: 'moonweave', name: 'Moonweave', sellValue: 165 },
-  { id: 'healing-tonic', name: 'Healing Tonic', sellValue: 120 },
-  { id: 'sunroot-elixir', name: 'Sunroot Elixir', sellValue: 190 },
+  { id: 'turnip-stew', name: 'Turnip Stew', sellValue: 125 },
+  { id: 'herb-tea', name: 'Herb Tea', sellValue: 100 },
+  { id: 'hearty-stew', name: 'Hearty Stew', sellValue: 210 },
+  { id: 'wool-cloth', name: 'Wool Cloth', sellValue: 140 },
+  { id: 'moonweave', name: 'Moonweave', sellValue: 280 },
+  { id: 'healing-tonic', name: 'Healing Tonic', sellValue: 200 },
+  { id: 'sunroot-elixir', name: 'Sunroot Elixir', sellValue: 275 },
 ];
 
 const workshopItemValueMap = workshopItems.reduce((acc, item) => {

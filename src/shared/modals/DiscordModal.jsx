@@ -4,24 +4,33 @@ import './DiscordModal.css'; // Import the CSS file
 const DISCORD_URL = 'https://discord.gg/BgqSghsmWY';
 const DISCORD_INVITE_KEY = 'discordInviteSeen';
 
-export default function DiscordModal() {
+export default function DiscordModal({ isOpen: controlledIsOpen, onClose: controlledOnClose }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
-    const hasSeen = localStorage.getItem(DISCORD_INVITE_KEY);
-    if (!hasSeen) {
-      setIsModalOpen(true);
+    if (controlledIsOpen !== undefined) {
+      setIsModalOpen(controlledIsOpen);
+      return;
     }
-  }, []);
+    const handleTrigger = () => setIsModalOpen(true);
+    window.addEventListener('ui:open-discord', handleTrigger);
+    return () => window.removeEventListener('ui:open-discord', handleTrigger);
+  }, [controlledIsOpen]);
 
   const handleCloseModal = () => {
     localStorage.setItem(DISCORD_INVITE_KEY, 'true');
     setIsModalOpen(false);
+    if (controlledOnClose) {
+      controlledOnClose();
+    }
   };
 
   const handleJoinDiscord = () => {
     localStorage.setItem(DISCORD_INVITE_KEY, 'true');
     setIsModalOpen(false);
+    if (controlledOnClose) {
+      controlledOnClose();
+    }
   };
 
   return (

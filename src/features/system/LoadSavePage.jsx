@@ -13,6 +13,14 @@ const STORAGE_KEYS = [
   'mockCharacters',
   'mockProfiles',
   'mockNotifications',
+  'salvation_arena_history',
+  'salvation_arena_rivals',
+  'salvation_market_listings',
+  'marketCollapsedSections',
+  'marketBulkSellConfirmDisabled',
+  'workshopFilters',
+  'hasSeenOnboarding',
+  'hasSeenDiscordInvite',
 ];
 
 const buildSavePayload = () => {
@@ -23,6 +31,17 @@ const buildSavePayload = () => {
       data[key] = value;
     }
   });
+
+  // Capture dynamic keys for active players
+  for (let i = 0; i < localStorage.length; i += 1) {
+    const key = localStorage.key(i);
+    if (key && (key.startsWith('profileSystemReset:') || key.startsWith('expeditionSession:'))) {
+      const value = localStorage.getItem(key);
+      if (value !== null) {
+        data[key] = value;
+      }
+    }
+  }
 
   return {
     version: 1,
@@ -173,19 +192,33 @@ export default function LoadSave() {
     }
 
     STORAGE_KEYS.forEach((key) => localStorage.removeItem(key));
-    STORAGE_KEYS.forEach((key) => {
-      if (Object.prototype.hasOwnProperty.call(importPayload.data, key)) {
-        const value = importPayload.data[key];
-        localStorage.setItem(key, typeof value === 'string' ? value : JSON.stringify(value));
+    const dynamicKeys = [];
+    for (let i = 0; i < localStorage.length; i += 1) {
+      const key = localStorage.key(i);
+      if (key && (key.startsWith('profileSystemReset:') || key.startsWith('expeditionSession:'))) {
+        dynamicKeys.push(key);
       }
+    }
+    dynamicKeys.forEach((key) => localStorage.removeItem(key));
+
+    Object.entries(importPayload.data).forEach(([key, value]) => {
+      localStorage.setItem(key, typeof value === 'string' ? value : JSON.stringify(value));
     });
 
-    toast.success('Save applied.');
+    toast.success('Save applied successfully.');
     navigate('/dashboard');
   };
 
   const clearLocalSave = () => {
     STORAGE_KEYS.forEach((key) => localStorage.removeItem(key));
+    const dynamicKeys = [];
+    for (let i = 0; i < localStorage.length; i += 1) {
+      const key = localStorage.key(i);
+      if (key && (key.startsWith('profileSystemReset:') || key.startsWith('expeditionSession:'))) {
+        dynamicKeys.push(key);
+      }
+    }
+    dynamicKeys.forEach((key) => localStorage.removeItem(key));
     toast.success('Local save cleared.');
     navigate('/');
   };
@@ -209,7 +242,7 @@ export default function LoadSave() {
   };
 
   return (
-    <section className="min-h-screen bg-center bg-cover bg-no-repeat bg-[url('./jbm.webp')] bg-gray-900 bg-blend-multiply dashboard-shell">
+    <section className="min-h-screen bg-center bg-cover bg-no-repeat bg-[url('/jbm.webp')] bg-gray-900 bg-blend-multiply dashboard-shell">
       <Navbar />
       <div className="dashboard-orb orb-1" />
       <div className="dashboard-orb orb-2" />

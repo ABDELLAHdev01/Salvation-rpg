@@ -4,7 +4,7 @@ import SectionHeader from '../../shared/ui/SectionHeader';
 import { miningOres } from '../../core/data/miningData';
 import { getItemCount } from '../../core/services/inventoryService';
 
-export default function MiningInventory({ inventory, lastResultList = [], lastResult }) {
+export default function MiningInventory({ inventory, lastResultList = [], lastResult, onCrackGeode }) {
     return (
         <div className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
             <Panel className="p-6">
@@ -29,6 +29,15 @@ export default function MiningInventory({ inventory, lastResultList = [], lastRe
                             <p className="mt-1 text-xl font-semibold text-yellow-300">
                                 {getItemCount(inventory, ore.id)}
                             </p>
+                            {ore.id === 'mystery-geode' && getItemCount(inventory, 'mystery-geode') > 0 && onCrackGeode && (
+                                <button
+                                    type="button"
+                                    onClick={onCrackGeode}
+                                    className="mt-3 w-full rounded-lg border border-cyan-500/50 bg-cyan-950/80 px-3 py-1.5 text-xs font-bold text-cyan-300 hover:bg-cyan-900 transition flex items-center justify-center gap-1.5 shadow"
+                                >
+                                    <span>💎</span> Crack Open Geode
+                                </button>
+                            )}
                         </div>
                     ))}
                 </div>

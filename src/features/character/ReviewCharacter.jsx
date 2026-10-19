@@ -5,6 +5,7 @@ export default function ReviewCharacter({
   name,
   race,
   gender,
+  characterClass,
   selectedImage,
   selectedCity,
   onConfirm,
@@ -50,6 +51,12 @@ export default function ReviewCharacter({
               <span className="text-gray-400">Gender</span>
               <span className="text-white font-semibold">{gender || '—'}</span>
             </div>
+            {characterClass && (
+              <div className="flex items-center justify-between">
+                <span className="text-gray-400">Class</span>
+                <span className="text-yellow-400 font-semibold">{characterClass}</span>
+              </div>
+            )}
             <div className="flex items-center justify-between">
               <span className="text-gray-400">Origin City</span>
               <span 

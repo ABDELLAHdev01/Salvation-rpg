@@ -1,4 +1,4 @@
-import { getHousingTierById } from './housingData';
+import { getHousingTierById, getActiveEstateBuffs } from './housingData';
 
 const STORAGE_KEY = 'arenaOpponent';
 const RESULT_KEY = 'arenaResult';
@@ -16,17 +16,22 @@ export const basePlayerStats = [
 export const getPlayerStats = (profile) => {
   const house = getHousingTierById(profile?.houseId || 'starter-cottage');
   const effect = house?.effect;
-  if (!effect?.stat || !effect?.percent) {
-    return basePlayerStats;
-  }
+  const estateBuffs = getActiveEstateBuffs(profile);
 
   return basePlayerStats.map((stat) => {
-    if (stat.label !== effect.stat) {
-      return stat;
+    let multiplier = 1;
+    if (effect?.stat === stat.label && effect?.percent) {
+      multiplier += effect.percent / 100;
+    }
+    if (stat.label === 'Attack' && estateBuffs.attackBonus) {
+      multiplier += estateBuffs.attackBonus / 100;
+    }
+    if (stat.label === 'Defense' && estateBuffs.shieldBonus) {
+      multiplier += estateBuffs.shieldBonus / 100;
     }
     return {
       ...stat,
-      value: Math.round(stat.value * (1 + effect.percent / 100)),
+      value: Math.round(stat.value * multiplier),
     };
   });
 };

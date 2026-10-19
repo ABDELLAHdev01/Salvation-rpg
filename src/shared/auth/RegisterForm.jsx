@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import AuthService from '../services/AuthService';
+import AuthService from '../../core/services/AuthService';
 import toast, { Toaster } from 'react-hot-toast';
 import { Link, useNavigate } from 'react-router-dom';
 
-export default function RegisteForm() {
+export default function RegisterForm() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -24,7 +24,7 @@ export default function RegisteForm() {
   const strengthColor =
     strengthScore <= 1 ? 'bg-red-500' : strengthScore === 2 ? 'bg-yellow-500' : 'bg-emerald-500';
 
-  const handleRegister = async (e: React.FormEvent) => {
+  const handleRegister = async (e) => {
     e.preventDefault();
 
     if (password !== confirmPassword) {
@@ -45,9 +45,9 @@ export default function RegisteForm() {
     try {
       setIsSubmitting(true);
       await AuthService.register(username, password);
-      navigate('/login'); // Redirect to login page
-      
-    } catch (err: any) {
+      navigate('/login');
+    } catch (err) {
+      toast.error(err?.message || 'Registration failed. Please try again.');
     } finally {
       setIsSubmitting(false);
     }

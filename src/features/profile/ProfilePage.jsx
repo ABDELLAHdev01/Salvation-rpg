@@ -1,10 +1,12 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import Sidebar from '../../shared/layout/Sidebar';
 import authService from '../../core/services/AuthService';
 import characterService from '../../core/services/CharacterService';
 import { mockQuests } from '../../core/data/mockQuests';
+import { chronicleChapters } from '../../core/data/missionData';
 import { getHousingTierById } from '../../core/data/housingData';
+import { getCityById } from '../../core/data/citiesData';
 
 // Profile Widgets
 import ProfileHeader from './widgets/ProfileHeader';
@@ -35,8 +37,18 @@ export default function Profile() {
     }
   }, []);
 
-  const achievements = mockQuests.map((quest) => `${quest.title} · ${quest.region}`);
+  const achievements = useMemo(() => {
+    const chapterAchievements = Array.isArray(profile?.claimedChapters)
+      ? chronicleChapters
+          .filter((c) => profile.claimedChapters.includes(c.id))
+          .map((c) => `Chapter ${c.chapterNumber}: ${c.title} · «${c.titleReward}»`)
+      : [];
+    const questAchievements = mockQuests.map((quest) => `${quest.title} · ${quest.region}`);
+    return [...chapterAchievements, ...questAchievements];
+  }, [profile?.claimedChapters]);
   const activeHouse = getHousingTierById(profile?.houseId || 'starter-cottage');
+  const cityId = character?.city || profile?.city;
+  const cityData = cityId ? getCityById(String(cityId).toLowerCase()) : null;
 
   const handleSaveProfile = () => {
     if (!MOCK_AUTH) return;
@@ -59,7 +71,7 @@ export default function Profile() {
   };
 
   return (
-    <section className="min-h-screen bg-center bg-cover bg-no-repeat bg-[url('./jbm.webp')] bg-gray-900 bg-blend-multiply dashboard-shell lg:pl-64">
+    <section className="min-h-screen bg-center bg-cover bg-no-repeat bg-[url('/jbm.webp')] bg-gray-900 bg-blend-multiply dashboard-shell lg:pl-64">
       <Sidebar />
       <div className="dashboard-orb orb-1" />
       <div className="dashboard-orb orb-2" />
@@ -75,9 +87,15 @@ export default function Profile() {
 
           <div className="mt-6 grid gap-4 lg:grid-cols-[1.3fr_0.7fr]">
             <div className="court-card rounded-2xl p-5">
-              <p className="text-xs uppercase tracking-[0.3em] text-gray-400">Legacy Banner</p>
-              <p className="mt-2 text-2xl font-semibold text-white">Embercrest Standard</p>
-              <p className="mt-2 text-sm text-gray-300">Displayed across your hall of honors.</p>
+              <p className="text-xs uppercase tracking-[0.3em] text-gray-400">
+                {cityData ? `${cityData.name} Origin Banner` : 'Legacy Banner'}
+              </p>
+              <p className="mt-2 text-2xl font-semibold text-white">
+                {cityData ? `${cityData.name} Citadel Standard` : 'Embercrest Standard'}
+              </p>
+              <p className="mt-2 text-sm text-gray-300">
+                {cityData ? cityData.lore : 'Displayed across your hall of honors.'}
+              </p>
             </div>
             <div className="image-panel image-panel-profile ornament-frame min-h-[140px] p-5">
               <div className="image-panel-content">
@@ -95,6 +113,7 @@ export default function Profile() {
               title={title} setTitle={setTitle}
               bio={bio} setBio={setBio}
               handleSaveProfile={handleSaveProfile} isSaving={isSaving}
+              unlockedTitles={profile?.unlockedTitles || ['Warden Initiate']}
             />
             <ProfileAchievements
               achievements={achievements}

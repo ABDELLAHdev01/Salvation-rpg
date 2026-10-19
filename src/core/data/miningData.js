@@ -1,17 +1,39 @@
 export const miningOres = [
-  { id: 'iron', name: 'Iron', tier: 1, price: 26, image: '/ores/iron.webp' },
-  { id: 'copper', name: 'Copper', tier: 1, price: 28, image: '/ores/copper.webp' },
-  { id: 'bronze', name: 'Bronze', tier: 1, price: 34, image: '/ores/bronze.webp' },
-  { id: 'silver', name: 'Silver', tier: 2, price: 62, image: '/ores/silver.webp' },
-  { id: 'electrum', name: 'Electrum', tier: 2, price: 74, image: '/ores/electrum.webp' },
-  { id: 'gold', name: 'Gold', tier: 3, price: 96, image: '/ores/gold.webp' },
-  { id: 'platinum', name: 'Platinum', tier: 3, price: 132, image: '/ores/platinum.webp' },
-  { id: 'mythril', name: 'Mythril', tier: 4, price: 170, image: '/ores/mythril.webp' },
-  { id: 'orichalcum', name: 'Orichalcum', tier: 4, price: 205, image: '/ores/orichalcum.webp' },
-  { id: 'adamantite', name: 'Adamantite', tier: 5, price: 265, image: '/ores/adamantite.webp' },
-  { id: 'voidsteel', name: 'Voidsteel', tier: 5, price: 310, image: '/ores/voidsteel.webp' },
-  { id: 'starforge', name: 'Starforge Ore', tier: 6, price: 395, image: '/ores/starforge.webp' },
+  { id: 'iron', name: 'Iron', tier: 1, price: 26, durability: 60, xp: 15, image: '/ores/iron.webp' },
+  { id: 'copper', name: 'Copper', tier: 1, price: 28, durability: 65, xp: 18, image: '/ores/copper.webp' },
+  { id: 'bronze', name: 'Bronze', tier: 1, price: 34, durability: 75, xp: 22, image: '/ores/bronze.webp' },
+  { id: 'silver', name: 'Silver', tier: 2, price: 62, durability: 90, xp: 30, image: '/ores/silver.webp' },
+  { id: 'electrum', name: 'Electrum', tier: 2, price: 74, durability: 100, xp: 35, image: '/ores/electrum.webp' },
+  { id: 'gold', name: 'Gold', tier: 3, price: 96, durability: 115, xp: 42, image: '/ores/gold.webp' },
+  { id: 'platinum', name: 'Platinum', tier: 3, price: 132, durability: 130, xp: 50, image: '/ores/platinum.webp' },
+  { id: 'mythril', name: 'Mythril', tier: 4, price: 170, durability: 145, xp: 60, image: '/ores/mythril.webp' },
+  { id: 'orichalcum', name: 'Orichalcum', tier: 4, price: 205, durability: 160, xp: 72, image: '/ores/orichalcum.webp' },
+  { id: 'adamantite', name: 'Adamantite', tier: 5, price: 265, durability: 180, xp: 85, image: '/ores/adamantite.webp' },
+  { id: 'voidsteel', name: 'Voidsteel', tier: 5, price: 310, durability: 200, xp: 100, image: '/ores/voidsteel.webp' },
+  { id: 'starforge', name: 'Starforge Ore', tier: 6, price: 395, durability: 240, xp: 130, image: '/ores/starforge.webp' },
+  { id: 'mystery-geode', name: 'Uncracked Geode', tier: 2, price: 180, durability: 95, xp: 40, image: '/ores/electrum.webp' },
 ];
+
+export const geodeLootTable = [
+  { id: 'silver', name: 'Raw Silver', amount: 3, weight: 35 },
+  { id: 'gold', name: 'Raw Gold', amount: 2, weight: 25 },
+  { id: 'platinum', name: 'Platinum Flakes', amount: 1, weight: 18 },
+  { id: 'mythril', name: 'Mythril Shard', amount: 1, weight: 12 },
+  { id: 'starforge', name: 'Starforge Fragment', amount: 1, weight: 6 },
+  { id: 'contract-sigil', name: 'Ancient Contract Sigil', amount: 1, weight: 4 },
+];
+
+export const crackGeode = () => {
+  const totalWeight = geodeLootTable.reduce((sum, item) => sum + item.weight, 0);
+  let roll = Math.random() * totalWeight;
+  for (const item of geodeLootTable) {
+    if (roll < item.weight) {
+      return { id: item.id, name: item.name, amount: item.amount };
+    }
+    roll -= item.weight;
+  }
+  return geodeLootTable[0];
+};
 
 export const miningStoreItems = miningOres.map((ore) => ({
   id: ore.id,
@@ -120,6 +142,9 @@ export const pickaxeUpgrades = [
     price: 0,
     requiredMiningLevel: 1,
     rarity: 'Common',
+    damage: 8,
+    efficiency: 1.0,
+    cooldownMs: 800,
     image: '/pickaxe/rustbound.webp',
     visual: 'Iron head with rawhide grip',
   },
@@ -129,6 +154,9 @@ export const pickaxeUpgrades = [
     price: 320,
     requiredMiningLevel: 2,
     rarity: 'Uncommon',
+    damage: 12,
+    efficiency: 1.15,
+    cooldownMs: 750,
     image: '/pickaxe/forged.webp',
     visual: 'Brass edges and chain-wrapped haft',
   },
@@ -138,6 +166,9 @@ export const pickaxeUpgrades = [
     price: 720,
     requiredMiningLevel: 4,
     rarity: 'Rare',
+    damage: 18,
+    efficiency: 1.3,
+    cooldownMs: 700,
     image: '/pickaxe/runed.webp',
     visual: 'Runed steel with ember inlay',
   },
@@ -147,6 +178,9 @@ export const pickaxeUpgrades = [
     price: 1400,
     requiredMiningLevel: 7,
     rarity: 'Epic',
+    damage: 26,
+    efficiency: 1.5,
+    cooldownMs: 650,
     image: '/pickaxe/gilded.webp',
     visual: 'Gold-flanged head, crimson binding',
   },
@@ -156,7 +190,10 @@ export const pickaxeUpgrades = [
     price: 2600,
     requiredMiningLevel: 10,
     rarity: 'Legendary',
-    image: '/pickaxe/mythril.webp',
+    damage: 36,
+    efficiency: 1.75,
+    cooldownMs: 600,
+    image: '/pickaxe/mythril_pickaxe.webp',
     visual: 'Mythril shimmer and frost-blue core',
   },
   {
@@ -165,7 +202,10 @@ export const pickaxeUpgrades = [
     price: 4200,
     requiredMiningLevel: 13,
     rarity: 'Mythic',
-    image: '/pickaxe/voidsteel.webp',
+    damage: 48,
+    efficiency: 2.0,
+    cooldownMs: 550,
+    image: '/pickaxe/voidsteel_pickaxe.webp',
     visual: 'Voidsteel veins wrapped in obsidian rope',
   },
   {
@@ -174,7 +214,10 @@ export const pickaxeUpgrades = [
     price: 6200,
     requiredMiningLevel: 16,
     rarity: 'Relic',
-    image: '/pickaxe/starforge.webp',
+    damage: 64,
+    efficiency: 2.35,
+    cooldownMs: 500,
+    image: '/pickaxe/starforge_pickaxe.webp',
     visual: 'Celestial core with arcane lattice',
   },
 ];
@@ -346,11 +389,18 @@ export const rollMiningTick = ({
   }
   const amount = Math.max(1, Math.round((0.35 + Math.random() * 0.95) * bonusMultiplier * amountMultiplier));
 
+  const yieldMap = {
+    [ore.id]: amount,
+  };
+
+  // 20% geode discovery roll on rare or crit events
+  if ((event === 'rare' || event === 'crit') && Math.random() < 0.20) {
+    yieldMap['mystery-geode'] = 1;
+  }
+
   return {
     tier,
-    yieldMap: {
-      [ore.id]: amount,
-    },
+    yieldMap,
     xpMultiplier,
     event,
   };

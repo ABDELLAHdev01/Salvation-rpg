@@ -27,8 +27,10 @@ import {
   miningOres,
   miningConsumables,
   miningHirelings,
+  crackGeode,
 } from '../../core/data/miningData';
 import { addItems, getItemCount, removeItems } from '../../core/services/inventoryService';
+import audioManager from '../../core/audio/AudioManager';
 
 import MiningInventory from './MiningInventory';
 import MiningBoosters from './MiningBoosters';
@@ -580,6 +582,43 @@ export default function Mining() {
     toast.success('Mining rewards collected.');
   }, [profile, miningLevel, miningXp, inventory, activeBoostId, pushReward]);
 
+  const handleCrackGeode = () => {
+    if (!MOCK_AUTH || !profile) return;
+    const geodeCount = getItemCount(inventory, 'mystery-geode');
+    if (geodeCount <= 0) {
+      toast.error('No uncracked geodes in inventory.');
+      return;
+    }
+    const reward = crackGeode();
+    const nextInventory = removeItems(inventory, { 'mystery-geode': 1 });
+    const finalInventory = addItems(nextInventory, { [reward.id]: reward.amount });
+    const xpReward = 45;
+
+    let nextLevel = miningLevel;
+    let nextXp = miningXp + xpReward;
+    let xpNeeded = getMiningXpForLevel(nextLevel);
+    let leveledUp = false;
+    while (nextXp >= xpNeeded) {
+      nextXp -= xpNeeded;
+      nextLevel += 1;
+      xpNeeded = getMiningXpForLevel(nextLevel);
+      leveledUp = true;
+    }
+
+    const updated = characterService.updateMockProfile({
+      inventory: finalInventory,
+      miningLevel: nextLevel,
+      miningXp: nextXp,
+    });
+    setProfile(updated);
+    audioManager.play('node_shatter');
+    toast.success(`Cracked Geode! Discovered +${reward.amount} ${reward.name} (+${xpReward} XP)!`, { icon: '💎' });
+    if (leveledUp) {
+      audioManager.play('level_up');
+      toast.success(`Mining Level Up! Reached level ${nextLevel}!`);
+    }
+  };
+
   const handleAutoClaimPartial = React.useCallback(() => {
     if (!MOCK_AUTH || !profile || !profile.miningSession) {
       return;
@@ -980,7 +1019,7 @@ export default function Mining() {
   }, [now, isMining, nextAutoClaimAt, handleAutoClaimPartial]);
 
   return (
-    <section className="min-h-screen bg-center bg-cover bg-no-repeat bg-[url('./jbm.webp')] bg-gray-900 bg-blend-multiply dashboard-shell lg:pl-64">
+    <section className="min-h-screen bg-center bg-cover bg-no-repeat bg-[url('/jbm.webp')] bg-gray-900 bg-blend-multiply dashboard-shell lg:pl-64">
       <Sidebar />
       <div className="dashboard-orb orb-1" />
       <div className="dashboard-orb orb-2" />
@@ -1142,6 +1181,7 @@ export default function Mining() {
             inventory={inventory}
             lastResultList={lastResultList}
             lastResult={lastResult}
+            onCrackGeode={handleCrackGeode}
           />
 
           <MiningContracts
