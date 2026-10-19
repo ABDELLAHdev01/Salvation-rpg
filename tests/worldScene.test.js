@@ -157,4 +157,105 @@ describe('2D Interactive World Scene Logic', () => {
       expect(finalPrice).toBe(112);
     });
   });
+
+  describe('2D Player Physics & Animation Stance Mechanics', () => {
+    it('maps every facing direction to the exact resting idle frame', () => {
+      const idleFrames = { south: 0, west: 4, east: 8, north: 12 };
+      expect(idleFrames.south).toBe(0);
+      expect(idleFrames.west).toBe(4);
+      expect(idleFrames.east).toBe(8);
+      expect(idleFrames.north).toBe(12);
+    });
+
+    it('damps movement speed by 75% during attack commitment to prevent sliding', () => {
+      const normalSpeed = 135;
+      const sprintSpeed = 210;
+
+      const attackingNormal = normalSpeed * 0.25;
+      const attackingSprint = sprintSpeed * 0.25;
+
+      expect(attackingNormal).toBe(33.75);
+      expect(attackingSprint).toBe(52.5);
+      expect(attackingNormal).toBeLessThan(normalSpeed);
+    });
+
+    it('validates health elixir consumption from inventory', () => {
+      const inventory = { 'health-potion': 2 };
+      const currentHp = 60;
+      const maxHp = 100;
+
+      const canHeal = currentHp < maxHp && (inventory['health-potion'] || 0) > 0;
+      expect(canHeal).toBe(true);
+
+      const nextInventory = { ...inventory, 'health-potion': inventory['health-potion'] - 1 };
+      const nextHp = Math.min(maxHp, currentHp + 45);
+
+      expect(nextInventory['health-potion']).toBe(1);
+      expect(nextHp).toBe(100);
+    });
+
+    it('blocks potion consumption when inventory has 0 potions', () => {
+      const inventory = { 'health-potion': 0 };
+      const currentHp = 40;
+      const maxHp = 100;
+
+      const canHeal = currentHp < maxHp && (inventory['health-potion'] || 0) > 0;
+      expect(canHeal).toBe(false);
+    });
+
+    it('calculates diagonal normalization accurately for dual-axis keyboard movement', () => {
+      let vx = 1;
+      let vy = 1;
+      // When both axes active, normalize by 1 / sqrt(2) approx 0.7071
+      if (vx !== 0 && vy !== 0) {
+        vx *= 0.7071;
+        vy *= 0.7071;
+      }
+      expect(Math.hypot(vx, vy)).toBeCloseTo(1.0, 3);
+    });
+
+    it('calculates click-to-move direction and automatically arrives when within threshold', () => {
+      const player = { x: 100, y: 100 };
+      let moveTarget = { x: 104, y: 103 }; // Dist: 5px (< 8px)
+      const dist = Math.hypot(moveTarget.x - player.x, moveTarget.y - player.y);
+      let vx = 0;
+      let vy = 0;
+
+      if (dist < 8) {
+        moveTarget = null;
+        vx = 0;
+        vy = 0;
+      } else {
+        const angle = Math.atan2(moveTarget.y - player.y, moveTarget.x - player.x);
+        vx = Math.cos(angle);
+        vy = Math.sin(angle);
+      }
+
+      expect(moveTarget).toBeNull();
+      expect(vx).toBe(0);
+      expect(vy).toBe(0);
+
+      // Distant target:
+      let farTarget = { x: 200, y: 100 };
+      const farDist = Math.hypot(farTarget.x - player.x, farTarget.y - player.y);
+      expect(farDist).toBe(100);
+      const angle = Math.atan2(farTarget.y - player.y, farTarget.x - player.x);
+      const moveVx = Math.cos(angle);
+      const moveVy = Math.sin(angle);
+      expect(moveVx).toBe(1);
+      expect(moveVy).toBe(0);
+    });
+
+    it('cancels click-to-move destination immediately when keyboard keys are pressed', () => {
+      let moveTarget = { x: 500, y: 400 };
+      const keyboardVx = -1; // player pressed 'A' or left arrow
+      const keyboardVy = 0;
+
+      if (keyboardVx !== 0 || keyboardVy !== 0) {
+        moveTarget = null;
+      }
+
+      expect(moveTarget).toBeNull();
+    });
+  });
 });

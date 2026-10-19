@@ -165,6 +165,24 @@ export default function DashboardPlayer() {
 
         {viewMode === 'world' ? (
           <div className="space-y-6">
+            {/* Direct Playable 2D World Banner */}
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 rounded-2xl border-2 border-yellow-500/40 bg-gradient-to-r from-yellow-950/60 via-gray-950 to-yellow-950/60 p-4 shadow-xl backdrop-blur">
+              <div className="flex items-center gap-3">
+                <span className="text-3xl animate-bounce">🌍</span>
+                <div>
+                  <h3 className="font-serif text-base font-bold text-yellow-300">
+                    Living 2D Fantasy RPG World
+                  </h3>
+                  <p className="text-xs text-gray-300">
+                    Control your custom adventurer directly with WASD &amp; Sprint. Till soil, mine minerals, and explore Homestead, Caverns, Whispering Forest &amp; Village!
+                  </p>
+                </div>
+              </div>
+              <Button variant="primary" to="/world" className="shrink-0 font-serif shadow-lg">
+                Enter 2D World ➔
+              </Button>
+            </div>
+
             {/* 2D Interactive Citadel Plaza */}
             <CitadelWorldView profile={profile} character={character} />
 
@@ -218,6 +236,7 @@ export default function DashboardPlayer() {
                     <p className="text-sm text-gray-400">Central hub for all major systems.</p>
                   </div>
                   <div className="mt-6 grid gap-3 grid-cols-2 sm:grid-cols-3 md:grid-cols-4">
+                    <Button variant="primary" to="/world">2D RPG World</Button>
                     <Button variant="secondary" to="/adventure">Expeditions</Button>
                     <Button variant="secondary" to="/arena">Colosseum</Button>
                     <Button variant="secondary" to="/missions">Missions</Button>

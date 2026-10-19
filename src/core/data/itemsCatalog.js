@@ -128,6 +128,43 @@ const extraSalvageItems = [
     description: 'Weathered stone tablet inscribed with pre-Emberfall runes. Can be deciphered in the Workshop Scriptorium.',
     image: defaultImage,
   },
+  {
+    id: 'slime-gel',
+    name: 'Emerald Slime Gel',
+    category: 'Monster Trophy',
+    type: 'reagent',
+    sellPrice: 15,
+    description: 'Bouncy, gelatinous slime substance. Highly sought by alchemists for restorative draughts.',
+    image: defaultImage,
+  },
+  {
+    id: 'wolf-pelt',
+    name: 'Shadow Wolf Pelt',
+    category: 'Monster Trophy',
+    type: 'material',
+    sellPrice: 35,
+    description: 'Thick shadow-infused pelt harvested from wilderness stalkers. Used for insulated armor linings.',
+    image: defaultImage,
+  },
+  {
+    id: 'bone-shard',
+    name: 'Deepforge Bone Shard',
+    category: 'Monster Trophy',
+    type: 'material',
+    sellPrice: 25,
+    description: 'Calcified bone remnant hardened by subterranean pressure. Used in weapon grips and ritual charms.',
+    image: defaultImage,
+  },
+  {
+    id: 'health-potion',
+    name: 'Sunforge Healing Elixir',
+    category: 'Consumable',
+    type: 'consumable',
+    sellPrice: 30,
+    price: 45,
+    description: 'Golden herbal draught that immediately restores 45 Health Points.',
+    image: defaultImage,
+  },
 ];
 
 export const itemsCatalog = [

@@ -52,8 +52,17 @@ const HammerIcon = ({ className }) => (
   </svg>
 );
 
+const World2DIcon = ({ className }) => (
+  <svg viewBox="0 0 24 24" className={className} fill="none" stroke="currentColor" strokeWidth="1.6">
+    <circle cx="12" cy="12" r="9" />
+    <path strokeLinecap="round" strokeLinejoin="round" d="M3.6 9h16.8M3.6 15h16.8" />
+    <path strokeLinecap="round" strokeLinejoin="round" d="M12 3a14.5 14.5 0 0 0 0 18M12 3a14.5 14.5 0 0 1 0 18" />
+  </svg>
+);
+
 const navItems = [
   { name: 'Dashboard', href: '/dashboard', icon: Squares2X2Icon },
+  { name: '2D World', href: '/world', icon: World2DIcon },
   { name: 'Inventory', href: '/inventory', icon: ArchiveBoxIcon },
   { name: 'Chronicle', href: '/chronicle', icon: ClipboardDocumentListIcon },
   { name: 'Farm', href: '/farm', icon: PigIcon },

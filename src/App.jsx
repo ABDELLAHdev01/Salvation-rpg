@@ -30,6 +30,7 @@ const FarmTasks = lazy(() => import("./features/farm/FarmTasksPage"));
 const Workshop = lazy(() => import("./features/workshop/WorkshopPage"));
 const DevCheats = lazy(() => import("./features/system/DevCheatsPage"));
 const Missions = lazy(() => import("./features/missions/MissionsPage"));
+const WorldPage = lazy(() => import("./features/world/WorldPage"));
 const LoadSave = lazy(() => import("./features/system/LoadSavePage"));
 const LoginPage = lazy(() => import("./features/auth/LoginPage"));
 const RegisterPage = lazy(() => import("./features/auth/RegisterPage"));
@@ -90,6 +91,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <DashboardPlayer />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/world"
+            element={
+              <ProtectedRoute>
+                <WorldPage />
               </ProtectedRoute>
             }
           />

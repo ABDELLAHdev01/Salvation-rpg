@@ -137,6 +137,21 @@ export default function CitadelWorldView({
           <div className="absolute h-2 w-2 rounded-full bg-amber-400/30 blur-[1px] animate-ping" style={{ top: '60%', left: '65%', animationDuration: '5s' }} />
         </div>
 
+        {/* Enter 2D World Badge */}
+        <button
+          type="button"
+          onClick={() => {
+            audioManager.play('tap');
+            navigate('/world');
+          }}
+          className="absolute top-4 right-4 z-20 flex items-center gap-1.5 rounded-2xl border border-yellow-500/50 bg-gray-950/90 px-3.5 py-1.5 text-xs font-bold text-yellow-300 shadow-xl backdrop-blur hover:bg-yellow-500/20 hover:border-yellow-400 transition"
+          title="Enter 2D Fantasy RPG World"
+        >
+          <span className="text-sm">🌍</span>
+          <span>Enter 2D World</span>
+          <span>➔</span>
+        </button>
+
         {/* =========================================================================
             CENTER: SUNFORGE CITADEL MONUMENT & PLAYER AVATAR
             ========================================================================= */}

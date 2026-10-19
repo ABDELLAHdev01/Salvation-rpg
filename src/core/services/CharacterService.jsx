@@ -1,5 +1,6 @@
 import toast from 'react-hot-toast';
 import authService from './AuthService';
+import saveService from './saveService';
 import { getSeedItemId } from '../data/itemsCatalog';
 import { applyInventoryDelta, normalizeInventory } from './inventoryService';
 import { getPlayerXpForLevel } from '../data/playerData';
@@ -111,6 +112,10 @@ const setMockProfiles = (profiles) => {
 };
 
 class CharacterService {
+  constructor() {
+    saveService.migrateStorage();
+  }
+
   async createCharacter(characterData) {
     if (MOCK_AUTH) {
       const username = authService.getCurrentUsername();
@@ -158,7 +163,7 @@ class CharacterService {
           miningCooldownUntil: 0,
           miningContracts: null,
           miningHirelings: [],
-          inventory: {},
+          inventory: { 'health-potion': 3 },
           miningSession: null,
           lastMiningResult: null,
           miningClickState: null,
@@ -342,7 +347,7 @@ class CharacterService {
         miningCooldownUntil: 0,
         miningContracts: null,
         miningHirelings: [],
-        inventory: {},
+        inventory: { 'health-potion': 3 },
         miningSession: null,
         lastMiningResult: null,
         farmLandSize: 3,
