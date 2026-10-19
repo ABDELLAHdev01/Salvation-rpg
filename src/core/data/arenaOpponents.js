@@ -1,4 +1,5 @@
 import { getHousingTierById, getActiveEstateBuffs } from './housingData';
+import { getPlayerEquippedGear, getGearStatTotals } from './gearData';
 
 const STORAGE_KEY = 'arenaOpponent';
 const RESULT_KEY = 'arenaResult';
@@ -6,6 +7,62 @@ const HISTORY_KEY = 'arenaHistory';
 const HAZARD_KEY = 'arenaHazard';
 const WAGER_KEY = 'arenaWager';
 const RIVAL_KEY = 'arenaRivals';
+const STANCE_KEY = 'arenaStance';
+
+export { getPlayerEquippedGear } from './gearData';
+
+export const combatStances = [
+  {
+    id: 'blazing-assault',
+    name: 'Blazing Assault',
+    category: 'Offensive',
+    description: 'Aggressive burst strikes with maximum offensive momentum.',
+    tagline: '+15% Attack · -5% Defense',
+    modifiers: { attack: 1.15, defense: 0.95, wisdom: 1.0 },
+    advantageAgainst: 'Arcane Focus',
+    moves: ['Crimson Dash', 'Ember Blade Flurry', 'Sunforge Execution'],
+  },
+  {
+    id: 'iron-bastion',
+    name: 'Iron Bastion',
+    category: 'Defensive',
+    description: 'Impenetrable shield discipline, absorbing blows and counter-attacking.',
+    tagline: '+20% Defense · -10% Attack',
+    modifiers: { attack: 0.90, defense: 1.20, wisdom: 1.0 },
+    advantageAgainst: 'Blazing Assault',
+    moves: ['Bulwark Stance', 'Shieldbreaker Counter', 'Dawnward Aegis'],
+  },
+  {
+    id: 'arcane-focus',
+    name: 'Arcane Focus',
+    category: 'Tactical',
+    description: 'Runes and tactical foresight to out-maneuver heavy defenses.',
+    tagline: '+25% Wisdom · +5% Defense',
+    modifiers: { attack: 1.0, defense: 1.05, wisdom: 1.25 },
+    advantageAgainst: 'Iron Bastion',
+    moves: ['Rune Pulse', 'Aether Surge', 'Starfall Finisher'],
+  },
+];
+
+export const getCombatStanceById = (stanceId) => {
+  return combatStances.find((s) => s.id === stanceId) || combatStances[0];
+};
+
+export const getStoredStance = () => {
+  try {
+    return sessionStorage.getItem(STANCE_KEY) || 'blazing-assault';
+  } catch {
+    return 'blazing-assault';
+  }
+};
+
+export const setStoredStance = (stanceId) => {
+  try {
+    sessionStorage.setItem(STANCE_KEY, stanceId);
+  } catch {
+    // Ignore storage failures.
+  }
+};
 
 export const basePlayerStats = [
   { label: 'Attack', value: 74 },
@@ -13,10 +70,12 @@ export const basePlayerStats = [
   { label: 'Wisdom', value: 54 },
 ];
 
-export const getPlayerStats = (profile) => {
+export const getPlayerStats = (profile, stanceId = null) => {
   const house = getHousingTierById(profile?.houseId || 'starter-cottage');
   const effect = house?.effect;
   const estateBuffs = getActiveEstateBuffs(profile);
+  const gearStats = getGearStatTotals(profile);
+  const stance = stanceId ? getCombatStanceById(stanceId) : null;
 
   return basePlayerStats.map((stat) => {
     let multiplier = 1;
@@ -29,9 +88,25 @@ export const getPlayerStats = (profile) => {
     if (stat.label === 'Defense' && estateBuffs.shieldBonus) {
       multiplier += estateBuffs.shieldBonus / 100;
     }
+
+    if (stance?.modifiers) {
+      if (stat.label === 'Attack' && stance.modifiers.attack) {
+        multiplier *= stance.modifiers.attack;
+      } else if (stat.label === 'Defense' && stance.modifiers.defense) {
+        multiplier *= stance.modifiers.defense;
+      } else if (stat.label === 'Wisdom' && stance.modifiers.wisdom) {
+        multiplier *= stance.modifiers.wisdom;
+      }
+    }
+
+    const flatValue = Math.round(stat.value * multiplier);
+    const gearBonus = gearStats ? (gearStats[stat.label.toLowerCase()] || 0) : 0;
+
     return {
       ...stat,
-      value: Math.round(stat.value * multiplier),
+      value: flatValue + gearBonus,
+      baseValue: stat.value,
+      gearBonus,
     };
   });
 };
@@ -274,67 +349,103 @@ export const clearStoredWager = () => {
   }
 };
 
-export const getOrCreateResult = (opponent) => {
+export const getOrCreateResult = (opponent, options = {}) => {
   const existing = getStoredResult();
   if (existing) {
     return existing;
   }
 
-  const getRandomItem = (list) => list[Math.floor(Math.random() * list.length)];
-  const getTopStat = (stats) => {
-    return stats.reduce((best, stat) => (stat.value > best.value ? stat : best), stats[0]);
-  };
-  const getRandomStat = (stats) => getRandomItem(stats);
-  const playerTotal = basePlayerStats.reduce((sum, stat) => sum + stat.value, 0);
-  const opponentTotal = opponent?.stats
-    ? opponent.stats.reduce((sum, stat) => sum + stat.value, 0)
-    : 0;
-  const mvpIsPlayer = Math.random() > 0.5;
-  const mvpName = mvpIsPlayer ? 'You' : opponent?.name || 'Rival';
-  const mvpStat = mvpIsPlayer
-    ? getRandomStat(basePlayerStats)
-    : getRandomStat(opponent?.stats || basePlayerStats);
-  const openerLines = [
-    `Opening volley shook the arena gates.`,
-    `First strike landed with a roar from the crowd.`,
-    `Both fighters traded fast counters in the opening.`,
-  ];
-  const swingLines = [
-    `${mvpName} surged with ${mvpStat.label} ${mvpStat.value}.`,
-    `${mvpName} chained a combo fueled by ${mvpStat.label}.`,
-    `${mvpName} seized momentum with ${mvpStat.label} pressure.`,
-  ];
-  const finisherLines = [
-    `A final push sealed the exchange.`,
-    `The crowd erupted at the finishing blow.`,
-    `A decisive feint ended the duel.`,
-  ];
-  const gearLine = opponent?.gear?.length
-    ? `Opponent gear spotted: ${getRandomItem(opponent.gear)}.`
-    : `Arena runes surged as the duel peaked.`;
+  const profile = options.profile || null;
+  const stanceId = options.stanceId || getStoredStance();
+  const hazard = options.hazard || getStoredHazard();
+  const stance = getCombatStanceById(stanceId);
+  const playerStats = getPlayerStats(profile, stanceId);
+  const equippedGear = getPlayerEquippedGear(profile);
 
-  const isWin = Math.random() > 0.45;
+  const pAtk = playerStats.find((s) => s.label === 'Attack')?.value ?? 74;
+  const pDef = playerStats.find((s) => s.label === 'Defense')?.value ?? 68;
+  const pWis = playerStats.find((s) => s.label === 'Wisdom')?.value ?? 54;
+
+  const oStats = opponent?.stats || basePlayerStats;
+  const oAtk = oStats.find((s) => s.label === 'Attack')?.value ?? 70;
+  const oDef = oStats.find((s) => s.label === 'Defense')?.value ?? 65;
+  const oWis = oStats.find((s) => s.label === 'Wisdom')?.value ?? 50;
+
+  // Hazard environmental modifications
+  let pDefMod = 1.0;
+  let oDefMod = 1.0;
+  let critBonus = 0;
+  if (hazard?.name === 'Searing Wind') {
+    pDefMod = 0.94;
+    oDefMod = 0.94;
+  } else if (hazard?.name === 'Obsidian Fog') {
+    critBonus = 8;
+  }
+
+  // Tactical power calculation
+  const playerPower = Math.round(pAtk * 1.25 + (pDef * pDefMod) * 1.1 + pWis * 0.9 + critBonus);
+  const opponentPower = Math.round(oAtk * 1.25 + (oDef * oDefMod) * 1.1 + oWis * 0.9);
+
+  // Stance tactical advantage vs Opponent profile
+  let tacticalAdvantage = 0;
+  if (oDef >= oAtk && oDef >= oWis && stance?.id === 'arcane-focus') {
+    tacticalAdvantage = 0.08;
+  } else if (oWis >= oAtk && oWis >= oDef && stance?.id === 'blazing-assault') {
+    tacticalAdvantage = 0.08;
+  } else if (oAtk >= oDef && oAtk >= oWis && stance?.id === 'iron-bastion') {
+    tacticalAdvantage = 0.08;
+  }
+
+  const baseRatio = playerPower / (playerPower + opponentPower);
+  const winProbability = Math.max(0.15, Math.min(0.88, baseRatio + tacticalAdvantage));
+
+  const roll = Math.random();
+  const isWin = roll < winProbability;
+
+  const weapon = equippedGear.find((g) => g.slot === 'weapon')?.name || 'weapon';
+  const opponentGear = opponent?.gear?.length ? opponent.gear[0] : 'armor';
+
+  const round1 = isWin
+    ? `You advanced in ${stance.name}, your ${weapon} finding an early gap against ${opponent?.name || 'Rival'}.`
+    : `${opponent?.name || 'Rival'} turned aside your ${weapon} strike with their ${opponentGear}.`;
+
+  const round2 = hazard?.name
+    ? `Under the ${hazard.name}, ${isWin ? 'you capitalized on tactical positioning' : opponent?.name + ' adapted swiftly to arena hazards'}.`
+    : `Both combatants traded heavy blows, testing defensive limits.`;
+
+  const round3 = isWin
+    ? `With a decisive tactical surge, you shattered your opponent's guard! The Colosseum crowd roars in approval!`
+    : `${opponent?.name || 'Rival'} landed a punishing counter-thrust, securing victory before the sands.`;
+
   const result = {
     outcome: isWin ? 'Victory' : 'Defeat',
     opponentName: opponent?.name || 'Unknown Rival',
     rewards: isWin ? ['240 gold', 'Arena Sigil', 'Renown +6'] : ['Consolation Chest', 'Renown +1'],
     rankChange: isWin ? '+1' : '-1',
+    combatStats: {
+      playerPower,
+      opponentPower,
+      winOdds: Math.round(winProbability * 100),
+      stanceUsed: stance.name,
+    },
     highlightReel: {
-      mvpName: isWin ? 'You' : opponent?.name || mvpName,
-      mvpStat: isWin ? getTopStat(basePlayerStats) : getTopStat(opponent?.stats || basePlayerStats),
-      totalScore: isWin ? playerTotal : opponentTotal,
+      mvpName: isWin ? 'You' : opponent?.name || 'Rival',
+      mvpStat: isWin
+        ? (pAtk >= pDef ? { label: 'Attack', value: pAtk } : { label: 'Defense', value: pDef })
+        : (oAtk >= oDef ? { label: 'Attack', value: oAtk } : { label: 'Defense', value: oDef }),
+      totalScore: isWin ? playerPower : opponentPower,
       moments: [
         {
           label: 'Opening Exchange',
-          detail: getRandomItem(openerLines),
+          detail: round1,
         },
         {
           label: 'Signature Push',
-          detail: getRandomItem(swingLines),
+          detail: round2,
         },
         {
           label: 'Final Swing',
-          detail: getRandomItem([gearLine, `Rank impact ${isWin ? '+1' : '-1'}.`, ...finisherLines]),
+          detail: round3,
         },
       ],
     },

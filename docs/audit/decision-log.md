@@ -50,11 +50,11 @@
 ---
 
 #### ADR-005: Tactical Asynchronous Combat vs Pure Stat Auto-Battler
-- **Status:** **PROPOSED (Recommended)**
-- **Context:** Arena duels currently compute outcomes via a flat `Math.random() > 0.45` coin flip, and the route is disabled via `OFFLINE_MODE` redirect.
-- **Decision:** Rebuild the Arena into an asynchronous tactical auto-battler where duel rounds calculate damage, defense mitigation, elemental stances, and hazard resistances based on player gear, house buffs, and city traits. Keep combat asynchronous and turn-based rather than attempting real-time multiplayer networking.
+- **Status:** **ACCEPTED & IMPLEMENTED**
+- **Context:** Arena duels previously computed outcomes via an arbitrary `Math.random() > 0.45` coin flip, and the routes were blocked via `OFFLINE_MODE` redirect.
+- **Decision:** Rebuild the Arena into an asynchronous tactical auto-battler where duel rounds calculate power, defense mitigation, stances (`Blazing Assault`, `Iron Bastion`, `Arcane Focus`), and hazard interactions based on player gear (`gearStatsCatalog`), house buffs, and city traits. Keep combat asynchronous and turn-based rather than attempting real-time multiplayer networking.
 - **Consequences:**
-  - *Positive:* Gear and housing buffs gain real mechanical value; gives players an exciting endgame gold/renown sink.
+  - *Positive:* Gear and housing buffs gain real mechanical value; gives players an exciting endgame gold/renown sink. Unblocks `/arena*` routes with dynamic queue timer, sparring practice simulation modal, and weapon-specific highlight reels.
   - *Negative:* Postpones real-time multiplayer PvP until post-launch expansion.
 
 ---

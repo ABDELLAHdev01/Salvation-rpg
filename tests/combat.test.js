@@ -7,14 +7,23 @@ import {
   incrementRivalRecord,
   basePlayerStats,
   getPlayerStats,
+  combatStances,
+  getCombatStanceById,
+  getStoredStance,
+  setStoredStance,
+  getPlayerEquippedGear,
 } from '../src/core/data/arenaOpponents';
+import { gearStatsCatalog, getGearStatTotals } from '../src/core/data/gearData';
 
 describe('Combat & Arena Domain Logic', () => {
   const mockStorage = {};
+  const mockSessionStorage = {};
 
   beforeEach(() => {
     vi.restoreAllMocks();
     Object.keys(mockStorage).forEach((k) => delete mockStorage[k]);
+    Object.keys(mockSessionStorage).forEach((k) => delete mockSessionStorage[k]);
+
     vi.stubGlobal('localStorage', {
       getItem: (key) => mockStorage[key] ?? null,
       setItem: (key, val) => {
@@ -25,6 +34,19 @@ describe('Combat & Arena Domain Logic', () => {
       },
       clear: () => {
         Object.keys(mockStorage).forEach((k) => delete mockStorage[k]);
+      },
+    });
+
+    vi.stubGlobal('sessionStorage', {
+      getItem: (key) => mockSessionStorage[key] ?? null,
+      setItem: (key, val) => {
+        mockSessionStorage[key] = String(val);
+      },
+      removeItem: (key) => {
+        delete mockSessionStorage[key];
+      },
+      clear: () => {
+        Object.keys(mockSessionStorage).forEach((k) => delete mockSessionStorage[k]);
       },
     });
   });
@@ -71,6 +93,9 @@ describe('Combat & Arena Domain Logic', () => {
     expect(winResult.highlightReel.mvpName).toBeDefined();
     expect(winResult.highlightReel.mvpStat).toBeDefined();
     expect(Array.isArray(winResult.highlightReel.moments)).toBe(true);
+    expect(winResult.combatStats).toBeDefined();
+    expect(winResult.combatStats.playerPower).toBeGreaterThan(0);
+    expect(winResult.combatStats.opponentPower).toBeGreaterThan(0);
     winSpy.mockRestore();
   });
 
@@ -97,5 +122,89 @@ describe('Combat & Arena Domain Logic', () => {
     const def = houseBuffed.find((s) => s.label === 'Defense');
     const baseDef = basePlayerStats.find((s) => s.label === 'Defense')?.value ?? 68;
     expect(def?.value).toBe(Math.round(baseDef * 1.05));
+  });
+
+  it('correctly aggregates gear statistics from player inventory into combat stats', () => {
+    const testProfile = {
+      houseId: 'starter-cottage',
+      inventory: {
+        'gear-runebound-staff': 1,
+        'gear-aegis-dawn': 1,
+        'gear-shadowleaf-cloak': 1,
+      },
+    };
+
+    const equipped = getPlayerEquippedGear(testProfile);
+    expect(equipped.length).toBe(3);
+
+    const gearTotals = getGearStatTotals(testProfile);
+    expect(gearTotals.attack).toBe(
+      gearStatsCatalog['gear-runebound-staff'].attack +
+      gearStatsCatalog['gear-aegis-dawn'].attack +
+      gearStatsCatalog['gear-shadowleaf-cloak'].attack
+    );
+    expect(gearTotals.wisdom).toBe(
+      gearStatsCatalog['gear-runebound-staff'].wisdom +
+      gearStatsCatalog['gear-aegis-dawn'].wisdom +
+      gearStatsCatalog['gear-shadowleaf-cloak'].wisdom
+    );
+
+    const buffedPlayerStats = getPlayerStats(testProfile);
+    const atk = buffedPlayerStats.find((s) => s.label === 'Attack');
+    const wis = buffedPlayerStats.find((s) => s.label === 'Wisdom');
+
+    expect(atk?.gearBonus).toBe(gearTotals.attack);
+    expect(wis?.gearBonus).toBe(gearTotals.wisdom);
+    expect(wis?.value).toBe(54 + gearTotals.wisdom);
+  });
+
+  it('defines 3 distinct combat stances modifying attack, defense, and wisdom multipliers', () => {
+    expect(combatStances.length).toBe(3);
+
+    const assault = getCombatStanceById('blazing-assault');
+    expect(assault.modifiers.attack).toBe(1.15);
+    expect(assault.modifiers.defense).toBe(0.95);
+
+    const bastion = getCombatStanceById('iron-bastion');
+    expect(bastion.modifiers.defense).toBe(1.20);
+    expect(bastion.modifiers.attack).toBe(0.90);
+
+    const focus = getCombatStanceById('arcane-focus');
+    expect(focus.modifiers.wisdom).toBe(1.25);
+
+    // Test session stance storage
+    setStoredStance('iron-bastion');
+    expect(getStoredStance()).toBe('iron-bastion');
+
+    // Test player stats under iron-bastion stance
+    const bastionStats = getPlayerStats(null, 'iron-bastion');
+    const defStat = bastionStats.find((s) => s.label === 'Defense');
+    // Base 68 * 1.02 (starter cottage) * 1.20 (bastion) = 83
+    expect(defStat?.value).toBe(Math.round(68 * 1.02 * 1.2));
+  });
+
+  it('evaluates tactical auto-battler result incorporating player gear, stance advantage, and hazards', () => {
+    const opponent = opponents[0];
+    const profile = {
+      houseId: 'starter-cottage',
+      inventory: {
+        'gear-embersteel-blade': 1,
+        'gear-aegis-dawn': 1,
+        'contract-sigil': 2,
+      },
+    };
+
+    const hazard = { name: 'Searing Wind', effect: 'Burning gusts reduce defense by 6%.' };
+    const result = getOrCreateResult(opponent, {
+      profile,
+      stanceId: 'blazing-assault',
+      hazard,
+    });
+
+    expect(result.outcome).toBeDefined();
+    expect(result.combatStats.stanceUsed).toBe('Blazing Assault');
+    expect(result.combatStats.playerPower).toBeGreaterThan(150);
+    expect(result.highlightReel.moments.length).toBe(3);
+    expect(result.highlightReel.moments[0].detail).toContain('Embersteel Blade');
   });
 });

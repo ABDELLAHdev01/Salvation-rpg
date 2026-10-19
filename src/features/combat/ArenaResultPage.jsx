@@ -21,7 +21,7 @@ const MOCK_AUTH = import.meta.env.VITE_MOCK_AUTH === 'true';
 
 export default function ArenaResult() {
   const [opponent, setOpponent] = useState(() => getOrCreateOpponent());
-  const [result, setResult] = useState(() => getOrCreateResult(opponent));
+  const [result, setResult] = useState(() => getOrCreateResult(opponent, { hazard }));
   const [wager] = useState(() => getStoredWager());
   const [hazard] = useState(() => getStoredHazard());
   const [playerStats, setPlayerStats] = useState(() => getPlayerStats(null));
@@ -30,12 +30,15 @@ export default function ArenaResult() {
 
   useEffect(() => {
     const nextOpponent = getOrCreateOpponent();
+    const currentHazard = getStoredHazard();
     setOpponent(nextOpponent);
-    setResult(getOrCreateResult(nextOpponent));
     if (MOCK_AUTH) {
       const username = authService.getCurrentUsername();
       const profile = characterService.getMockProfile(username);
       setPlayerStats(getPlayerStats(profile));
+      setResult(getOrCreateResult(nextOpponent, { profile, hazard: currentHazard }));
+    } else {
+      setResult(getOrCreateResult(nextOpponent, { hazard: currentHazard }));
     }
   }, []);
 

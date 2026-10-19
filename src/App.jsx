@@ -40,7 +40,6 @@ import { RewardFloatProvider } from "./shared/feedback/RewardFloatProvider";
 import InteractionFeedbackLayer from "./shared/feedback/InteractionFeedbackLayer";
 import OnboardingGuide from "./features/onboarding/OnboardingGuide";
 
-const OFFLINE_MODE = import.meta.env.VITE_OFFLINE_MODE === "true";
 const prefetchCommonRoutes = () => {
   import("./features/dashboard/DashboardPage");
   import("./features/adventure/AdventurePage");
@@ -144,49 +143,33 @@ function App() {
           <Route
             path="/arena"
             element={
-              OFFLINE_MODE ? (
-                <Navigate to="/dashboard" replace />
-              ) : (
-                <ProtectedRoute>
-                  <Arena />
-                </ProtectedRoute>
-              )
+              <ProtectedRoute>
+                <Arena />
+              </ProtectedRoute>
             }
           />
           <Route
             path="/arena/fight"
             element={
-              OFFLINE_MODE ? (
-                <Navigate to="/dashboard" replace />
-              ) : (
-                <ProtectedRoute>
-                  <ArenaFight />
-                </ProtectedRoute>
-              )
+              <ProtectedRoute>
+                <ArenaFight />
+              </ProtectedRoute>
             }
           />
           <Route
             path="/arena/fight/opponent"
             element={
-              OFFLINE_MODE ? (
-                <Navigate to="/dashboard" replace />
-              ) : (
-                <ProtectedRoute>
-                  <ArenaOpponent />
-                </ProtectedRoute>
-              )
+              <ProtectedRoute>
+                <ArenaOpponent />
+              </ProtectedRoute>
             }
           />
           <Route
             path="/arena/fight/result"
             element={
-              OFFLINE_MODE ? (
-                <Navigate to="/dashboard" replace />
-              ) : (
-                <ProtectedRoute>
-                  <ArenaResult />
-                </ProtectedRoute>
-              )
+              <ProtectedRoute>
+                <ArenaResult />
+              </ProtectedRoute>
             }
           />
           <Route
@@ -200,13 +183,9 @@ function App() {
           <Route
             path="/guild"
             element={
-              OFFLINE_MODE ? (
-                <Navigate to="/dashboard" replace />
-              ) : (
-                <ProtectedRoute>
-                  <Guild />
-                </ProtectedRoute>
-              )
+              <ProtectedRoute>
+                <Guild />
+              </ProtectedRoute>
             }
           />
           <Route

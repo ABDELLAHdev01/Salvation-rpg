@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import Sidebar from '../../shared/layout/Sidebar';
 import authService from '../../core/services/AuthService';
@@ -9,6 +9,9 @@ import {
   getPlayerStats,
   getRivalRecord,
   getRivalTaunt,
+  getCombatStanceById,
+  getStoredStance,
+  getPlayerEquippedGear,
 } from '../../core/data/arenaOpponents';
 import { audioManager } from '../../core/audio/AudioManager';
 
@@ -21,10 +24,17 @@ export default function ArenaOpponent() {
   const [taunt, setTaunt] = useState(null);
   const [rivalFights, setRivalFights] = useState(0);
   const [playerStats, setPlayerStats] = useState([]);
+  const [equippedGear, setEquippedGear] = useState([]);
+  const [activeStanceId] = useState(() => getStoredStance());
+
+  const activeStance = useMemo(
+    () => getCombatStanceById(activeStanceId),
+    [activeStanceId]
+  );
 
   useEffect(() => {
     if (!MOCK_AUTH) {
-      setPlayerStats(getPlayerStats(null));
+      setPlayerStats(getPlayerStats(null, activeStanceId));
       return;
     }
 
@@ -39,8 +49,11 @@ export default function ArenaOpponent() {
     setHazard(getOrCreateHazard());
     setTaunt(getRivalTaunt(nextOpponent.name));
     setRivalFights(getRivalRecord(nextOpponent.name).fights);
-    setPlayerStats(getPlayerStats(characterService.getMockProfile(username)));
-  }, []);
+
+    const profile = characterService.getMockProfile(username);
+    setPlayerStats(getPlayerStats(profile, activeStanceId));
+    setEquippedGear(getPlayerEquippedGear(profile));
+  }, [activeStanceId]);
 
   return (
     <section className="min-h-screen bg-page-primary dashboard-shell lg:pl-64">
@@ -55,7 +68,7 @@ export default function ArenaOpponent() {
               <p className="section-kicker text-xs uppercase tracking-[0.4em] text-yellow-500">Arena Clash</p>
               <h1 className="mt-3 text-4xl font-extrabold text-white hero-title">Opponent Revealed</h1>
               <p className="mt-3 text-base text-gray-300">
-                Your opponent is in your level tier. Decide to fight or retreat.
+                Your opponent is locked in your tier. Inspect gear matchups and commit to the clash.
               </p>
             </div>
             <div className="flex flex-wrap gap-2 text-xs text-gray-300">
@@ -79,6 +92,7 @@ export default function ArenaOpponent() {
           </div>
 
           <div className="mt-8 grid gap-6 lg:grid-cols-[1fr_auto_1fr]">
+            {/* Player Card */}
             <div className="court-card rounded-2xl p-6 overflow-hidden">
               <div className="-mx-6 -mt-6 h-80 overflow-hidden border-b border-yellow-700/30 bg-gray-900/70">
                 <img
@@ -91,28 +105,60 @@ export default function ArenaOpponent() {
                   }}
                 />
               </div>
-              <p className="mt-4 text-xs uppercase tracking-[0.3em] text-gray-400">You</p>
+              <div className="mt-4 flex items-center justify-between">
+                <p className="text-xs uppercase tracking-[0.3em] text-gray-400">You</p>
+                <span className="rounded-full border border-yellow-700/40 bg-yellow-950/40 px-2.5 py-0.5 text-xs text-yellow-300 font-semibold">
+                  {activeStance?.name || 'Blazing Assault'}
+                </span>
+              </div>
               <p className="mt-2 text-2xl font-semibold text-white">Stormblade Vanguard</p>
-              <p className="mt-1 text-sm text-gray-300">Level 22 · Rank IV</p>
-              <div className="mt-4 text-xs text-gray-400">Gear</div>
+              <p className="mt-1 text-sm text-gray-300">Level 22 · Rank IV · Stance: {activeStance?.category}</p>
+
+              <div className="mt-4 flex items-center justify-between text-xs text-gray-400">
+                <span>Active Battle Gear</span>
+                <span className="text-emerald-400">Tactical Loadout</span>
+              </div>
               <ul className="mt-2 space-y-2 text-sm text-gray-300">
-                <li className="rounded-lg border border-yellow-700/20 bg-gray-950/60 px-3 py-2">Embersteel Blade</li>
-                <li className="rounded-lg border border-yellow-700/20 bg-gray-950/60 px-3 py-2">Aegis of Dawn</li>
-                <li className="rounded-lg border border-yellow-700/20 bg-gray-950/60 px-3 py-2">Ironfall Greaves</li>
+                {equippedGear.map((item) => (
+                  <li
+                    key={item.id}
+                    className="flex items-center justify-between rounded-lg border border-yellow-700/20 bg-gray-950/60 px-3 py-2 text-xs"
+                  >
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] font-bold uppercase text-yellow-400">
+                        {item.slot}
+                      </span>
+                      <span className="font-medium text-white">{item.name}</span>
+                    </div>
+                    <span className="text-[11px] text-emerald-400 font-mono">
+                      {item.attack ? `+${item.attack}A ` : ''}
+                      {item.defense ? `+${item.defense}D ` : ''}
+                      {item.wisdom ? `+${item.wisdom}W` : ''}
+                    </span>
+                  </li>
+                ))}
               </ul>
+
               <div className="mt-5">
-                <p className="text-xs uppercase tracking-[0.3em] text-gray-400">Stats</p>
+                <p className="text-xs uppercase tracking-[0.3em] text-gray-400">Calculated Stats</p>
                 <div className="mt-3 space-y-3">
                   {playerStats.map((stat) => (
                     <div key={stat.label}>
                       <div className="flex items-center justify-between text-xs text-gray-300">
-                        <span>{stat.label}</span>
-                        <span>{stat.value}</span>
+                        <div className="flex items-center gap-1.5">
+                          <span>{stat.label}</span>
+                          {stat.gearBonus > 0 && (
+                            <span className="text-emerald-400 text-[10px] font-mono">
+                              (+{stat.gearBonus} gear)
+                            </span>
+                          )}
+                        </div>
+                        <span className="font-semibold text-white">{stat.value}</span>
                       </div>
-                      <div className="mt-2 h-2 rounded-full bg-gray-800">
+                      <div className="mt-2 h-2 rounded-full bg-gray-800 overflow-hidden">
                         <div
                           className="h-full rounded-full bg-yellow-500 shimmer-bar"
-                          style={{ width: `${stat.value}%` }}
+                          style={{ width: `${Math.min(100, stat.value)}%` }}
                         />
                       </div>
                     </div>
@@ -125,6 +171,7 @@ export default function ArenaOpponent() {
               VS
             </div>
 
+            {/* Opponent Card */}
             <div className="court-card rounded-2xl p-6 overflow-hidden">
               <div className="-mx-6 -mt-6 h-80 overflow-hidden border-b border-yellow-700/30 bg-gray-900/70">
                 <img
@@ -140,30 +187,33 @@ export default function ArenaOpponent() {
               <p className="mt-4 text-xs uppercase tracking-[0.3em] text-gray-400">Opponent</p>
               <p className="mt-2 text-2xl font-semibold text-white">{opponent.name}</p>
               <p className="mt-1 text-sm text-gray-300">Level {opponent.level} · Rank {opponent.rank}</p>
-              <div className="mt-4 text-xs text-gray-400">Gear</div>
+
+              <div className="mt-4 text-xs text-gray-400">Observed Equipment</div>
               <ul className="mt-2 space-y-2 text-sm text-gray-300">
                 {opponent.gear.map((item) => (
                   <li
                     key={item}
-                    className="rounded-lg border border-yellow-700/20 bg-gray-950/60 px-3 py-2"
+                    className="flex items-center justify-between rounded-lg border border-yellow-700/20 bg-gray-950/60 px-3 py-2 text-xs"
                   >
-                    {item}
+                    <span className="text-white font-medium">{item}</span>
+                    <span className="text-[10px] text-gray-400 uppercase">Equipped</span>
                   </li>
                 ))}
               </ul>
+
               <div className="mt-5">
-                <p className="text-xs uppercase tracking-[0.3em] text-gray-400">Stats</p>
+                <p className="text-xs uppercase tracking-[0.3em] text-gray-400">Rival Stats</p>
                 <div className="mt-3 space-y-3">
                   {(opponent.stats || []).map((stat) => (
                     <div key={stat.label}>
                       <div className="flex items-center justify-between text-xs text-gray-300">
                         <span>{stat.label}</span>
-                        <span>{stat.value}</span>
+                        <span className="font-semibold text-white">{stat.value}</span>
                       </div>
-                      <div className="mt-2 h-2 rounded-full bg-gray-800">
+                      <div className="mt-2 h-2 rounded-full bg-gray-800 overflow-hidden">
                         <div
                           className="h-full rounded-full bg-yellow-500 shimmer-bar"
-                          style={{ width: `${stat.value}%` }}
+                          style={{ width: `${Math.min(100, stat.value)}%` }}
                         />
                       </div>
                     </div>
@@ -177,23 +227,23 @@ export default function ArenaOpponent() {
             <Link
               to="/arena/fight/result"
               onClick={() => audioManager.play('strike')}
-              className="inline-flex items-center rounded-lg px-4 py-2 text-sm font-semibold text-white action-primary"
+              className="inline-flex items-center rounded-lg px-5 py-2.5 text-sm font-bold text-white action-primary shadow-lg"
             >
-              Fight
+              Commit to Clash
             </Link>
             <Link
               to="/arena"
               onClick={() => audioManager.play('tap')}
-              className="inline-flex items-center rounded-lg px-4 py-2 text-sm font-semibold text-yellow-200 action-ghost"
+              className="inline-flex items-center rounded-lg px-4 py-2.5 text-sm font-semibold text-yellow-200 action-ghost"
             >
               Run Away
             </Link>
             <Link
               to="/arena/fight"
               onClick={() => audioManager.play('tap')}
-              className="inline-flex items-center rounded-lg px-4 py-2 text-sm font-semibold text-yellow-200 action-ghost"
+              className="inline-flex items-center rounded-lg px-4 py-2.5 text-sm font-semibold text-yellow-200 action-ghost"
             >
-              Back to Lobby
+              Adjust Stance
             </Link>
           </div>
         </div>
