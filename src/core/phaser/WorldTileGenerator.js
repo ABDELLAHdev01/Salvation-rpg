@@ -342,6 +342,242 @@ export function registerWorldTextures(scene) {
   scene.textures.addCanvas('prop_shrine', shrineCanvas);
 
   // =========================================================================
+  // 2b. CITY & ADVENTURERS' GUILD MASTER PROPS (Canvas Fallbacks)
+  // =========================================================================
+
+  // 1. prop_guild_board (32x32)
+  if (!scene.textures.exists('prop_guild_board')) {
+    const guildBoardCanvas = createTileCanvas(32, 32, (ctx) => {
+      ctx.fillStyle = 'rgba(0,0,0,0.35)';
+      ctx.beginPath();
+      ctx.ellipse(16, 29, 12, 3, 0, Math.PI * 2);
+      ctx.fill();
+      // Wooden board frame
+      ctx.fillStyle = '#451a03';
+      ctx.fillRect(4, 4, 24, 20);
+      ctx.fillStyle = '#78350f';
+      ctx.fillRect(6, 6, 20, 16);
+      // Posts
+      ctx.fillStyle = '#451a03';
+      ctx.fillRect(6, 24, 3, 7);
+      ctx.fillRect(23, 24, 3, 7);
+      // Pinned notices
+      ctx.fillStyle = '#fef3c7';
+      ctx.fillRect(8, 8, 7, 6);
+      ctx.fillRect(17, 9, 7, 6);
+      ctx.fillRect(9, 15, 6, 5);
+      ctx.fillRect(17, 16, 6, 5);
+      // Red wax seals
+      ctx.fillStyle = '#dc2626';
+      ctx.fillRect(11, 7, 2, 2);
+      ctx.fillRect(20, 8, 2, 2);
+    });
+    scene.textures.addCanvas('prop_guild_board', guildBoardCanvas);
+  }
+
+  // 2. prop_guild_desk (48x32)
+  if (!scene.textures.exists('prop_guild_desk')) {
+    const guildDeskCanvas = createTileCanvas(48, 32, (ctx) => {
+      ctx.fillStyle = 'rgba(0,0,0,0.35)';
+      ctx.beginPath();
+      ctx.ellipse(24, 28, 20, 4, 0, Math.PI * 2);
+      ctx.fill();
+      // Desk counter
+      ctx.fillStyle = '#451a03';
+      ctx.fillRect(4, 10, 40, 18);
+      ctx.fillStyle = '#78350f';
+      ctx.fillRect(6, 12, 36, 14);
+      // Counter top
+      ctx.fillStyle = '#92400e';
+      ctx.fillRect(2, 8, 44, 4);
+      // Open ledger & quill
+      ctx.fillStyle = '#fef3c7';
+      ctx.fillRect(18, 6, 10, 5);
+      ctx.fillStyle = '#d97706';
+      ctx.fillRect(22, 6, 1, 5);
+      ctx.fillStyle = '#fbbf24';
+      ctx.fillRect(30, 4, 2, 6); // Golden candle/quill
+    });
+    scene.textures.addCanvas('prop_guild_desk', guildDeskCanvas);
+  }
+
+  // 3. prop_forge_furnace (32x32)
+  if (!scene.textures.exists('prop_forge_furnace')) {
+    const furnaceCanvas = createTileCanvas(32, 32, (ctx) => {
+      ctx.fillStyle = 'rgba(0,0,0,0.4)';
+      ctx.beginPath();
+      ctx.ellipse(16, 29, 14, 3, 0, Math.PI * 2);
+      ctx.fill();
+      // Stone chimney & kiln
+      ctx.fillStyle = '#374151';
+      ctx.fillRect(6, 4, 20, 24);
+      ctx.fillStyle = '#4b5563';
+      ctx.fillRect(8, 6, 16, 20);
+      // Kiln opening & glowing coals
+      ctx.fillStyle = '#111827';
+      ctx.fillRect(10, 14, 12, 12);
+      ctx.fillStyle = '#ea580c';
+      ctx.fillRect(11, 16, 10, 9);
+      ctx.fillStyle = '#facc15';
+      ctx.fillRect(12, 19, 8, 5);
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(14, 21, 4, 2);
+    });
+    scene.textures.addCanvas('prop_forge_furnace', furnaceCanvas);
+  }
+
+  // 4. prop_anvil (32x32)
+  if (!scene.textures.exists('prop_anvil')) {
+    const anvilCanvas = createTileCanvas(32, 32, (ctx) => {
+      ctx.fillStyle = 'rgba(0,0,0,0.35)';
+      ctx.beginPath();
+      ctx.ellipse(16, 28, 11, 3, 0, Math.PI * 2);
+      ctx.fill();
+      // Oak stump base
+      ctx.fillStyle = '#451a03';
+      ctx.fillRect(10, 16, 12, 12);
+      ctx.fillStyle = '#78350f';
+      ctx.fillRect(11, 17, 10, 10);
+      // Iron horn anvil
+      ctx.fillStyle = '#374151';
+      ctx.fillRect(8, 9, 16, 8);
+      ctx.fillStyle = '#6b7280';
+      ctx.fillRect(8, 9, 16, 2);
+      ctx.fillRect(5, 10, 4, 4); // Horn
+    });
+    scene.textures.addCanvas('prop_anvil', anvilCanvas);
+  }
+
+  // 5. prop_market_stand (48x32)
+  if (!scene.textures.exists('prop_market_stand')) {
+    const marketCanvas = createTileCanvas(48, 32, (ctx) => {
+      ctx.fillStyle = 'rgba(0,0,0,0.35)';
+      ctx.beginPath();
+      ctx.ellipse(24, 28, 20, 4, 0, Math.PI * 2);
+      ctx.fill();
+      // Counter
+      ctx.fillStyle = '#78350f';
+      ctx.fillRect(6, 14, 36, 14);
+      // Striped awning
+      for (let i = 0; i < 44; i += 8) {
+        ctx.fillStyle = (i % 16 === 0) ? '#dc2626' : '#fef3c7';
+        ctx.fillRect(2 + i, 2, 8, 8);
+      }
+      // Awning posts
+      ctx.fillStyle = '#451a03';
+      ctx.fillRect(4, 8, 2, 18);
+      ctx.fillRect(42, 8, 2, 18);
+      // Produce in crates
+      ctx.fillStyle = '#ea580c';
+      ctx.fillRect(10, 14, 6, 4);
+      ctx.fillStyle = '#16a34a';
+      ctx.fillRect(18, 14, 6, 4);
+      ctx.fillStyle = '#eab308';
+      ctx.fillRect(26, 14, 6, 4);
+    });
+    scene.textures.addCanvas('prop_market_stand', marketCanvas);
+  }
+
+  // 6. prop_inn_bed (32x32)
+  if (!scene.textures.exists('prop_inn_bed')) {
+    const innBedCanvas = createTileCanvas(32, 32, (ctx) => {
+      ctx.fillStyle = 'rgba(0,0,0,0.3)';
+      ctx.beginPath();
+      ctx.ellipse(16, 28, 12, 3, 0, Math.PI * 2);
+      ctx.fill();
+      // Bed frame
+      ctx.fillStyle = '#5c2b05';
+      ctx.fillRect(6, 6, 20, 22);
+      // White pillow
+      ctx.fillStyle = '#f1f5f9';
+      ctx.fillRect(8, 8, 16, 6);
+      // Cozy blue quilt blanket
+      ctx.fillStyle = '#1d4ed8';
+      ctx.fillRect(8, 14, 16, 12);
+      ctx.fillStyle = '#3b82f6';
+      ctx.fillRect(8, 14, 16, 2);
+    });
+    scene.textures.addCanvas('prop_inn_bed', innBedCanvas);
+  }
+
+  // 7. prop_town_fountain (48x48)
+  if (!scene.textures.exists('prop_town_fountain')) {
+    const fountainCanvas = createTileCanvas(48, 48, (ctx) => {
+      ctx.fillStyle = 'rgba(0,0,0,0.35)';
+      ctx.beginPath();
+      ctx.ellipse(24, 42, 20, 5, 0, Math.PI * 2);
+      ctx.fill();
+      // Stone basin
+      ctx.fillStyle = '#4b5563';
+      ctx.beginPath();
+      ctx.ellipse(24, 28, 20, 14, 0, Math.PI * 2);
+      ctx.fill();
+      // Clear pool water
+      ctx.fillStyle = '#0284c7';
+      ctx.beginPath();
+      ctx.ellipse(24, 28, 16, 10, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#38bdf8';
+      ctx.beginPath();
+      ctx.ellipse(24, 27, 12, 6, 0, Math.PI * 2);
+      ctx.fill();
+      // Center pedestal & water jet
+      ctx.fillStyle = '#6b7280';
+      ctx.fillRect(22, 14, 4, 14);
+      ctx.fillStyle = '#bae6fd';
+      ctx.fillRect(23, 8, 2, 8);
+      ctx.fillRect(21, 10, 6, 2);
+    });
+    scene.textures.addCanvas('prop_town_fountain', fountainCanvas);
+  }
+
+  // 8. prop_notice_board (32x32)
+  if (!scene.textures.exists('prop_notice_board')) {
+    const noticeBoardCanvas = createTileCanvas(32, 32, (ctx) => {
+      ctx.fillStyle = 'rgba(0,0,0,0.3)';
+      ctx.beginPath();
+      ctx.ellipse(16, 28, 9, 3, 0, Math.PI * 2);
+      ctx.fill();
+      // Post
+      ctx.fillStyle = '#451a03';
+      ctx.fillRect(15, 16, 3, 13);
+      // Board
+      ctx.fillStyle = '#78350f';
+      ctx.fillRect(5, 5, 22, 14);
+      ctx.fillStyle = '#b45309';
+      ctx.fillRect(6, 6, 20, 12);
+      // Pinned notices
+      ctx.fillStyle = '#fef3c7';
+      ctx.fillRect(8, 8, 6, 5);
+      ctx.fillRect(16, 9, 7, 6);
+    });
+    scene.textures.addCanvas('prop_notice_board', noticeBoardCanvas);
+  }
+
+  // 9. prop_road_sign (32x32)
+  if (!scene.textures.exists('prop_road_sign')) {
+    const roadSignCanvas = createTileCanvas(32, 32, (ctx) => {
+      ctx.fillStyle = 'rgba(0,0,0,0.3)';
+      ctx.beginPath();
+      ctx.ellipse(16, 29, 8, 3, 0, Math.PI * 2);
+      ctx.fill();
+      // Post
+      ctx.fillStyle = '#451a03';
+      ctx.fillRect(15, 10, 3, 19);
+      // Signboards
+      ctx.fillStyle = '#78350f';
+      ctx.fillRect(6, 6, 18, 5);
+      ctx.fillStyle = '#fef3c7';
+      ctx.fillRect(7, 7, 16, 3);
+      ctx.fillStyle = '#78350f';
+      ctx.fillRect(8, 13, 18, 5);
+      ctx.fillStyle = '#fef3c7';
+      ctx.fillRect(9, 14, 16, 3);
+    });
+    scene.textures.addCanvas('prop_road_sign', roadSignCanvas);
+  }
+
+  // =========================================================================
   // 3. MINING ORE BOULDERS
   // =========================================================================
   const makeOreSprite = (oreColor, shineColor) => createTileCanvas(32, 32, (ctx) => {

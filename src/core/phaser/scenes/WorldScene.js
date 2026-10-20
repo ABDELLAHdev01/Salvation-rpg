@@ -57,6 +57,12 @@ export default class WorldScene extends Phaser.Scene {
     if (data.profile) this.profile = data.profile;
     if (data.zone) this.currentZone = data.zone;
 
+    if (data.spawnX !== undefined && data.spawnY !== undefined) {
+      this.customSpawn = { x: data.spawnX, y: data.spawnY };
+    } else {
+      this.customSpawn = null;
+    }
+
     // Initialize player combat stats from profile
     const lvl = this.profile?.stats?.level || 1;
     this.playerMaxHp = 100 + (lvl - 1) * 15;
@@ -85,6 +91,17 @@ export default class WorldScene extends Phaser.Scene {
       this.load.image('prop_house', '/assets/tilesets/prop_house.png');
       this.load.image('prop_chest', '/assets/tilesets/prop_chest.png');
       this.load.image('prop_workbench', '/assets/tilesets/prop_workbench.png');
+
+      // 4. Preload City, Guild & Open-World Master Props
+      this.load.image('prop_guild_board', '/assets/tilesets/prop_guild_board.png');
+      this.load.image('prop_guild_desk', '/assets/tilesets/prop_guild_desk.png');
+      this.load.image('prop_forge_furnace', '/assets/tilesets/prop_forge_furnace.png');
+      this.load.image('prop_anvil', '/assets/tilesets/prop_anvil.png');
+      this.load.image('prop_market_stand', '/assets/tilesets/prop_market_stand.png');
+      this.load.image('prop_inn_bed', '/assets/tilesets/prop_inn_bed.png');
+      this.load.image('prop_town_fountain', '/assets/tilesets/prop_town_fountain.png');
+      this.load.image('prop_notice_board', '/assets/tilesets/prop_notice_board.png');
+      this.load.image('prop_road_sign', '/assets/tilesets/prop_road_sign.png');
     } catch {
       // Safe fallback
     }
@@ -93,7 +110,7 @@ export default class WorldScene extends Phaser.Scene {
   create() {
     // 0. Ensure Camera FX is clean and set mood lighting
     this.cameras.main.resetFX();
-    const bgColors = { homestead: '#3c6624', forest: '#274b1a', mine: '#181a20', village: '#3a2718' };
+    const bgColors = { homestead: '#3c6624', west_road: '#3c6624', forest: '#274b1a', mine: '#181a20', village: '#3a2718' };
     this.cameras.main.setBackgroundColor(bgColors[this.currentZone] || '#3c6624');
     this.cameras.main.fadeIn(250, 0, 0, 0);
 
@@ -236,6 +253,18 @@ export default class WorldScene extends Phaser.Scene {
           frequency: 250,
         });
         emitter.setDepth(28);
+      } else if (this.currentZone === 'west_road') {
+        const emitter = this.add.particles(640, 480, 'col_invisible', {
+          emitZone: { source: new Phaser.Geom.Rectangle(0, 0, 1280, 960), type: 'random' },
+          speedX: { min: -15, max: -5 },
+          speedY: { min: -8, max: 8 },
+          scale: { start: 1.5, end: 0.5 },
+          alpha: { start: 0.5, end: 0 },
+          tint: 0xfacc15,
+          lifespan: 3800,
+          frequency: 250,
+        });
+        emitter.setDepth(28);
       } else if (this.currentZone === 'forest') {
         const emitter = this.add.particles(640, 480, 'col_invisible', {
           emitZone: { source: new Phaser.Geom.Rectangle(0, 0, 1280, 960), type: 'random' },
@@ -305,6 +334,10 @@ export default class WorldScene extends Phaser.Scene {
       for (let x = 15; x < 38; x += 1) {
         this.add.image(x * 32 + 16, 12 * 32 + 16, 'tile_path');
       }
+      // Paved road leaving left boundary to West Road
+      for (let x = 0; x < 15; x += 1) {
+        this.add.image(x * 32 + 16, 14 * 32 + 16, 'tile_path');
+      }
     }
 
     // Groups
@@ -313,6 +346,8 @@ export default class WorldScene extends Phaser.Scene {
 
     if (this.currentZone === 'homestead') {
       this.buildHomesteadProps();
+    } else if (this.currentZone === 'west_road') {
+      this.buildWestRoadProps();
     } else if (this.currentZone === 'mine') {
       this.buildMineProps();
     } else if (this.currentZone === 'forest') {
@@ -322,8 +357,24 @@ export default class WorldScene extends Phaser.Scene {
     }
 
     // Player Spawn
-    const spawnX = this.currentZone === 'homestead' ? 15 * 32 : 10 * 32;
-    const spawnY = this.currentZone === 'homestead' ? 14 * 32 : 12 * 32;
+    let spawnX = 15 * 32;
+    let spawnY = 14 * 32;
+    if (this.customSpawn) {
+      spawnX = this.customSpawn.x;
+      spawnY = this.customSpawn.y;
+    } else if (this.currentZone === 'homestead') {
+      spawnX = 15 * 32;
+      spawnY = 14 * 32;
+    } else if (this.currentZone === 'west_road') {
+      spawnX = 36 * 32;
+      spawnY = 14 * 32;
+    } else if (this.currentZone === 'village') {
+      spawnX = 36 * 32;
+      spawnY = 15 * 32;
+    } else {
+      spawnX = 10 * 32;
+      spawnY = 12 * 32;
+    }
 
     this.player = this.physics.add.sprite(spawnX, spawnY, 'player_spritesheet', 0);
     this.player.setCollideWorldBounds(true);
@@ -427,14 +478,26 @@ export default class WorldScene extends Phaser.Scene {
       }
     });
 
+    // Road Signs
+    const westSign = this.add.image(3 * 32, 12 * 32, 'prop_road_sign');
+    westSign.setDepth(11);
+    this.registerInteractive(3 * 32, 12 * 32, 50, '[E] Read Road Sign 📜', () => {
+      this.showFloatingText(3 * 32, 12 * 32 - 20, '← Sunforge City (West Road) | Homestead Manor →', '#fef08a');
+      gameEventBridge.emit(gameEvents.PROP_INTERACT, { propId: 'prop_road_sign' });
+    });
+
     // Exits
+    // Physical West Gate connecting to West Road
+    this.registerInteractive(2 * 32, 14 * 32, 60, '[E] Walk along West Road to City ←', () => {
+      this.switchZone('west_road', { spawnX: 38 * 32, spawnY: this.player.y });
+    });
     this.registerInteractive(37 * 32, 12 * 32, 60, '[E] Enter Enchanted Forest →', () => {
       this.switchZone('forest');
     });
     this.registerInteractive(34 * 32, 4 * 32, 60, '[E] Delve into Deepforge Mine ⛏️', () => {
       this.switchZone('mine');
     });
-    this.registerInteractive(15 * 32, 28 * 32, 60, '[E] Travel to Valorian Bazaar 🪙', () => {
+    this.registerInteractive(15 * 32, 28 * 32, 60, '[E] Fast-Travel to Sunforge City Plaza 🏛️', () => {
       this.switchZone('village');
     });
   }
@@ -524,41 +587,177 @@ export default class WorldScene extends Phaser.Scene {
     });
   }
 
-  buildVillageProps() {
-    // Village Plaza Cobblestone Paths
-    for (let x = 6; x < 34; x += 1) {
-      this.add.image(x * 32 + 16, 15 * 32 + 16, 'tile_path');
+  buildWestRoadProps() {
+    const mapWidth = 40;
+    // Central cobblestone highway spanning full width
+    for (let x = 0; x < mapWidth; x += 1) {
+      for (let y = 13; y <= 15; y += 1) {
+        this.add.image(x * 32 + 16, y * 32 + 16, 'tile_path');
+      }
     }
-    for (let y = 6; y < 24; y += 1) {
-      this.add.image(18 * 32 + 16, y * 32 + 16, 'tile_path');
+
+    // Northern tree barrier with natural depth
+    for (let x = 1; x < 39; x += 3) {
+      if (x % 4 !== 0) {
+        const t = this.add.image(x * 32, 4 * 32, 'prop_tree');
+        t.setDepth(10);
+        const col = this.obstacles.create(x * 32, 4 * 32 + 14, 'col_invisible');
+        col.setSize(22, 16);
+        col.setVisible(false);
+      }
     }
 
-    const stalls = [
-      { name: "Old Barnaby's Seeds", x: 10, y: 10, action: 'seed_cart', prop: 'prop_house' },
-      { name: "Torvald's Ore Exchange", x: 26, y: 10, action: 'ore_exchange', prop: 'prop_workbench' },
-      { name: "Linnea's Produce Stand", x: 10, y: 20, action: 'produce_stand', prop: 'prop_house' },
-      { name: "Garrison's Armory", x: 26, y: 20, action: 'armory', prop: 'prop_workbench' },
-    ];
+    // Southern tree barrier with natural depth
+    for (let x = 1; x < 39; x += 3) {
+      if (x % 5 !== 0) {
+        const t = this.add.image(x * 32, 25 * 32, 'prop_tree');
+        t.setDepth(10);
+        const col = this.obstacles.create(x * 32, 25 * 32 + 14, 'col_invisible');
+        col.setSize(22, 16);
+        col.setVisible(false);
+      }
+    }
 
-    stalls.forEach((stall) => {
-      const sx = stall.x * 32;
-      const sy = stall.y * 32;
-      const b = this.add.image(sx, sy, stall.prop);
-      if (stall.prop === 'prop_house') b.setScale(0.75);
-      b.setDepth(10);
-      const col = this.obstacles.create(sx, sy + 5, 'col_invisible');
-      col.setSize(48, 24);
-      col.setVisible(false);
-
-      this.registerInteractive(sx, sy, 60, `[E] Trade at ${stall.name} 🪙`, () => {
-        audioManager.play('coin');
-        gameEventBridge.emit(gameEvents.NPC_TALK, { stall });
-      });
+    // East Road Sign (near Homestead border)
+    const eastSign = this.add.image(36 * 32, 11 * 32, 'prop_road_sign');
+    eastSign.setDepth(11);
+    this.registerInteractive(36 * 32, 11 * 32, 50, '[E] Read Road Sign: "Homestead Frontier Ahead"', () => {
+      this.showFloatingText(36 * 32, 11 * 32 - 20, '← City 1 League | Homestead Estate 100 Paces →', '#fef08a');
+      gameEventBridge.emit(gameEvents.PROP_INTERACT, { propId: 'prop_road_sign' });
     });
 
-    // Return Exit
-    this.registerInteractive(20 * 32, 2 * 32, 60, '[E] Return to Homestead Manor ↑', () => {
-      this.switchZone('homestead');
+    // Ancient Central Granite Milestone (Discovery Prop)
+    const milestone = this.add.image(20 * 32, 11 * 32, 'prop_road_sign');
+    milestone.setDepth(11);
+    this.registerInteractive(20 * 32, 11 * 32, 55, '[E] Inspect Sunforge West Milestone 📜', () => {
+      audioManager.play('tap');
+      this.showFloatingText(20 * 32, 11 * 32 - 20, 'Milestone Discovered: Halfway to Sunforge City!', '#a7f3d0');
+      gameEventBridge.emit(gameEvents.PROP_INTERACT, { propId: 'prop_road_sign' });
+    });
+
+    // West Road Sign (near City Gates)
+    const westSign = this.add.image(5 * 32, 11 * 32, 'prop_road_sign');
+    westSign.setDepth(11);
+    this.registerInteractive(5 * 32, 11 * 32, 50, '[E] Read Road Sign: "Sunforge City Gates Ahead"', () => {
+      this.showFloatingText(5 * 32, 11 * 32 - 20, "← Sunforge City Gates | The King's Highway →", '#fef08a');
+      gameEventBridge.emit(gameEvents.PROP_INTERACT, { propId: 'prop_road_sign' });
+    });
+
+    // Physical Interactive Exits
+    this.registerInteractive(2 * 32, 14 * 32, 60, '[E] Enter Sunforge City Gates ←', () => {
+      this.switchZone('village', { spawnX: 38 * 32, spawnY: this.player.y });
+    });
+    this.registerInteractive(38 * 32, 14 * 32, 60, '[E] Return to Sunforge Homestead →', () => {
+      this.switchZone('homestead', { spawnX: 3 * 32, spawnY: this.player.y });
+    });
+
+    // Roadside Monsters
+    this.spawnEnemy('slime_forest', 12 * 32, 9 * 32);
+    this.spawnEnemy('wolf_shadow', 28 * 32, 20 * 32);
+  }
+
+  buildVillageProps() {
+    // Grand Plaza Cobblestone Avenues
+    for (let x = 0; x < 40; x += 1) {
+      this.add.image(x * 32 + 16, 14 * 32 + 16, 'tile_path');
+      this.add.image(x * 32 + 16, 15 * 32 + 16, 'tile_path');
+    }
+    for (let y = 2; y < 28; y += 1) {
+      this.add.image(19 * 32 + 16, y * 32 + 16, 'tile_path');
+      this.add.image(20 * 32 + 16, y * 32 + 16, 'tile_path');
+    }
+
+    // 1. CENTER PLAZA: Town Fountain & Notice Board
+    const fountain = this.obstacles.create(20 * 32, 14 * 32 + 16, 'prop_town_fountain');
+    fountain.setDepth(14);
+    fountain.setSize(44, 40);
+    this.registerInteractive(20 * 32, 14 * 32 + 16, 56, '[E] Toss Lucky Coin into Fountain ✨', () => {
+      audioManager.play('coin');
+      this.showFloatingText(20 * 32, 14 * 32 - 15, 'Fortune Smiles Upon You! (+1 Renown)', '#fde047');
+      gameEventBridge.emit(gameEvents.PROP_INTERACT, { propId: 'prop_town_fountain' });
+    });
+
+    const noticeBoard = this.add.image(16 * 32, 12 * 32, 'prop_notice_board');
+    noticeBoard.setDepth(14);
+    this.registerInteractive(16 * 32, 12 * 32, 50, '[E] Read Town Square Notice Board 📜', () => {
+      audioManager.play('tap');
+      this.showFloatingText(16 * 32, 12 * 32 - 20, "Notice: Adventurers' Guild awarding bounties at NW Hall!", '#fef08a');
+      gameEventBridge.emit(gameEvents.PROP_INTERACT, { propId: 'prop_notice_board' });
+    });
+
+    // 2. ADVENTURERS' GUILD (North-West Quarter)
+    const guildhall = this.add.image(11 * 32, 5 * 32, 'prop_house');
+    guildhall.setDepth(10);
+    guildhall.setScale(0.9);
+    const guildCol = this.obstacles.create(11 * 32, 5 * 32 + 10, 'col_invisible');
+    guildCol.setSize(75, 36);
+    guildCol.setVisible(false);
+
+    // Guild Desk & Receptionist Michelle
+    const desk = this.obstacles.create(10 * 32, 8 * 32, 'prop_guild_desk');
+    desk.setDepth(12);
+    desk.setSize(44, 26);
+    this.registerInteractive(10 * 32, 8 * 32, 54, '[E] Speak with Guild Warden Michelle ⚔️', () => {
+      audioManager.play('coin');
+      gameEventBridge.emit(gameEvents.GUILD_VISITED);
+      gameEventBridge.emit('OPEN_IN_GAME_GUILD');
+    });
+
+    // Guild Bounty Board
+    const guildBoard = this.add.image(13 * 32, 7 * 32, 'prop_guild_board');
+    guildBoard.setDepth(12);
+    this.registerInteractive(13 * 32, 7 * 32, 50, '[E] Inspect Guild Contract Board 📜', () => {
+      audioManager.play('tap');
+      gameEventBridge.emit(gameEvents.GUILD_VISITED);
+      gameEventBridge.emit('OPEN_IN_GAME_GUILD');
+    });
+
+    // 3. IRON ANVIL BLACKSMITH (North-East Quarter)
+    const forgeKiln = this.obstacles.create(29 * 32, 7 * 32, 'prop_forge_furnace');
+    forgeKiln.setDepth(12);
+    forgeKiln.setSize(28, 26);
+
+    const anvil = this.obstacles.create(27 * 32, 8 * 32, 'prop_anvil');
+    anvil.setDepth(12);
+    anvil.setSize(28, 24);
+    this.registerInteractive(27 * 32, 8 * 32, 54, '[E] Speak with Blacksmith Elric (Forge & Craft) ⚒️', () => {
+      audioManager.play('anvil');
+      gameEventBridge.emit('OPEN_IN_GAME_FORGE');
+    });
+
+    // 4. THE HEARTH & PINT INN (South-West Quarter)
+    const innBuilding = this.add.image(10 * 32, 19 * 32, 'prop_house');
+    innBuilding.setDepth(10);
+    innBuilding.setScale(0.85);
+    const innCol = this.obstacles.create(10 * 32, 19 * 32 + 10, 'col_invisible');
+    innCol.setSize(70, 34);
+    innCol.setVisible(false);
+
+    const innBed = this.obstacles.create(10 * 32, 22 * 32, 'prop_inn_bed');
+    innBed.setDepth(12);
+    innBed.setSize(28, 26);
+    this.registerInteractive(10 * 32, 22 * 32, 52, '[E] Rest in Cozy Bed (Restore Full Health) 🛏️', () => {
+      this.restAtInn();
+    });
+
+    // 5. SUNFORGE MARKET BAZAAR (South-East Quarter)
+    const marketStand = this.obstacles.create(28 * 32, 22 * 32, 'prop_market_stand');
+    marketStand.setDepth(12);
+    marketStand.setSize(44, 26);
+    this.registerInteractive(28 * 32, 22 * 32, 54, '[E] Trade with Merchant Silas (Bazaar & Seeds) 🪙', () => {
+      audioManager.play('coin');
+      gameEventBridge.emit('OPEN_IN_GAME_BAZAAR');
+    });
+
+    // Exits
+    // East Exit to West Road
+    this.registerInteractive(38 * 32, 14 * 32, 60, '[E] Leave City via West Road →', () => {
+      this.switchZone('west_road', { spawnX: 3 * 32, spawnY: this.player.y });
+    });
+
+    // North Exit: Fast-Travel to Homestead Manor
+    this.registerInteractive(20 * 32, 2 * 32, 60, '[E] Return to Homestead Manor [Fast-Travel] 🏡', () => {
+      this.switchZone('homestead', { spawnX: 15 * 32, spawnY: 14 * 32 });
     });
   }
 
@@ -886,7 +1085,35 @@ export default class WorldScene extends Phaser.Scene {
     });
   }
 
-  switchZone(newZone) {
+  restAtInn() {
+    audioManager.play('levelup');
+    this.playerHp = this.playerMaxHp;
+    this.cameras.main.flash(400, 255, 255, 255);
+    this.showFloatingText(this.player.x, this.player.y - 20, 'Rested & Restored (+Full HP)!', '#4ade80');
+    gameEventBridge.emit(gameEvents.COMBAT_PLAYER_HEAL, {
+      hp: this.playerHp,
+      maxHp: this.playerMaxHp,
+      healed: this.playerMaxHp,
+    });
+    gameEventBridge.emit(gameEvents.INN_REST);
+  }
+
+  returnHome() {
+    if (this.currentZone === 'homestead') {
+      this.showFloatingText(this.player.x, this.player.y - 20, 'Already at Homestead!', '#fde047');
+      return;
+    }
+    const now = Date.now();
+    if (now < this.playerInvulnerableUntil) {
+      this.showFloatingText(this.player.x, this.player.y - 20, 'Cannot recall during combat!', '#ef4444');
+      return;
+    }
+    audioManager.play('tap');
+    this.showFloatingText(this.player.x, this.player.y - 20, 'Returning Home...', '#38bdf8');
+    this.switchZone('homestead', { spawnX: 15 * 32, spawnY: 14 * 32 });
+  }
+
+  switchZone(newZone, spawnPos = null) {
     audioManager.play('tap');
     this.cameras.main.fade(200, 0, 0, 0, false, (camera, progress) => {
       if (progress === 1) {
@@ -895,6 +1122,8 @@ export default class WorldScene extends Phaser.Scene {
           profile: this.profile,
           zone: newZone,
           hp: this.playerHp,
+          spawnX: spawnPos ? spawnPos.spawnX : undefined,
+          spawnY: spawnPos ? spawnPos.spawnY : undefined,
         });
       }
     });
@@ -963,6 +1192,9 @@ export default class WorldScene extends Phaser.Scene {
       gameEventBridge.on(gameEvents.EXECUTE_PLAYER_HEAL, () => {
         this.useHealingPotion();
       }),
+      gameEventBridge.on(gameEvents.RETURN_HOME, () => {
+        this.returnHome();
+      }),
     ];
   }
 
@@ -972,6 +1204,46 @@ export default class WorldScene extends Phaser.Scene {
         this.player.setVelocity(0, 0);
       }
       return;
+    }
+
+    // Continuous physical boundary crossings
+    if (this.currentZone === 'homestead') {
+      if (this.player.x <= 16 && this.player.y >= 10 * 32 && this.player.y <= 18 * 32) {
+        this.switchZone('west_road', { spawnX: 38 * 32, spawnY: this.player.y });
+        return;
+      }
+    } else if (this.currentZone === 'west_road') {
+      if (this.player.x >= 39 * 32) {
+        this.switchZone('homestead', { spawnX: 2 * 32, spawnY: this.player.y });
+        return;
+      } else if (this.player.x <= 16) {
+        this.switchZone('village', { spawnX: 38 * 32, spawnY: this.player.y });
+        return;
+      }
+    } else if (this.currentZone === 'village') {
+      if (this.player.x >= 39 * 32 && this.player.y >= 10 * 32 && this.player.y <= 19 * 32) {
+        this.switchZone('west_road', { spawnX: 2 * 32, spawnY: this.player.y });
+        return;
+      }
+    }
+
+    // Live player coordinates & facing broadcast for minimap (throttled)
+    const curX = Math.round(this.player.x);
+    const curY = Math.round(this.player.y);
+    if (this._lastEmittedX !== curX || this._lastEmittedY !== curY || this._lastEmittedFacing !== this.playerFacing) {
+      const now = Date.now();
+      if (!this._lastMoveEmit || now - this._lastMoveEmit > 80) {
+        this._lastMoveEmit = now;
+        this._lastEmittedX = curX;
+        this._lastEmittedY = curY;
+        this._lastEmittedFacing = this.playerFacing;
+        gameEventBridge.emit(gameEvents.PLAYER_MOVED, {
+          x: curX,
+          y: curY,
+          facing: this.playerFacing,
+          zone: this.currentZone,
+        });
+      }
     }
 
     // Hotkey attack

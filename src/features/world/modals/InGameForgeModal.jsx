@@ -4,6 +4,7 @@ import audioManager from '../../../core/audio/AudioManager';
 import characterService from '../../../core/services/CharacterService';
 import { addItems, removeItems } from '../../../core/services/inventoryService';
 import { getItemIcon } from '../../../core/data/itemIcons';
+import { recordContractProgress } from '../../../core/quests/guildContracts';
 
 const FORGE_RECIPES = [
   {
@@ -94,9 +95,16 @@ export default function InGameForgeModal({
 
     const nextXp = (profile?.workshopXp || 0) + recipe.xp;
 
+    const progress = recordContractProgress(
+      'forge:crafted',
+      { itemId: recipe.output.id, count: recipe.output.count },
+      profile?.activeContracts || []
+    );
+
     const updated = characterService.updateMockProfile({
       inventory: nextInv,
       workshopXp: nextXp,
+      ...(progress.updated ? { activeContracts: progress.activeContracts } : {}),
     });
 
     onProfileUpdate(updated);

@@ -7,6 +7,15 @@ import { addItems, removeItems } from '../services/inventoryService';
 import characterService from '../services/CharacterService';
 import toast from 'react-hot-toast';
 import audioManager from '../audio/AudioManager';
+import { recordContractProgress } from '../quests/guildContracts';
+
+const ZONE_TITLES = {
+  homestead: 'Sunforge Homestead & Manor',
+  west_road: "Sunforge West Road & King's Highway",
+  village: "Sunforge City Plaza & Adventurers' Guild",
+  forest: 'The Whispering Enchanted Forest',
+  mine: 'Deepforge Caverns & Seams',
+};
 
 export default function PhaserWorldCanvas({
   customization = null,
@@ -80,10 +89,13 @@ export default function PhaserWorldCanvas({
     const xpGain = 25;
     const nextXp = (prof.farmXp || 0) + xpGain;
 
+    const progress = recordContractProgress('farm:harvest', { cropId: plot.cropId }, prof.activeContracts || []);
+
     const updated = characterService.updateMockProfile({
       inventory: nextInventory,
       farmPlots: nextPlots,
       farmXp: nextXp,
+      ...(progress.updated ? { activeContracts: progress.activeContracts } : {}),
     });
 
     onProfileUpdateRef.current(updated);
@@ -103,9 +115,12 @@ export default function PhaserWorldCanvas({
     const xpGain = 20;
     const nextXp = (prof.miningXp || 0) + xpGain;
 
+    const progress = recordContractProgress('mine:shatter', { oreId: ore.type }, prof.activeContracts || []);
+
     const updated = characterService.updateMockProfile({
       inventory: nextInventory,
       miningXp: nextXp,
+      ...(progress.updated ? { activeContracts: progress.activeContracts } : {}),
     });
 
     onProfileUpdateRef.current(updated);
@@ -179,6 +194,24 @@ export default function PhaserWorldCanvas({
       }),
       gameEventBridge.on(gameEvents.ZONE_CHANGED, ({ zone }) => {
         setCurrentZone(zone);
+        const prof = profileRef.current;
+        if (prof) {
+          const currentDiscovered = new Set(prof.discoveredRegions || ['homestead']);
+          const isNew = !currentDiscovered.has(zone);
+          currentDiscovered.add(zone);
+
+          const progress = recordContractProgress('zone:changed', { zone }, prof.activeContracts || []);
+          if (isNew || progress.updated) {
+            const updated = characterService.updateMockProfile({
+              discoveredRegions: Array.from(currentDiscovered),
+              ...(progress.updated ? { activeContracts: progress.activeContracts } : {}),
+            });
+            onProfileUpdateRef.current(updated);
+            if (isNew) {
+              toast.success(`Discovered New Realm: ${ZONE_TITLES[zone] || zone}!`, { icon: '🗺️' });
+            }
+          }
+        }
       }),
       gameEventBridge.on(gameEvents.FARM_PLOT_INTERACT, ({ plot, isMature }) => {
         if (isMature) {
@@ -194,6 +227,16 @@ export default function PhaserWorldCanvas({
         handleMineNode(ore);
       }),
       gameEventBridge.on(gameEvents.CHEST_OPEN, () => {
+        const prof = profileRef.current;
+        if (prof) {
+          const progress = recordContractProgress('chest:open', {}, prof.activeContracts || []);
+          if (progress.updated) {
+            const updated = characterService.updateMockProfile({
+              activeContracts: progress.activeContracts,
+            });
+            onProfileUpdateRef.current(updated);
+          }
+        }
         gameEventBridge.emit('OPEN_IN_GAME_INVENTORY');
       }),
       gameEventBridge.on(gameEvents.WORKBENCH_OPEN, () => {
@@ -201,6 +244,29 @@ export default function PhaserWorldCanvas({
       }),
       gameEventBridge.on(gameEvents.NPC_TALK, () => {
         gameEventBridge.emit('OPEN_IN_GAME_BAZAAR');
+      }),
+      gameEventBridge.on(gameEvents.PROP_INTERACT, ({ propId }) => {
+        const prof = profileRef.current;
+        if (!prof) return;
+        const progress = recordContractProgress('prop:interacted', { propId }, prof.activeContracts || []);
+        if (progress.updated) {
+          const updated = characterService.updateMockProfile({
+            activeContracts: progress.activeContracts,
+          });
+          onProfileUpdateRef.current(updated);
+          toast.success('Guild Discovery Recorded!', { icon: '📜' });
+        }
+      }),
+      gameEventBridge.on(gameEvents.GUILD_VISITED, () => {
+        const prof = profileRef.current;
+        if (!prof) return;
+        const progress = recordContractProgress('guild:visited', {}, prof.activeContracts || []);
+        if (progress.updated) {
+          const updated = characterService.updateMockProfile({
+            activeContracts: progress.activeContracts,
+          });
+          onProfileUpdateRef.current(updated);
+        }
       }),
       gameEventBridge.on(gameEvents.COMBAT_PLAYER_DAMAGED, ({ hp, maxHp }) => {
         setPlayerHp(hp);
@@ -232,6 +298,12 @@ export default function PhaserWorldCanvas({
         const nextGold = (prof.stats?.gold || 0) + (loot.gold || 0);
         const nextXp = (prof.stats?.xp || 0) + (loot.xp || 0);
 
+        const progress = recordContractProgress(
+          'combat:enemy_defeated',
+          { enemyType: monster.texture },
+          prof.activeContracts || []
+        );
+
         const updated = characterService.updateMockProfile({
           inventory: nextInventory,
           stats: {
@@ -240,6 +312,7 @@ export default function PhaserWorldCanvas({
             xp: nextXp,
             victories: (prof.stats?.victories || 0) + 1,
           },
+          ...(progress.updated ? { activeContracts: progress.activeContracts } : {}),
         });
 
         onProfileUpdateRef.current(updated);
@@ -318,13 +391,6 @@ export default function PhaserWorldCanvas({
     gameEventBridge.emit(gameEvents.SWITCH_ZONE, { zone: currentZoneRef.current });
   };
 
-  const zoneTitles = {
-    homestead: "Sunforge Homestead & Manor",
-    mine: "Deepforge Caverns & Seams",
-    forest: "The Whispering Enchanted Forest",
-    village: "Imperial Merchant Bazaar Square",
-  };
-
   return (
     <div className={`relative w-full h-full overflow-hidden bg-gray-950 select-none ${className}`}>
       {/* Phaser Canvas Host Container */}
@@ -338,7 +404,7 @@ export default function PhaserWorldCanvas({
             Current Region
           </span>
           <span className="font-serif text-xs font-bold text-white sm:text-sm">
-            {zoneTitles[currentZone] || currentZone}
+            {ZONE_TITLES[currentZone] || currentZone}
           </span>
         </div>
       </div>

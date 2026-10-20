@@ -55,6 +55,11 @@ export const gameEvents = {
   COMBAT_PLAYER_DAMAGED: 'combat:player_damaged',
   COMBAT_PLAYER_DIED: 'combat:player_died',
   COMBAT_PLAYER_HEAL: 'combat:player_heal',
+  GUILD_OPEN: 'guild:open',
+  INN_REST: 'inn:rest',
+  PROP_INTERACT: 'prop:interacted',
+  FORGE_CRAFTED: 'forge:crafted',
+  GUILD_VISITED: 'guild:visited',
 
   // From React -> Phaser
   LOCK_CONTROLS: 'controls:lock',
@@ -63,6 +68,7 @@ export const gameEvents = {
   REFRESH_CUSTOMIZATION: 'player:refresh_customization',
   USE_HEALING_POTION: 'player:use_healing_potion',
   EXECUTE_PLAYER_HEAL: 'player:execute_heal',
+  RETURN_HOME: 'player:return_home',
 };
 
 export const gameEventBridge = new GameEventBridge();

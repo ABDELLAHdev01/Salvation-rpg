@@ -6,10 +6,10 @@
 
 import { sanitizeCustomization, DEFAULT_CUSTOMIZATION } from '../phaser/characterCustomizationData';
 
-export const CURRENT_SAVE_SCHEMA_VERSION = 2;
+export const CURRENT_SAVE_SCHEMA_VERSION = 3;
 export const MOCK_CHARACTERS_KEY = 'mockCharacters';
 export const MOCK_PROFILES_KEY = 'mockProfiles';
-export const SAVE_BACKUP_KEY = 'salvation_save_backup_v2';
+export const SAVE_BACKUP_KEY = 'salvation_save_backup_v3';
 
 /**
  * Validates save data integrity
@@ -72,7 +72,33 @@ export function migrateSavePayload(characterData, profileData) {
     ];
   }
 
-  // 5. Schema version marker
+  // 5. Ensure Adventurers' Guild Contracts, Discovered Regions & Home Position
+  if (!Array.isArray(safeProfile.activeContracts)) {
+    safeProfile.activeContracts = [
+      {
+        id: 'main_01_homestead_foundations',
+        acceptedAt: Date.now(),
+        objectives: [
+          { id: 'harvest_turnip', current: 0 },
+          { id: 'stock_chest', current: 0 },
+        ],
+      },
+    ];
+  }
+  if (!safeProfile.completedContracts || typeof safeProfile.completedContracts !== 'object') {
+    safeProfile.completedContracts = {};
+  }
+  if (!Array.isArray(safeProfile.discoveredRegions)) {
+    safeProfile.discoveredRegions = ['homestead'];
+  }
+  if (!safeProfile.discoveredRegions.includes('homestead')) {
+    safeProfile.discoveredRegions.unshift('homestead');
+  }
+  if (!safeProfile.homePosition || typeof safeProfile.homePosition !== 'object') {
+    safeProfile.homePosition = { zone: 'homestead', x: 15 * 32, y: 14 * 32 };
+  }
+
+  // 6. Schema version marker
   safeChar.schemaVersion = CURRENT_SAVE_SCHEMA_VERSION;
   safeProfile.schemaVersion = CURRENT_SAVE_SCHEMA_VERSION;
   safeProfile.lastSavedAt = Date.now();

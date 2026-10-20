@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
+import toast from 'react-hot-toast';
 import authService from '../../core/services/AuthService';
 import characterService from '../../core/services/CharacterService';
 import PhaserWorldCanvas from '../../core/phaser/PhaserWorldCanvas';
@@ -10,14 +11,17 @@ import InGameInventoryModal from './modals/InGameInventoryModal';
 import InGameWardrobeModal from './modals/InGameWardrobeModal';
 import InGameForgeModal from './modals/InGameForgeModal';
 import InGameBazaarModal from './modals/InGameBazaarModal';
+import InGameGuildModal from './modals/InGameGuildModal';
 import InGameSaveModal from './modals/InGameSaveModal';
 import InGameHelpModal from './modals/InGameHelpModal';
+import WorldMinimap from './components/WorldMinimap';
 
 const ZONES = [
   { id: 'homestead', label: 'Homestead', icon: '🏡', kicker: 'Sunforge Estate' },
-  { id: 'mine', label: 'Deep Mine', icon: '⛏️', kicker: 'Cavern Seams' },
+  { id: 'west_road', label: 'West Road', icon: '🛣️', kicker: "King's Highway" },
+  { id: 'village', label: 'Sunforge City', icon: '🏛️', kicker: "Adventurers' Plaza" },
   { id: 'forest', label: 'Whispering Forest', icon: '🌲', kicker: 'Enchanted Grove' },
-  { id: 'village', label: 'Valorian Bazaar', icon: '🏛️', kicker: 'Merchant Plaza' },
+  { id: 'mine', label: 'Deep Caverns', icon: '⛏️', kicker: 'Deepforge Seams' },
 ];
 
 export default function WorldPage() {
@@ -26,11 +30,16 @@ export default function WorldPage() {
   const [currentZone, setCurrentZone] = useState('homestead');
   const [isFullscreen, setIsFullscreen] = useState(false);
 
+  // Live player tracking for permanent minimap
+  const [playerPosition, setPlayerPosition] = useState({ x: 480, y: 448 });
+  const [playerFacing, setPlayerFacing] = useState('south');
+
   // In-Game Modal Overlays
   const [isInventoryOpen, setIsInventoryOpen] = useState(false);
   const [isWardrobeOpen, setIsWardrobeOpen] = useState(false);
   const [isForgeOpen, setIsForgeOpen] = useState(false);
   const [isBazaarOpen, setIsBazaarOpen] = useState(false);
+  const [isGuildOpen, setIsGuildOpen] = useState(false);
   const [isSaveOpen, setIsSaveOpen] = useState(false);
   const [isHelpOpen, setIsHelpOpen] = useState(false);
 
@@ -83,6 +92,10 @@ export default function WorldPage() {
       gameEventBridge.on(gameEvents.ZONE_CHANGED, ({ zone }) => {
         setCurrentZone(zone);
       }),
+      gameEventBridge.on(gameEvents.PLAYER_MOVED, ({ x, y, facing }) => {
+        setPlayerPosition({ x, y });
+        if (facing) setPlayerFacing(facing);
+      }),
       gameEventBridge.on('OPEN_IN_GAME_INVENTORY', () => {
         setIsInventoryOpen(true);
       }),
@@ -91,6 +104,9 @@ export default function WorldPage() {
       }),
       gameEventBridge.on('OPEN_IN_GAME_BAZAAR', () => {
         setIsBazaarOpen(true);
+      }),
+      gameEventBridge.on('OPEN_IN_GAME_GUILD', () => {
+        setIsGuildOpen(true);
       }),
     ];
 
@@ -109,6 +125,7 @@ export default function WorldPage() {
         setIsWardrobeOpen(false);
         setIsForgeOpen(false);
         setIsBazaarOpen(false);
+        setIsGuildOpen(false);
         setIsSaveOpen(false);
         setIsHelpOpen(false);
       } else if (e.key === 'i' || e.key === 'I' || e.key === 'b' || e.key === 'B') {
@@ -117,6 +134,17 @@ export default function WorldPage() {
       } else if (e.key === 'c' || e.key === 'C') {
         setIsWardrobeOpen((prev) => !prev);
         audioManager.play('tap');
+      } else if (e.key === 'g' || e.key === 'G') {
+        setIsGuildOpen((prev) => !prev);
+        audioManager.play('tap');
+      } else if (e.key === 'h' || e.key === 'H') {
+        if (currentZone === 'homestead') {
+          toast('You are already at Sunforge Homestead!', { icon: '🏡' });
+        } else {
+          audioManager.play('tap');
+          toast('Recalling to Homestead...', { icon: '✨' });
+          gameEventBridge.emit(gameEvents.RETURN_HOME);
+        }
       }
     };
     window.addEventListener('keydown', handleKeyDown);
@@ -126,7 +154,17 @@ export default function WorldPage() {
       document.removeEventListener('fullscreenchange', handleFullscreenChange);
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, []);
+  }, [currentZone]);
+
+  const handleReturnHome = () => {
+    if (currentZone === 'homestead') {
+      toast('You are already at Sunforge Homestead!', { icon: '🏡' });
+      return;
+    }
+    audioManager.play('tap');
+    toast('Recalling to Homestead...', { icon: '✨' });
+    gameEventBridge.emit(gameEvents.RETURN_HOME);
+  };
 
   const toggleFullscreen = () => {
     audioManager.play('tap');
@@ -247,7 +285,35 @@ export default function WorldPage() {
             </span>
           </div>
 
+          {/* Return Home Fast Travel Button */}
+          <button
+            type="button"
+            onClick={handleReturnHome}
+            className={`flex items-center gap-1.5 rounded-2xl border px-3 py-1.5 text-xs font-bold shadow-xl backdrop-blur-md transition active:scale-95 ${
+              currentZone === 'homestead'
+                ? 'border-gray-800 bg-gray-900/60 text-gray-500 opacity-60 cursor-default'
+                : 'border-yellow-600/40 bg-gray-950/90 text-yellow-300 hover:border-yellow-400 hover:bg-yellow-500/15'
+            }`}
+            title="Return Home to Sunforge Homestead [H]"
+          >
+            <span>🏡</span>
+            <span className="hidden sm:inline">Home</span>
+          </button>
+
           {/* Action Modals Buttons */}
+          <button
+            type="button"
+            onClick={() => {
+              audioManager.play('tap');
+              setIsGuildOpen(true);
+            }}
+            className="flex items-center gap-1.5 rounded-2xl border border-yellow-600/40 bg-gray-950/90 px-3 py-1.5 text-xs font-bold text-yellow-300 shadow-xl backdrop-blur-md hover:border-yellow-400 hover:bg-yellow-500/15 transition active:scale-95"
+            title="Adventurers' Guild Board & Renown [G]"
+          >
+            <span>⚔️</span>
+            <span className="hidden sm:inline">Guild</span>
+          </button>
+
           <button
             type="button"
             onClick={() => {
@@ -350,13 +416,33 @@ export default function WorldPage() {
         <span className="text-yellow-400 font-bold">Click/Space</span> Attack ·
         <span className="text-yellow-400 font-bold">[E]</span> Interact ·
         <span className="text-yellow-400 font-bold">[Q]</span> Heal ·
-        <span className="text-yellow-400 font-bold">[I]</span> Pouch ·
-        <span className="text-yellow-400 font-bold">[C]</span> Wardrobe
+        <span className="text-yellow-400 font-bold">[H]</span> Home ·
+        <span className="text-yellow-400 font-bold">[G]</span> Guild ·
+        <span className="text-yellow-400 font-bold">[M]</span> Map
       </footer>
+
+      {/* =========================================================================
+          PERMANENT MINIMAP & EXPANDED WORLD ATLAS
+          ========================================================================= */}
+      <WorldMinimap
+        currentZone={currentZone}
+        playerPosition={playerPosition}
+        playerFacing={playerFacing}
+        discoveredRegions={profile?.discoveredRegions || ['homestead']}
+        activeContracts={profile?.activeContracts || []}
+        onReturnHome={handleReturnHome}
+      />
 
       {/* =========================================================================
           IN-GAME MODALS (RENDER DIRECTLY OVER 2D REALM)
           ========================================================================= */}
+      <InGameGuildModal
+        isOpen={isGuildOpen}
+        onClose={() => setIsGuildOpen(false)}
+        profile={profile}
+        onProfileUpdate={setProfile}
+      />
+
       <InGameInventoryModal
         isOpen={isInventoryOpen}
         onClose={() => setIsInventoryOpen(false)}
