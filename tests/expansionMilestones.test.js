@@ -5,8 +5,6 @@ import { FISH_SPECIES } from '../src/core/data/fishData';
 import {
   CONTRACT_REGISTRY,
   recordContractProgress,
-  acceptGuildContract,
-  getGuildBoardState,
 } from '../src/core/quests/guildContracts';
 import audioManager from '../src/core/audio/AudioManager';
 
