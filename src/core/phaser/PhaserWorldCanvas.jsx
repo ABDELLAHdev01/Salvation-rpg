@@ -463,6 +463,19 @@ export default function PhaserWorldCanvas({
             </button>
           );
         })()}
+
+        {/* Companion Morale Quick Pat */}
+        <button
+          type="button"
+          onClick={() => {
+            gameEventBridge.emit('PET_COMPANION');
+          }}
+          className="flex items-center gap-1 rounded-xl border border-amber-600/40 bg-amber-950/70 px-2 py-1 text-[11px] font-bold text-amber-300 hover:border-amber-400 hover:bg-amber-900 transition active:scale-95 ml-1"
+          title="Pat Companion (+Morale) / Sanctuary [P]"
+        >
+          <span>🐾</span>
+          <span className="hidden sm:inline">Pet</span>
+        </button>
       </div>
 
       {/* Controls Quick Guide */}
@@ -472,7 +485,7 @@ export default function PhaserWorldCanvas({
         <span className="text-yellow-400 font-bold">Space</span> Attack ·
         <span className="text-yellow-400 font-bold">[E]</span> Interact ·
         <span className="text-yellow-400 font-bold">[1]</span> Heal ·
-        <span className="text-yellow-400 font-bold">Click Pet</span> Morale
+        <span className="text-yellow-400 font-bold">[P]</span> Pet Sanctuary
       </div>
 
       {/* Floating In-World Contextual Interaction Prompt */}

@@ -407,16 +407,13 @@ export default class WorldScene extends Phaser.Scene {
       const px = this.player ? this.player.x - 22 : 15 * 32;
       const py = this.player ? this.player.y + 10 : 14 * 32;
       this.petSprite = this.physics.add.sprite(px, py, texKey, 0);
-      this.petSprite.setDepth(19);
+      this.petSprite.setDepth(17);
       this.petSprite.setSize(18, 16);
       this.petSprite.setCollideWorldBounds(true);
-      this.petSprite.setInteractive({ useHandCursor: true });
-      this.petSprite.on('pointerdown', (pointer) => {
-        if (pointer.event && pointer.event.stopPropagation) {
-          pointer.event.stopPropagation();
-        }
-        this.petCompanion();
-      });
+      // Ensure follower pet never intercepts or blocks player clicks
+      if (typeof this.petSprite.disableInteractive === 'function') {
+        this.petSprite.disableInteractive();
+      }
       if (this.anims.exists(animKey)) {
         this.petSprite.play(animKey);
       }
@@ -1662,30 +1659,35 @@ export default class WorldScene extends Phaser.Scene {
       }
       if (clickedEnemy) return;
 
-      // 2. Check if clicking directly on follower pet to pet it
-      if (this.petSprite && this.petSprite.active) {
-        const petDist = Phaser.Math.Distance.Between(worldPoint.x, worldPoint.y, this.petSprite.x, this.petSprite.y);
-        if (petDist <= 24) {
-          this.petCompanion();
-          return;
-        }
-      }
-
-      // 3. Check if clicking directly on an interactive prop
+      // 2. Check if clicking on an interactive prop (ore node, fishing spot, chest, forge, farm plot, NPC, exit)
       let clickedInteractive = false;
-      if (this.interactiveObjects) {
+      if (this.interactiveObjects && this.player) {
+        let targetObj = null;
+        let minDist = Infinity;
         for (const obj of this.interactiveObjects) {
-          const dist = Phaser.Math.Distance.Between(worldPoint.x, worldPoint.y, obj.x, obj.y);
-          if (dist <= 32) {
-            clickedInteractive = true;
-            if (obj.onTrigger) obj.onTrigger();
-            break;
+          const clickDist = Phaser.Math.Distance.Between(worldPoint.x, worldPoint.y, obj.x, obj.y);
+          const effectiveRadius = Math.max(obj.radius || 48, 44);
+          if (clickDist <= effectiveRadius && clickDist < minDist) {
+            minDist = clickDist;
+            targetObj = obj;
+          }
+        }
+
+        if (targetObj) {
+          clickedInteractive = true;
+          const playerDist = Phaser.Math.Distance.Between(this.player.x, this.player.y, targetObj.x, targetObj.y);
+          // If already in interaction proximity, trigger action immediately!
+          if (playerDist <= (targetObj.radius || 48) + 24) {
+            if (targetObj.onTrigger) targetObj.onTrigger();
+          } else {
+            // Otherwise, walk toward the interactive prop
+            this.moveTarget = { x: targetObj.x, y: targetObj.y };
           }
         }
       }
       if (clickedInteractive) return;
 
-      // 4. Otherwise, smoothly set click-to-move destination!
+      // 3. Otherwise, smoothly set click-to-move destination!
       this.moveTarget = { x: worldPoint.x, y: worldPoint.y };
     });
   }
@@ -1702,6 +1704,9 @@ export default class WorldScene extends Phaser.Scene {
         if (this.activePrompt && this.activePrompt.onTrigger) {
           this.activePrompt.onTrigger();
         }
+      }),
+      gameEventBridge.on('PET_COMPANION', () => {
+        this.petCompanion();
       }),
       gameEventBridge.on(gameEvents.SWITCH_ZONE, ({ zone }) => {
         this.switchZone(zone);
