@@ -60,6 +60,10 @@ export const gameEvents = {
   PROP_INTERACT: 'prop:interacted',
   FORGE_CRAFTED: 'forge:crafted',
   GUILD_VISITED: 'guild:visited',
+  ENVIRONMENT_TICK: 'environment:tick',
+  FISH_CAUGHT: 'fish:caught',
+  OPEN_FISHING: 'fishing:open',
+  OPEN_PETS: 'pets:open',
 
   // From React -> Phaser
   LOCK_CONTROLS: 'controls:lock',
@@ -69,6 +73,7 @@ export const gameEvents = {
   USE_HEALING_POTION: 'player:use_healing_potion',
   EXECUTE_PLAYER_HEAL: 'player:execute_heal',
   RETURN_HOME: 'player:return_home',
+  EQUIP_PET: 'pet:equip',
 };
 
 export const gameEventBridge = new GameEventBridge();

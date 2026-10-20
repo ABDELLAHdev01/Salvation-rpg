@@ -6,10 +6,10 @@
 
 import { sanitizeCustomization, DEFAULT_CUSTOMIZATION } from '../phaser/characterCustomizationData';
 
-export const CURRENT_SAVE_SCHEMA_VERSION = 3;
+export const CURRENT_SAVE_SCHEMA_VERSION = 4;
 export const MOCK_CHARACTERS_KEY = 'mockCharacters';
 export const MOCK_PROFILES_KEY = 'mockProfiles';
-export const SAVE_BACKUP_KEY = 'salvation_save_backup_v3';
+export const SAVE_BACKUP_KEY = 'salvation_save_backup_v4';
 
 /**
  * Validates save data integrity
@@ -98,7 +98,20 @@ export function migrateSavePayload(characterData, profileData) {
     safeProfile.homePosition = { zone: 'homestead', x: 15 * 32, y: 14 * 32 };
   }
 
-  // 6. Schema version marker
+  // 6. Ensure Companions, Fishing & World Simulation State
+  safeProfile.equippedPet = safeProfile.equippedPet || 'sheepdog';
+  safeProfile.unlockedPets = Array.isArray(safeProfile.unlockedPets)
+    ? safeProfile.unlockedPets
+    : ['sheepdog', 'wisp', 'falcon'];
+  safeProfile.fishCaught = Number(safeProfile.fishCaught || 0);
+  safeProfile.bossesDefeated = safeProfile.bossesDefeated && typeof safeProfile.bossesDefeated === 'object'
+    ? safeProfile.bossesDefeated
+    : {};
+  safeProfile.gameTime = safeProfile.gameTime && typeof safeProfile.gameTime === 'object'
+    ? safeProfile.gameTime
+    : { hour: 8, minute: 0 };
+
+  // 7. Schema version marker
   safeChar.schemaVersion = CURRENT_SAVE_SCHEMA_VERSION;
   safeProfile.schemaVersion = CURRENT_SAVE_SCHEMA_VERSION;
   safeProfile.lastSavedAt = Date.now();

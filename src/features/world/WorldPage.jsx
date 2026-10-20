@@ -14,6 +14,9 @@ import InGameBazaarModal from './modals/InGameBazaarModal';
 import InGameGuildModal from './modals/InGameGuildModal';
 import InGameSaveModal from './modals/InGameSaveModal';
 import InGameHelpModal from './modals/InGameHelpModal';
+import InGameFishingModal from './modals/InGameFishingModal';
+import InGamePetModal from './modals/InGamePetModal';
+import { COMPANIONS } from '../../core/data/companionData';
 import WorldMinimap from './components/WorldMinimap';
 
 const ZONES = [
@@ -34,6 +37,14 @@ export default function WorldPage() {
   const [playerPosition, setPlayerPosition] = useState({ x: 480, y: 448 });
   const [playerFacing, setPlayerFacing] = useState('south');
 
+  // Simulation Clock & Weather
+  const [worldClock, setWorldClock] = useState({
+    hour: 8,
+    minute: 30,
+    timeOfDay: 'day',
+    weather: 'clear',
+  });
+
   // In-Game Modal Overlays
   const [isInventoryOpen, setIsInventoryOpen] = useState(false);
   const [isWardrobeOpen, setIsWardrobeOpen] = useState(false);
@@ -42,6 +53,8 @@ export default function WorldPage() {
   const [isGuildOpen, setIsGuildOpen] = useState(false);
   const [isSaveOpen, setIsSaveOpen] = useState(false);
   const [isHelpOpen, setIsHelpOpen] = useState(false);
+  const [isFishingOpen, setIsFishingOpen] = useState(false);
+  const [isPetOpen, setIsPetOpen] = useState(false);
 
   // Load character & profile on mount
   const loadActiveHero = useCallback(() => {
@@ -108,6 +121,21 @@ export default function WorldPage() {
       gameEventBridge.on('OPEN_IN_GAME_GUILD', () => {
         setIsGuildOpen(true);
       }),
+      gameEventBridge.on(gameEvents.OPEN_FISHING, () => {
+        setIsFishingOpen(true);
+      }),
+      gameEventBridge.on('OPEN_IN_GAME_FISHING', () => {
+        setIsFishingOpen(true);
+      }),
+      gameEventBridge.on(gameEvents.OPEN_PETS, () => {
+        setIsPetOpen(true);
+      }),
+      gameEventBridge.on('OPEN_IN_GAME_PETS', () => {
+        setIsPetOpen(true);
+      }),
+      gameEventBridge.on(gameEvents.ENVIRONMENT_TICK, (env) => {
+        setWorldClock(env);
+      }),
     ];
 
     const handleFullscreenChange = () => {
@@ -128,6 +156,8 @@ export default function WorldPage() {
         setIsGuildOpen(false);
         setIsSaveOpen(false);
         setIsHelpOpen(false);
+        setIsFishingOpen(false);
+        setIsPetOpen(false);
       } else if (e.key === 'i' || e.key === 'I' || e.key === 'b' || e.key === 'B') {
         setIsInventoryOpen((prev) => !prev);
         audioManager.play('tap');
@@ -136,6 +166,12 @@ export default function WorldPage() {
         audioManager.play('tap');
       } else if (e.key === 'g' || e.key === 'G') {
         setIsGuildOpen((prev) => !prev);
+        audioManager.play('tap');
+      } else if (e.key === 'p' || e.key === 'P') {
+        setIsPetOpen((prev) => !prev);
+        audioManager.play('tap');
+      } else if (e.key === 'f' || e.key === 'F') {
+        setIsFishingOpen((prev) => !prev);
         audioManager.play('tap');
       } else if (e.key === 'h' || e.key === 'H') {
         if (currentZone === 'homestead') {
@@ -198,6 +234,8 @@ export default function WorldPage() {
   const playerXp = profile?.stats?.xp ?? 0;
   const currentToolId = character?.customization?.equippedTool || character?.customization?.tool || 'iron_pickaxe';
   const toolMeta = EQUIPPED_TOOLS.find((t) => t.id === currentToolId) || { name: 'Iron Pickaxe', icon: '⛏️' };
+  const equippedPetId = profile?.equippedPet || 'sheepdog';
+  const equippedPetMeta = COMPANIONS.find((c) => c.id === equippedPetId) || COMPANIONS[0];
 
   return (
     <div className="fixed inset-0 w-screen h-screen overflow-hidden bg-black select-none z-0">
@@ -258,6 +296,19 @@ export default function WorldPage() {
 
         {/* Top Right: Player Stats & In-Game Action Menus */}
         <div className="pointer-events-auto flex flex-wrap items-center justify-end gap-1.5 sm:gap-2">
+          {/* Day/Night & Weather Clock */}
+          <div className="hidden sm:flex items-center gap-1.5 rounded-2xl border border-yellow-600/40 bg-gray-950/90 px-3 py-1.5 shadow-xl backdrop-blur-md">
+            <span className="text-sm">
+              {worldClock.timeOfDay === 'night' ? '🌙' : worldClock.timeOfDay === 'dusk' ? '🌅' : '☀️'}
+            </span>
+            <span className="font-mono text-xs font-bold text-yellow-300">
+              {String(worldClock.hour).padStart(2, '0')}:{String(worldClock.minute).padStart(2, '0')}
+            </span>
+            <span className="text-[10px] text-gray-400 border-l border-yellow-700/40 pl-1.5">
+              {worldClock.weather === 'rain' ? '🌧️ Rain' : worldClock.weather === 'thunderstorm' ? '⚡ Storm' : worldClock.weather === 'fog' ? '🌫️ Fog' : '☀️ Clear'}
+            </span>
+          </div>
+
           {/* Gold Counter */}
           <div className="flex items-center gap-1.5 rounded-2xl border border-yellow-600/40 bg-gray-950/90 px-3 py-1.5 shadow-xl backdrop-blur-md">
             <img src={getItemIcon('gold-coin')} alt="Gold" className="h-4 w-4 object-contain pixelated" />
@@ -344,6 +395,32 @@ export default function WorldPage() {
             type="button"
             onClick={() => {
               audioManager.play('tap');
+              setIsPetOpen(true);
+            }}
+            className="flex items-center gap-1.5 rounded-2xl border border-amber-600/50 bg-gray-950/90 px-3 py-1.5 text-xs font-bold text-amber-300 shadow-xl backdrop-blur-md hover:border-amber-400 hover:bg-amber-500/15 transition active:scale-95"
+            title="Warden Companion Sanctuary [P]"
+          >
+            <span>{equippedPetMeta.icon}</span>
+            <span className="hidden sm:inline">Pet</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              audioManager.play('tap');
+              setIsFishingOpen(true);
+            }}
+            className="flex items-center gap-1.5 rounded-2xl border border-cyan-600/50 bg-gray-950/90 px-3 py-1.5 text-xs font-bold text-cyan-300 shadow-xl backdrop-blur-md hover:border-cyan-400 hover:bg-cyan-500/15 transition active:scale-95"
+            title="Angler Fishing [F]"
+          >
+            <span>🎣</span>
+            <span className="hidden sm:inline">Fish</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              audioManager.play('tap');
               setIsForgeOpen(true);
             }}
             className="flex items-center gap-1.5 rounded-2xl border border-yellow-600/40 bg-gray-950/90 px-3 py-1.5 text-xs font-bold text-yellow-300 shadow-xl backdrop-blur-md hover:border-yellow-400 hover:bg-yellow-500/15 transition active:scale-95"
@@ -418,6 +495,8 @@ export default function WorldPage() {
         <span className="text-yellow-400 font-bold">[Q]</span> Heal ·
         <span className="text-yellow-400 font-bold">[H]</span> Home ·
         <span className="text-yellow-400 font-bold">[G]</span> Guild ·
+        <span className="text-yellow-400 font-bold">[P]</span> Pet ·
+        <span className="text-yellow-400 font-bold">[F]</span> Fish ·
         <span className="text-yellow-400 font-bold">[M]</span> Map
       </footer>
 
@@ -483,6 +562,21 @@ export default function WorldPage() {
       <InGameHelpModal
         isOpen={isHelpOpen}
         onClose={() => setIsHelpOpen(false)}
+      />
+
+      <InGameFishingModal
+        isOpen={isFishingOpen}
+        onClose={() => setIsFishingOpen(false)}
+        profile={profile}
+        onProfileUpdate={setProfile}
+        currentZone={currentZone}
+      />
+
+      <InGamePetModal
+        isOpen={isPetOpen}
+        onClose={() => setIsPetOpen(false)}
+        profile={profile}
+        onProfileUpdate={setProfile}
       />
     </div>
   );

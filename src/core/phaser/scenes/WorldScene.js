@@ -50,6 +50,24 @@ export default class WorldScene extends Phaser.Scene {
     this.enemies = null;
     this.obstacles = null;
     this.moveTarget = null;
+
+    // Environment, Day/Night & Weather Simulation
+    this.gameTime = 8.5 * 3600; // 08:30 AM
+    this.weatherState = 'clear';
+    this.timeOfDay = 'day';
+    this.nextWeatherChange = Date.now() + 90000;
+    this.nextLightningTime = 0;
+    this.lightSources = [];
+    this.ambientDarkGraphics = null;
+    this.lightingAddGraphics = null;
+    this.rainEmitter = null;
+
+    // Follower Pet Companion
+    this.petSprite = null;
+    this.equippedPet = 'sheepdog';
+
+    // Boss Encounters
+    this.bosses = [];
   }
 
   init(data) {
@@ -68,6 +86,13 @@ export default class WorldScene extends Phaser.Scene {
     this.playerMaxHp = 100 + (lvl - 1) * 15;
     this.playerHp = data.hp !== undefined ? data.hp : this.playerMaxHp;
     this.playerDefense = Math.round((this.profile?.stats?.power || 120) * 0.05);
+
+    this.equippedPet = this.profile?.equippedPet || 'sheepdog';
+    const initHour = this.profile?.gameTime?.hour ?? 8;
+    const initMin = this.profile?.gameTime?.minute ?? 30;
+    this.gameTime = initHour * 3600 + initMin * 60;
+    this.lightSources = [];
+    this.bosses = [];
   }
 
   preload() {
@@ -114,6 +139,9 @@ export default class WorldScene extends Phaser.Scene {
     this.cameras.main.setBackgroundColor(bgColors[this.currentZone] || '#3c6624');
     this.cameras.main.fadeIn(250, 0, 0, 0);
 
+    // 0b. Regional BGM & Ambience
+    audioManager.playBGM(this.currentZone);
+
     // 1. Register Procedural World Textures
     registerWorldTextures(this);
 
@@ -126,7 +154,10 @@ export default class WorldScene extends Phaser.Scene {
     // 3. Build Zone Environment & Props
     this.buildCurrentZone();
 
-    // 3b. Setup Ambient Atmosphere & Lighting
+    // 3b. Setup Follower Pet Companion
+    this.setupFollowerPet();
+
+    // 3c. Setup Ambient Atmosphere & Lighting
     this.setupZoneAtmosphere();
 
     // 4. Setup Input Controls
@@ -221,6 +252,11 @@ export default class WorldScene extends Phaser.Scene {
       { key: 'anim_enemy_wolf', sheet: 'enemy_wolf', rate: 6 },
       { key: 'anim_enemy_skeleton', sheet: 'enemy_skeleton', rate: 4 },
       { key: 'anim_enemy_goblin', sheet: 'enemy_goblin', rate: 6 },
+      { key: 'anim_boss_slime_king', sheet: 'boss_slime_king', rate: 4 },
+      { key: 'anim_boss_drakmor', sheet: 'boss_drakmor', rate: 4 },
+      { key: 'anim_pet_sheepdog', sheet: 'pet_sheepdog', rate: 6 },
+      { key: 'anim_pet_wisp', sheet: 'pet_wisp', rate: 5 },
+      { key: 'anim_pet_falcon', sheet: 'pet_falcon', rate: 7 },
     ];
     enemyAnims.forEach((ea) => {
       if (this.textures.exists(ea.sheet)) {
@@ -241,6 +277,19 @@ export default class WorldScene extends Phaser.Scene {
 
   setupZoneAtmosphere() {
     try {
+      // 1. Ambient darkness & dynamic light graphics layers
+      if (this.ambientDarkGraphics) this.ambientDarkGraphics.destroy();
+      this.ambientDarkGraphics = this.add.graphics();
+      this.ambientDarkGraphics.setScrollFactor(0);
+      this.ambientDarkGraphics.setDepth(27);
+
+      if (this.lightingAddGraphics) this.lightingAddGraphics.destroy();
+      this.lightingAddGraphics = this.add.graphics();
+      this.lightingAddGraphics.setScrollFactor(0);
+      this.lightingAddGraphics.setDepth(28);
+      this.lightingAddGraphics.setBlendMode(Phaser.BlendModes.ADD);
+
+      // 2. Zone atmospheric motes
       if (this.currentZone === 'homestead') {
         const emitter = this.add.particles(640, 480, 'col_invisible', {
           emitZone: { source: new Phaser.Geom.Rectangle(0, 0, 1280, 960), type: 'random' },
@@ -252,7 +301,7 @@ export default class WorldScene extends Phaser.Scene {
           lifespan: 4000,
           frequency: 250,
         });
-        emitter.setDepth(28);
+        emitter.setDepth(25);
       } else if (this.currentZone === 'west_road') {
         const emitter = this.add.particles(640, 480, 'col_invisible', {
           emitZone: { source: new Phaser.Geom.Rectangle(0, 0, 1280, 960), type: 'random' },
@@ -264,7 +313,7 @@ export default class WorldScene extends Phaser.Scene {
           lifespan: 3800,
           frequency: 250,
         });
-        emitter.setDepth(28);
+        emitter.setDepth(25);
       } else if (this.currentZone === 'forest') {
         const emitter = this.add.particles(640, 480, 'col_invisible', {
           emitZone: { source: new Phaser.Geom.Rectangle(0, 0, 1280, 960), type: 'random' },
@@ -276,7 +325,7 @@ export default class WorldScene extends Phaser.Scene {
           lifespan: 3500,
           frequency: 200,
         });
-        emitter.setDepth(28);
+        emitter.setDepth(25);
       } else if (this.currentZone === 'mine') {
         const emitter = this.add.particles(640, 480, 'col_invisible', {
           emitZone: { source: new Phaser.Geom.Rectangle(0, 0, 1280, 960), type: 'random' },
@@ -288,7 +337,7 @@ export default class WorldScene extends Phaser.Scene {
           lifespan: 3000,
           frequency: 300,
         });
-        emitter.setDepth(28);
+        emitter.setDepth(25);
       } else if (this.currentZone === 'village') {
         const emitter = this.add.particles(640, 480, 'col_invisible', {
           emitZone: { source: new Phaser.Geom.Rectangle(0, 0, 1280, 960), type: 'random' },
@@ -300,11 +349,253 @@ export default class WorldScene extends Phaser.Scene {
           lifespan: 3500,
           frequency: 350,
         });
-        emitter.setDepth(28);
+        emitter.setDepth(25);
       }
+
+      // 3. Dynamic Weather (rain / storm / clear)
+      this.setupWeatherParticles();
     } catch {
       // Safe fallback
     }
+  }
+
+  setupWeatherParticles() {
+    if (this.rainEmitter) {
+      this.rainEmitter.destroy();
+      this.rainEmitter = null;
+    }
+    if (this.currentZone === 'mine') {
+      audioManager.stopRainAmbience();
+      return;
+    }
+
+    if (this.weatherState === 'rain' || this.weatherState === 'thunderstorm') {
+      audioManager.startRainAmbience();
+      this.rainEmitter = this.add.particles(640, 0, 'col_invisible', {
+        emitZone: { source: new Phaser.Geom.Rectangle(-200, 0, 1680, 20), type: 'random' },
+        speedY: { min: 300, max: 460 },
+        speedX: { min: -60, max: -30 },
+        scaleY: { start: 2.8, end: 1.5 },
+        scaleX: { start: 0.6, end: 0.4 },
+        alpha: { start: 0.65, end: 0.2 },
+        tint: 0x93c5fd,
+        lifespan: 1400,
+        frequency: this.weatherState === 'thunderstorm' ? 8 : 16,
+      });
+      this.rainEmitter.setDepth(26);
+    } else {
+      audioManager.stopRainAmbience();
+    }
+  }
+
+  setupFollowerPet() {
+    this.equippedPet = this.profile?.equippedPet || 'sheepdog';
+    if (this.petSprite) {
+      this.petSprite.destroy();
+      this.petSprite = null;
+    }
+
+    const texKey = 'pet_' + this.equippedPet;
+    const animKey = 'anim_pet_' + this.equippedPet;
+
+    if (this.textures.exists(texKey)) {
+      const px = this.player ? this.player.x - 22 : 15 * 32;
+      const py = this.player ? this.player.y + 10 : 14 * 32;
+      this.petSprite = this.physics.add.sprite(px, py, texKey, 0);
+      this.petSprite.setDepth(19);
+      this.petSprite.setSize(18, 16);
+      this.petSprite.setCollideWorldBounds(true);
+      if (this.anims.exists(animKey)) {
+        this.petSprite.play(animKey);
+      }
+    }
+  }
+
+  petCompanion() {
+    if (!this.petSprite) return;
+    const petSounds = { sheepdog: 'synthBark', wisp: 'synthWisp', falcon: 'synthChirp' };
+    const soundKey = petSounds[this.equippedPet] || 'synthBark';
+    if (typeof audioManager[soundKey] === 'function') audioManager[soundKey]();
+
+    const names = { sheepdog: 'Barkley', wisp: 'Lumina', falcon: 'Talon' };
+    const petName = names[this.equippedPet] || 'Companion';
+    this.showFloatingText(this.petSprite.x, this.petSprite.y - 20, `${petName} loves you! ❤️ (+Morale)`, '#f472b6');
+    this.spawnHitSparks(this.petSprite.x, this.petSprite.y);
+  }
+
+  spawnBoss(typeId, x, y) {
+    const boss = this.spawnEnemy(typeId, x, y);
+    if (!boss) return null;
+
+    boss.isBoss = true;
+    boss.bossPhase = 1;
+    boss.nextQuakeSlam = Date.now() + 6000;
+    boss.setScale(1.4);
+    boss.setSize(38, 34);
+    boss.setDepth(19);
+
+    this.bosses.push(boss);
+    return boss;
+  }
+
+  triggerBossQuakeSlam(boss) {
+    if (!this.player || !this.player.active) return;
+    const targetX = this.player.x;
+    const targetY = this.player.y;
+
+    // 1. Telegraph Warning Decal
+    const telegraph = this.add.image(targetX, targetY, 'fx_telegraph_circle');
+    telegraph.setDepth(4);
+    telegraph.setAlpha(0.75);
+    telegraph.setScale(0.8);
+    audioManager.synthBossTelegraph();
+
+    this.tweens.add({
+      targets: telegraph,
+      scaleX: 1.15,
+      scaleY: 1.15,
+      alpha: 0.95,
+      yoyo: true,
+      repeat: 3,
+      duration: 150,
+    });
+
+    // 2. Heavy Ground Slam Impact
+    this.time.delayedCall(1200, () => {
+      if (!telegraph.active) return;
+      audioManager.synthBossSlam();
+      this.cameras.main.shake(240, 0.016);
+      this.spawnHitSparks(targetX, targetY);
+
+      if (this.player && this.player.active) {
+        const dist = Phaser.Math.Distance.Between(this.player.x, this.player.y, targetX, targetY);
+        if (dist <= 48) {
+          this.damagePlayer(35, (boss.monsterDef?.name || 'Boss') + ' Quake Slam');
+          this.showFloatingText(this.player.x, this.player.y - 25, 'CRUSHED BY SLAM!', '#ef4444');
+        } else {
+          this.showFloatingText(this.player.x, this.player.y - 20, 'DODGED SLAM! ⚡', '#a7f3d0');
+        }
+      }
+
+      telegraph.destroy();
+    });
+  }
+
+  updateEnvironmentSimulation(delta) {
+    this.gameTime += (delta / 1000) * 60; // 1 real second = 1 in-game minute
+    if (this.gameTime >= 86400) this.gameTime -= 86400;
+
+    const hour = Math.floor(this.gameTime / 3600);
+    const minute = Math.floor((this.gameTime % 3600) / 60);
+
+    let timeOfDay = 'day';
+    if (hour >= 21 || hour < 5) timeOfDay = 'night';
+    else if (hour >= 18) timeOfDay = 'dusk';
+    else if (hour >= 5 && hour < 8) timeOfDay = 'dawn';
+
+    this.timeOfDay = timeOfDay;
+
+    // Weather state transitions (clear / rain / storm)
+    const now = Date.now();
+    if (this.currentZone !== 'mine' && now >= this.nextWeatherChange) {
+      this.nextWeatherChange = now + 90000;
+      const roll = Math.random();
+      const prevWeather = this.weatherState;
+      if (roll < 0.60) this.weatherState = 'clear';
+      else if (roll < 0.85) this.weatherState = 'rain';
+      else this.weatherState = 'thunderstorm';
+
+      if (prevWeather !== this.weatherState) {
+        this.setupWeatherParticles();
+      }
+    }
+
+    // Thunderstorm lightning strikes
+    if (this.weatherState === 'thunderstorm' && now >= this.nextLightningTime) {
+      this.nextLightningTime = now + Phaser.Math.Between(7000, 14000);
+      this.cameras.main.flash(90, 255, 255, 255);
+      audioManager.playThunder();
+    }
+
+    // Broadcast tick every 1.5s
+    if (!this._lastEnvEmit || now - this._lastEnvEmit > 1500) {
+      this._lastEnvEmit = now;
+      gameEventBridge.emit(gameEvents.ENVIRONMENT_TICK, {
+        hour,
+        minute,
+        timeOfDay: this.timeOfDay,
+        weather: this.weatherState,
+      });
+    }
+
+    this.updateLighting();
+  }
+
+  updateLighting() {
+    if (!this.ambientDarkGraphics || !this.lightingAddGraphics) return;
+
+    this.ambientDarkGraphics.clear();
+    this.lightingAddGraphics.clear();
+
+    let ambientAlpha = 0;
+    let ambientColor = 0x090e1a;
+
+    if (this.currentZone === 'mine') {
+      ambientAlpha = 0.55;
+      ambientColor = 0x030712;
+    } else if (this.timeOfDay === 'night') {
+      ambientAlpha = 0.65;
+      ambientColor = 0x090e1a;
+    } else if (this.timeOfDay === 'dusk') {
+      ambientAlpha = 0.38;
+      ambientColor = 0x2e1065;
+    } else if (this.timeOfDay === 'dawn') {
+      ambientAlpha = 0.22;
+      ambientColor = 0x78350f;
+    } else if (this.weatherState === 'rain' || this.weatherState === 'thunderstorm') {
+      ambientAlpha = 0.28;
+      ambientColor = 0x1e293b;
+    }
+
+    if (ambientAlpha > 0) {
+      this.ambientDarkGraphics.fillStyle(ambientColor, ambientAlpha);
+      this.ambientDarkGraphics.fillRect(0, 0, this.scale.width, this.scale.height);
+
+      // Player radial light
+      if (this.player && this.player.active) {
+        const playerRadius = this.equippedPet === 'wisp' ? 140 : 100;
+        this.drawAdditiveLight(this.player.x, this.player.y, playerRadius, 0xffe082, 0.45);
+      }
+
+      // Zone light sources
+      this.lightSources.forEach((light) => {
+        this.drawAdditiveLight(light.x, light.y, light.radius, light.color, light.intensity, light.flicker);
+      });
+    }
+  }
+
+  drawAdditiveLight(worldX, worldY, radius, color, intensity, flicker = false) {
+    const cam = this.cameras.main;
+    const screenX = (worldX - cam.worldView.x) * cam.zoom;
+    const screenY = (worldY - cam.worldView.y) * cam.zoom;
+    const flickerFactor = flicker ? 0.94 + Math.sin(Date.now() * 0.008) * 0.06 : 1.0;
+    const screenRadius = radius * cam.zoom * flickerFactor;
+
+    if (
+      screenX + screenRadius < 0 ||
+      screenX - screenRadius > this.scale.width ||
+      screenY + screenRadius < 0 ||
+      screenY - screenRadius > this.scale.height
+    ) {
+      return;
+    }
+
+    this.lightingAddGraphics.fillStyle(color, intensity * 0.18);
+    this.lightingAddGraphics.fillCircle(screenX, screenY, screenRadius);
+    this.lightingAddGraphics.fillStyle(color, intensity * 0.30);
+    this.lightingAddGraphics.fillCircle(screenX, screenY, screenRadius * 0.65);
+    this.lightingAddGraphics.fillStyle(0xffffff, intensity * 0.38);
+    this.lightingAddGraphics.fillCircle(screenX, screenY, screenRadius * 0.3);
   }
 
   buildCurrentZone() {
@@ -486,6 +777,42 @@ export default class WorldScene extends Phaser.Scene {
       gameEventBridge.emit(gameEvents.PROP_INTERACT, { propId: 'prop_road_sign' });
     });
 
+    // 6. Homestead Pond & Fishing Spot
+    for (let px = 28; px <= 32; px += 1) {
+      for (let py = 20; py <= 23; py += 1) {
+        this.add.image(px * 32 + 16, py * 32 + 16, 'tile_water');
+      }
+    }
+    const pondRipple = this.add.image(30 * 32, 21 * 32 + 16, 'fx_ripple');
+    pondRipple.setDepth(6);
+    pondRipple.setAlpha(0.7);
+    this.tweens.add({
+      targets: pondRipple,
+      scaleX: 1.25,
+      scaleY: 1.25,
+      alpha: 0.35,
+      duration: 1500,
+      yoyo: true,
+      repeat: -1,
+    });
+
+    const fishSpot = this.add.image(30 * 32, 22 * 32, 'prop_fishing_spot');
+    fishSpot.setDepth(7);
+    this.registerInteractive(30 * 32, 22 * 32, 55, '[E] Cast Fishing Line into Pond 🎣', () => {
+      audioManager.synthSplash();
+      gameEventBridge.emit('OPEN_IN_GAME_FISHING');
+    });
+
+    // 7. Wall Torches on Manor House
+    const torchL = this.add.image(12 * 32, 4 * 32, 'prop_torch');
+    torchL.setDepth(16);
+    const torchR = this.add.image(16 * 32, 4 * 32, 'prop_torch');
+    torchR.setDepth(16);
+    this.lightSources.push(
+      { x: 12 * 32, y: 4 * 32, radius: 75, color: 0xf97316, intensity: 0.45, flicker: true },
+      { x: 16 * 32, y: 4 * 32, radius: 75, color: 0xf97316, intensity: 0.45, flicker: true }
+    );
+
     // Exits
     // Physical West Gate connecting to West Road
     this.registerInteractive(2 * 32, 14 * 32, 60, '[E] Walk along West Road to City ←', () => {
@@ -542,7 +869,19 @@ export default class WorldScene extends Phaser.Scene {
     this.spawnEnemy('skeleton_cavern', 16 * 32, 12 * 32);
     this.spawnEnemy('skeleton_cavern', 28 * 32, 16 * 32);
     this.spawnEnemy('goblin_raider', 22 * 32, 24 * 32);
-    this.spawnEnemy('goblin_raider', 32 * 32, 22 * 32);
+    this.spawnEnemy('goblin_raider', 14 * 32, 24 * 32);
+
+    // World Boss Encounter: Drakmor Bone-Lord Sanctum
+    this.spawnBoss('boss_drakmor', 32 * 32, 24 * 32);
+
+    // Glowing Azure Cavern Crystals (Dynamic Light Sources)
+    this.lightSources.push(
+      { x: 8 * 32, y: 8 * 32, radius: 80, color: 0x38bdf8, intensity: 0.45, flicker: false },
+      { x: 18 * 32, y: 6 * 32, radius: 80, color: 0xfbbf24, intensity: 0.45, flicker: false },
+      { x: 28 * 32, y: 9 * 32, radius: 90, color: 0xfacc15, intensity: 0.5, flicker: false },
+      { x: 24 * 32, y: 20 * 32, radius: 95, color: 0xa855f7, intensity: 0.5, flicker: false },
+      { x: 32 * 32, y: 24 * 32, radius: 120, color: 0x38bdf8, intensity: 0.55, flicker: true }
+    );
 
     // Return Exit
     this.registerInteractive(4 * 32, 12 * 32, 60, '[E] Return to Homestead Surface ←', () => {
@@ -577,10 +916,19 @@ export default class WorldScene extends Phaser.Scene {
 
     // Hostile Forest Monsters (Emerald Slimes & Shadow Wolves)
     this.spawnEnemy('slime_forest', 12 * 32, 8 * 32);
-    this.spawnEnemy('slime_forest', 28 * 32, 10 * 32);
+    this.spawnEnemy('slime_forest', 26 * 32, 10 * 32);
     this.spawnEnemy('slime_forest', 15 * 32, 22 * 32);
     this.spawnEnemy('wolf_shadow', 26 * 32, 22 * 32);
     this.spawnEnemy('wolf_shadow', 32 * 32, 16 * 32);
+
+    // World Boss Encounter: Slime King Colossus
+    this.spawnBoss('boss_slime_king', 32 * 32, 8 * 32);
+
+    // Dynamic Sylvan Light Sources
+    this.lightSources.push(
+      { x: 20 * 32, y: 14 * 32, radius: 100, color: 0x34d399, intensity: 0.55, flicker: false },
+      { x: 32 * 32, y: 8 * 32, radius: 115, color: 0x10b981, intensity: 0.5, flicker: true }
+    );
 
     // Return Exit
     this.registerInteractive(2 * 32, 12 * 32, 60, '[E] Return to Homestead ←', () => {
@@ -636,6 +984,44 @@ export default class WorldScene extends Phaser.Scene {
       gameEventBridge.emit(gameEvents.PROP_INTERACT, { propId: 'prop_road_sign' });
     });
 
+    // Roadside Street Lantern at Milestone
+    const roadLantern = this.add.image(20 * 32, 9 * 32 + 16, 'prop_street_lantern');
+    roadLantern.setDepth(12);
+    this.lightSources.push({
+      x: 20 * 32,
+      y: 9 * 32 + 16,
+      radius: 85,
+      color: 0xfbbf24,
+      intensity: 0.45,
+      flicker: false,
+    });
+
+    // Roadside Stream & Fishing Spot
+    for (let sx = 23; sx <= 26; sx += 1) {
+      for (let sy = 7; sy <= 9; sy += 1) {
+        this.add.image(sx * 32 + 16, sy * 32 + 16, 'tile_water');
+      }
+    }
+    const streamRipple = this.add.image(24 * 32 + 16, 8 * 32 + 16, 'fx_ripple');
+    streamRipple.setDepth(6);
+    streamRipple.setAlpha(0.65);
+    this.tweens.add({
+      targets: streamRipple,
+      scaleX: 1.25,
+      scaleY: 1.25,
+      alpha: 0.3,
+      duration: 1400,
+      yoyo: true,
+      repeat: -1,
+    });
+
+    const streamFish = this.add.image(24 * 32 + 16, 8 * 32 + 16, 'prop_fishing_spot');
+    streamFish.setDepth(7);
+    this.registerInteractive(24 * 32 + 16, 8 * 32 + 16, 52, '[E] Cast Fishing Line into Stream 🎣', () => {
+      audioManager.synthSplash();
+      gameEventBridge.emit('OPEN_IN_GAME_FISHING');
+    });
+
     // West Road Sign (near City Gates)
     const westSign = this.add.image(5 * 32, 11 * 32, 'prop_road_sign');
     westSign.setDepth(11);
@@ -678,6 +1064,34 @@ export default class WorldScene extends Phaser.Scene {
       gameEventBridge.emit(gameEvents.PROP_INTERACT, { propId: 'prop_town_fountain' });
     });
 
+    // Town Fountain Fishing Spot
+    const fountainFish = this.add.image(20 * 32, 16 * 32, 'prop_fishing_spot');
+    fountainFish.setDepth(15);
+    this.registerInteractive(20 * 32, 16 * 32, 50, '[E] Fish in Sunforge Fountain 🎣', () => {
+      audioManager.synthSplash();
+      gameEventBridge.emit('OPEN_IN_GAME_FISHING');
+    });
+
+    // Street Lanterns illuminating Sunforge Plaza Avenues
+    const plazaLanterns = [
+      { x: 17 * 32, y: 13 * 32 },
+      { x: 23 * 32, y: 13 * 32 },
+      { x: 17 * 32, y: 16 * 32 + 16 },
+      { x: 23 * 32, y: 16 * 32 + 16 },
+    ];
+    plazaLanterns.forEach((pl) => {
+      const lant = this.add.image(pl.x, pl.y, 'prop_street_lantern');
+      lant.setDepth(15);
+      this.lightSources.push({
+        x: pl.x,
+        y: pl.y,
+        radius: 85,
+        color: 0xfbbf24,
+        intensity: 0.45,
+        flicker: false,
+      });
+    });
+
     const noticeBoard = this.add.image(16 * 32, 12 * 32, 'prop_notice_board');
     noticeBoard.setDepth(14);
     this.registerInteractive(16 * 32, 12 * 32, 50, '[E] Read Town Square Notice Board 📜', () => {
@@ -693,6 +1107,18 @@ export default class WorldScene extends Phaser.Scene {
     const guildCol = this.obstacles.create(11 * 32, 5 * 32 + 10, 'col_invisible');
     guildCol.setSize(75, 36);
     guildCol.setVisible(false);
+
+    // Wall Torch on Guildhall Entrance
+    const guildTorch = this.add.image(11 * 32, 7 * 32, 'prop_torch');
+    guildTorch.setDepth(13);
+    this.lightSources.push({
+      x: 11 * 32,
+      y: 7 * 32,
+      radius: 75,
+      color: 0xf97316,
+      intensity: 0.45,
+      flicker: true,
+    });
 
     // Guild Desk & Receptionist Michelle
     const desk = this.obstacles.create(10 * 32, 8 * 32, 'prop_guild_desk');
@@ -717,6 +1143,14 @@ export default class WorldScene extends Phaser.Scene {
     const forgeKiln = this.obstacles.create(29 * 32, 7 * 32, 'prop_forge_furnace');
     forgeKiln.setDepth(12);
     forgeKiln.setSize(28, 26);
+    this.lightSources.push({
+      x: 29 * 32,
+      y: 7 * 32,
+      radius: 95,
+      color: 0xf97316,
+      intensity: 0.5,
+      flicker: true,
+    });
 
     const anvil = this.obstacles.create(27 * 32, 8 * 32, 'prop_anvil');
     anvil.setDepth(12);
@@ -807,6 +1241,25 @@ export default class WorldScene extends Phaser.Scene {
     sprite.hpBar.clear();
     if (sprite.hp <= 0) return;
 
+    if (sprite.isBoss) {
+      const barW = 46;
+      const barH = 5;
+      const barX = sprite.x - barW / 2;
+      const barY = sprite.y - 28;
+
+      // Dark background & Gold frame
+      sprite.hpBar.fillStyle(0x000000, 0.85);
+      sprite.hpBar.fillRect(barX - 1, barY - 1, barW + 2, barH + 2);
+      sprite.hpBar.lineStyle(1, 0xfbbf24, 1);
+      sprite.hpBar.strokeRect(barX - 1, barY - 1, barW + 2, barH + 2);
+
+      const pct = Math.max(0, sprite.hp / sprite.maxHp);
+      const fillColor = sprite.bossPhase === 3 ? 0xef4444 : sprite.bossPhase === 2 ? 0xf59e0b : 0x10b981;
+      sprite.hpBar.fillStyle(fillColor, 1);
+      sprite.hpBar.fillRect(barX, barY, barW * pct, barH);
+      return;
+    }
+
     const barW = 24;
     const barH = 3;
     const barX = sprite.x - barW / 2;
@@ -857,7 +1310,11 @@ export default class WorldScene extends Phaser.Scene {
         );
 
         if (inArc) {
-          const dmgResult = computePlayerAttackDamage(this.profile?.stats, weapon.id);
+          const statsWithFalcon = {
+            ...(this.profile?.stats || {}),
+            critBonus: this.equippedPet === 'falcon' ? 0.10 : 0,
+          };
+          const dmgResult = computePlayerAttackDamage(statsWithFalcon, weapon.id);
           this.damageEnemy(enemy, dmgResult.damage, dmgResult.isCrit, dmgResult.knockback);
         }
       });
@@ -875,6 +1332,28 @@ export default class WorldScene extends Phaser.Scene {
     const finalDamage = applyDefenseMitigation(rawDamage, enemy.defense);
     enemy.hp = Math.max(0, enemy.hp - finalDamage);
     this.updateEnemyHpBar(enemy);
+
+    // Boss Phase Transitions
+    if (enemy.isBoss && enemy.hp > 0) {
+      const pct = enemy.hp / enemy.maxHp;
+      if (enemy.bossPhase === 1 && pct <= 0.6) {
+        enemy.bossPhase = 2;
+        audioManager.synthBossRoar();
+        this.cameras.main.shake(250, 0.012);
+        this.showFloatingText(enemy.x, enemy.y - 32, '⚡ PHASE 2: Minions Rise!', '#f59e0b');
+
+        // Spawn 2 Minions
+        const minionType = enemy.monsterDef?.id === 'boss_slime_king' ? 'slime_forest' : 'skeleton_cavern';
+        this.spawnEnemy(minionType, enemy.x - 36, enemy.y + 20);
+        this.spawnEnemy(minionType, enemy.x + 36, enemy.y + 20);
+      } else if (enemy.bossPhase === 2 && pct <= 0.3) {
+        enemy.bossPhase = 3;
+        audioManager.synthBossRoar();
+        this.cameras.main.shake(350, 0.018);
+        enemy.setTint(0xff4444);
+        this.showFloatingText(enemy.x, enemy.y - 32, '💀 PHASE 3: ENRAGED SLAM!', '#dc2626');
+      }
+    }
 
     // Floating damage text
     const textStr = (isCrit ? 'CRIT! ' : '') + '-' + finalDamage;
@@ -1196,16 +1675,23 @@ export default class WorldScene extends Phaser.Scene {
       gameEventBridge.on(gameEvents.RETURN_HOME, () => {
         this.returnHome();
       }),
+      gameEventBridge.on(gameEvents.EQUIP_PET, ({ petId }) => {
+        this.equippedPet = petId;
+        this.setupFollowerPet();
+      }),
     ];
   }
 
-  update() {
+  update(time, delta) {
     if (!this.player || this.controlsLocked) {
       if (this.player && this.player.body) {
         this.player.setVelocity(0, 0);
       }
       return;
     }
+
+    // Update Day/Night, Weather & Dynamic Lighting Simulation
+    this.updateEnvironmentSimulation(delta || 16.6);
 
     // Continuous physical boundary crossings
     if (this.currentZone === 'homestead') {
@@ -1259,7 +1745,7 @@ export default class WorldScene extends Phaser.Scene {
 
     // Movement calculation
     const isSprinting = this.shiftKey ? Boolean(this.shiftKey.isDown) : false;
-    let speed = isSprinting ? 210 : 135;
+    let speed = isSprinting ? (this.equippedPet === 'sheepdog' ? 240 : 210) : 135;
     if (this.isAttacking) {
       speed *= 0.25; // Controlled momentum during weapon swing commitment
     }
@@ -1311,6 +1797,33 @@ export default class WorldScene extends Phaser.Scene {
 
     this.player.setVelocity(vx * speed, vy * speed);
 
+    // Update Follower Pet movement & physics
+    if (this.petSprite && this.petSprite.active) {
+      const dist = Phaser.Math.Distance.Between(this.player.x, this.player.y, this.petSprite.x, this.petSprite.y);
+      if (dist > 38) {
+        const angle = Phaser.Math.Angle.Between(this.petSprite.x, this.petSprite.y, this.player.x, this.player.y);
+        const petSpeed = isSprinting ? 225 : 140;
+        this.petSprite.setVelocity(Math.cos(angle) * petSpeed, Math.sin(angle) * petSpeed);
+        this.petSprite.setFlipX(this.player.x < this.petSprite.x);
+      } else {
+        this.petSprite.setVelocity(0, 0);
+      }
+    }
+
+    // Passive Companion Perks (Wisp regeneration)
+    if (this.equippedPet === 'wisp' && this.playerHp < this.playerMaxHp) {
+      const now = Date.now();
+      if (!this._lastWispRegen || now - this._lastWispRegen > 3000) {
+        this._lastWispRegen = now;
+        this.playerHp = Math.min(this.playerMaxHp, this.playerHp + 1);
+        gameEventBridge.emit(gameEvents.COMBAT_PLAYER_HEAL, {
+          hp: this.playerHp,
+          maxHp: this.playerMaxHp,
+          healed: 1,
+        });
+      }
+    }
+
     // Directional facing & animations
     const isMoving = vx !== 0 || vy !== 0;
 
@@ -1352,6 +1865,18 @@ export default class WorldScene extends Phaser.Scene {
       }
     });
 
+    // Companion Petting Interaction Check
+    if (this.petSprite && this.petSprite.active) {
+      const petDist = Phaser.Math.Distance.Between(this.player.x, this.player.y, this.petSprite.x, this.petSprite.y);
+      if (petDist <= 42 && !closest) {
+        const petNames = { sheepdog: 'Barkley', wisp: 'Lumina', falcon: 'Talon' };
+        closest = {
+          prompt: `[E] Pet ${petNames[this.equippedPet] || 'Companion'} ❤️`,
+          onTrigger: () => this.petCompanion(),
+        };
+      }
+    }
+
     if (closest) {
       if (!this.activePrompt || this.activePrompt.prompt !== closest.prompt) {
         this.activePrompt = closest;
@@ -1388,6 +1913,12 @@ export default class WorldScene extends Phaser.Scene {
           }
         }
 
+        // Boss Phase 3 Telegraphed Quake Slam
+        if (enemy.isBoss && enemy.bossPhase === 3 && now >= (enemy.nextQuakeSlam || 0)) {
+          enemy.nextQuakeSlam = now + 5500;
+          this.triggerBossQuakeSlam(enemy);
+        }
+
         // Enemy melee strike
         if (nextState.shouldStrike) {
           enemy.lastAttackTime = now;
@@ -1401,6 +1932,7 @@ export default class WorldScene extends Phaser.Scene {
   }
 
   destroy() {
+    audioManager.stopRainAmbience();
     if (this.cleanupBridge) {
       this.cleanupBridge.forEach((cleanup) => cleanup());
     }
@@ -1409,5 +1941,8 @@ export default class WorldScene extends Phaser.Scene {
         if (enemy.hpBar) enemy.hpBar.destroy();
       });
     }
+    if (this.ambientDarkGraphics) this.ambientDarkGraphics.destroy();
+    if (this.lightingAddGraphics) this.lightingAddGraphics.destroy();
+    if (this.rainEmitter) this.rainEmitter.destroy();
   }
 }

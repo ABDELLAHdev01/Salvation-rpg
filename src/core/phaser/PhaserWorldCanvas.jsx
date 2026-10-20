@@ -226,6 +226,17 @@ export default function PhaserWorldCanvas({
       gameEventBridge.on(gameEvents.MINE_NODE_INTERACT, ({ ore }) => {
         handleMineNode(ore);
       }),
+      gameEventBridge.on(gameEvents.FISH_CAUGHT, ({ fish }) => {
+        const prof = profileRef.current;
+        if (!prof) return;
+        const progress = recordContractProgress('fish:caught', { fishId: fish?.id }, prof.activeContracts || []);
+        if (progress.updated) {
+          const updated = characterService.updateMockProfile({
+            activeContracts: progress.activeContracts,
+          });
+          onProfileUpdateRef.current(updated);
+        }
+      }),
       gameEventBridge.on(gameEvents.CHEST_OPEN, () => {
         const prof = profileRef.current;
         if (prof) {

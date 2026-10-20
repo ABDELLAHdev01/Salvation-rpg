@@ -279,6 +279,66 @@ export const CONTRACT_REGISTRY = [
       items: { 'gold-ore': 2 },
     },
   },
+
+  // =========================================================================
+  // 4. MYTHIC BOSS BOUNTIES & REGIONAL CHALLENGES
+  // =========================================================================
+  {
+    id: 'guild_boss_01_slime_king',
+    category: CONTRACT_CATEGORIES.GUILD,
+    title: 'Colossus of the Sylvan Grove',
+    kicker: 'Mythic Boss Bounty · Whispering Woods',
+    summary: 'A colossal Slime King has crystallized in the northern forest grove. Slay the monarch and retrieve the Royal Slime Gem.',
+    minRank: 'silver',
+    requiresTurnIn: true,
+    turnInNpc: 'Guild Warden Michelle',
+    objectives: [
+      { id: 'kill_slime_king', label: 'Defeat Slime King Colossus', type: 'defeat_enemy', enemyType: 'boss_slime_king', target: 1, current: 0 },
+    ],
+    rewards: {
+      gold: 650,
+      xp: 500,
+      renown: 100,
+      items: { 'slime-gel': 6, 'health-potion': 4 },
+    },
+  },
+  {
+    id: 'guild_boss_02_drakmor',
+    category: CONTRACT_CATEGORIES.GUILD,
+    title: 'Drakmor the Bone-Lord',
+    kicker: 'Mythic Boss Bounty · Deepforge Sanctum',
+    summary: 'The ancient warlord Drakmor commands skeletal legions from the deep crystal cavern. Shatter the Bone-Lord to liberate the seams.',
+    minRank: 'gold',
+    requiresTurnIn: true,
+    turnInNpc: 'Guild Warden Michelle',
+    objectives: [
+      { id: 'kill_drakmor', label: 'Defeat Drakmor Bone-Lord', type: 'defeat_enemy', enemyType: 'boss_drakmor', target: 1, current: 0 },
+    ],
+    rewards: {
+      gold: 850,
+      xp: 750,
+      renown: 150,
+      items: { 'bone-shard': 8, 'gold-bar': 4 },
+    },
+  },
+  {
+    id: 'disc_04_first_catch',
+    category: CONTRACT_CATEGORIES.DISCOVERY,
+    title: 'Angler of the Realm',
+    kicker: 'Discovery · Fresh Waters',
+    summary: 'Cast your line into the ripples of Homestead Pond or the Sunforge Fountain and land a prize catch.',
+    minRank: 'recruit',
+    requiresTurnIn: false,
+    objectives: [
+      { id: 'catch_any_fish', label: 'Catch a freshwater fish', type: 'catch_fish', target: 1, current: 0 },
+    ],
+    rewards: {
+      gold: 120,
+      xp: 100,
+      renown: 25,
+      items: { 'health-potion': 1 },
+    },
+  },
 ];
 
 /**
@@ -493,6 +553,11 @@ export function recordContractProgress(eventType, payload, activeContracts = [])
           break;
         case 'open_chest':
           if (eventType === 'chest:open') {
+            increment = 1;
+          }
+          break;
+        case 'catch_fish':
+          if (eventType === 'fish:caught') {
             increment = 1;
           }
           break;

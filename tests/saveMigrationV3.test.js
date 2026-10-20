@@ -38,10 +38,13 @@ describe('Save System Schema v3 Migration', () => {
     };
 
     const migrated = migrateSavePayload(legacyChar, legacyProfile);
-    expect(migrated.schemaVersion).toBe(3);
-    expect(migrated.character.schemaVersion).toBe(3);
-    expect(migrated.profile.schemaVersion).toBe(3);
+    expect(migrated.schemaVersion).toBe(CURRENT_SAVE_SCHEMA_VERSION);
+    expect(migrated.character.schemaVersion).toBe(CURRENT_SAVE_SCHEMA_VERSION);
+    expect(migrated.profile.schemaVersion).toBe(CURRENT_SAVE_SCHEMA_VERSION);
     expect(migrated.profile.stats.renown).toBe(45);
+    expect(migrated.profile.equippedPet).toBe('sheepdog');
+    expect(migrated.profile.unlockedPets).toContain('sheepdog');
+    expect(migrated.profile.fishCaught).toBe(0);
 
     // Guild Contracts & Discovered Regions
     expect(Array.isArray(migrated.profile.activeContracts)).toBe(true);
@@ -80,7 +83,7 @@ describe('Save System Schema v3 Migration', () => {
     localStorage.setItem('mockProfiles', JSON.stringify({ aria_hero: migrated.profile }));
 
     const exportedJson = exportSavePayloadJSON();
-    expect(exportedJson).toContain('"schemaVersion": 3');
+    expect(exportedJson).toContain(`"schemaVersion": ${CURRENT_SAVE_SCHEMA_VERSION}`);
     expect(exportedJson).toContain('guild_01_slime_cull');
 
     const importRes = importSavePayloadJSON(exportedJson);
