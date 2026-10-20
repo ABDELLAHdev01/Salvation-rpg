@@ -488,14 +488,14 @@ export default function WorldPage() {
           BOTTOM HUD CONTROLS HINT (MINIMAL & NON-INTRUSIVE)
           ========================================================================= */}
       <footer className="pointer-events-none fixed bottom-3 left-4 z-20 hidden md:flex items-center gap-2 rounded-2xl border border-yellow-700/30 bg-gray-950/80 px-3.5 py-1 text-[11px] font-mono text-gray-300 backdrop-blur-md shadow-xl">
-        <span className="text-yellow-400 font-bold">WASD</span> Walk ·
+        <span className="text-yellow-400 font-bold">WASD / ZQSD / Click</span> Walk ·
         <span className="text-yellow-400 font-bold">Shift</span> Sprint ·
-        <span className="text-yellow-400 font-bold">Click/Space</span> Attack ·
+        <span className="text-yellow-400 font-bold">Space</span> Attack ·
         <span className="text-yellow-400 font-bold">[E]</span> Interact ·
-        <span className="text-yellow-400 font-bold">[Q]</span> Heal ·
+        <span className="text-yellow-400 font-bold">[1]</span> Heal ·
         <span className="text-yellow-400 font-bold">[H]</span> Home ·
         <span className="text-yellow-400 font-bold">[G]</span> Guild ·
-        <span className="text-yellow-400 font-bold">[P]</span> Pet ·
+        <span className="text-yellow-400 font-bold">[P]</span> Pet Sanctuary ·
         <span className="text-yellow-400 font-bold">[F]</span> Fish ·
         <span className="text-yellow-400 font-bold">[M]</span> Map
       </footer>

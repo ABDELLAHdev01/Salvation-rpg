@@ -71,6 +71,11 @@ export default class WorldScene extends Phaser.Scene {
   }
 
   init(data) {
+    this.controlsLocked = false;
+    this.isAttacking = false;
+    this.moveTarget = null;
+    this.activePrompt = null;
+
     if (data.customization) this.customization = data.customization;
     if (data.profile) this.profile = data.profile;
     if (data.zone) this.currentZone = data.zone;
@@ -405,6 +410,13 @@ export default class WorldScene extends Phaser.Scene {
       this.petSprite.setDepth(19);
       this.petSprite.setSize(18, 16);
       this.petSprite.setCollideWorldBounds(true);
+      this.petSprite.setInteractive({ useHandCursor: true });
+      this.petSprite.on('pointerdown', (pointer) => {
+        if (pointer.event && pointer.event.stopPropagation) {
+          pointer.event.stopPropagation();
+        }
+        this.petCompanion();
+      });
       if (this.anims.exists(animKey)) {
         this.petSprite.play(animKey);
       }
@@ -1611,29 +1623,31 @@ export default class WorldScene extends Phaser.Scene {
 
   setupControls() {
     this.cursors = this.input.keyboard.createCursorKeys();
-    this.wasd = {
-      up: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.W),
-      down: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.S),
-      left: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.A),
-      right: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D),
-    };
+    this.keyW = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.W);
+    this.keyA = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.A);
+    this.keyS = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.S);
+    this.keyD = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D);
+    // AZERTY layout support: Z = Up, Q = Left
+    this.keyZ = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.Z);
+    this.keyQ = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.Q);
+
+    this.keyOne = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ONE);
+    this.keyNumpadOne = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.NUMPAD_ONE);
     this.shiftKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SHIFT);
     this.interactKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.E);
     this.attackKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
-    this.healKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.Q);
 
-    // Pointer click: click-to-move, attack enemy, or trigger prompt
+    // Pointer click: click-to-move, attack enemy, or pet companion
     this.input.on('pointerdown', (pointer) => {
-      // 1. If clicking when active prompt is open, trigger interaction
-      if (this.activePrompt && this.activePrompt.onTrigger) {
-        this.activePrompt.onTrigger();
-        return;
+      // Ensure canvas has browser focus for immediate keyboard input
+      if (this.game && this.game.canvas && typeof this.game.canvas.focus === 'function') {
+        this.game.canvas.focus();
       }
 
       // Convert screen pointer coordinates to world coordinates
       const worldPoint = this.cameras.main.getWorldPoint(pointer.x, pointer.y);
 
-      // 2. Check if clicking on an active enemy within 36px to attack
+      // 1. Check if clicking on an active enemy within 36px to attack
       let clickedEnemy = false;
       if (this.enemies) {
         this.enemies.getChildren().forEach((enemy) => {
@@ -1646,11 +1660,33 @@ export default class WorldScene extends Phaser.Scene {
           }
         });
       }
+      if (clickedEnemy) return;
 
-      // 3. Otherwise, set click-to-move destination!
-      if (!clickedEnemy) {
-        this.moveTarget = { x: worldPoint.x, y: worldPoint.y };
+      // 2. Check if clicking directly on follower pet to pet it
+      if (this.petSprite && this.petSprite.active) {
+        const petDist = Phaser.Math.Distance.Between(worldPoint.x, worldPoint.y, this.petSprite.x, this.petSprite.y);
+        if (petDist <= 24) {
+          this.petCompanion();
+          return;
+        }
       }
+
+      // 3. Check if clicking directly on an interactive prop
+      let clickedInteractive = false;
+      if (this.interactiveObjects) {
+        for (const obj of this.interactiveObjects) {
+          const dist = Phaser.Math.Distance.Between(worldPoint.x, worldPoint.y, obj.x, obj.y);
+          if (dist <= 32) {
+            clickedInteractive = true;
+            if (obj.onTrigger) obj.onTrigger();
+            break;
+          }
+        }
+      }
+      if (clickedInteractive) return;
+
+      // 4. Otherwise, smoothly set click-to-move destination!
+      this.moveTarget = { x: worldPoint.x, y: worldPoint.y };
     });
   }
 
@@ -1661,6 +1697,11 @@ export default class WorldScene extends Phaser.Scene {
       }),
       gameEventBridge.on(gameEvents.UNLOCK_CONTROLS, () => {
         this.controlsLocked = false;
+      }),
+      gameEventBridge.on('TRIGGER_ACTIVE_PROMPT', () => {
+        if (this.activePrompt && this.activePrompt.onTrigger) {
+          this.activePrompt.onTrigger();
+        }
       }),
       gameEventBridge.on(gameEvents.SWITCH_ZONE, ({ zone }) => {
         this.switchZone(zone);
@@ -1738,8 +1779,11 @@ export default class WorldScene extends Phaser.Scene {
       this.executePlayerAttack();
     }
 
-    // Hotkey heal (routes through React inventory verification)
-    if (Phaser.Input.Keyboard.JustDown(this.healKey)) {
+    // Hotkey heal (quickslot 1 / numpad 1)
+    if (
+      (this.keyOne && Phaser.Input.Keyboard.JustDown(this.keyOne)) ||
+      (this.keyNumpadOne && Phaser.Input.Keyboard.JustDown(this.keyNumpadOne))
+    ) {
       gameEventBridge.emit(gameEvents.USE_HEALING_POTION);
     }
 
@@ -1753,21 +1797,24 @@ export default class WorldScene extends Phaser.Scene {
     let vx = 0;
     let vy = 0;
 
+    // Support QWERTY (WASD), AZERTY (ZQSD), and Arrow keys
     const left = Boolean(
       (this.cursors && this.cursors.left && this.cursors.left.isDown) ||
-      (this.wasd && this.wasd.left && this.wasd.left.isDown)
+      (this.keyA && this.keyA.isDown) ||
+      (this.keyQ && this.keyQ.isDown)
     );
     const right = Boolean(
       (this.cursors && this.cursors.right && this.cursors.right.isDown) ||
-      (this.wasd && this.wasd.right && this.wasd.right.isDown)
+      (this.keyD && this.keyD.isDown)
     );
     const up = Boolean(
       (this.cursors && this.cursors.up && this.cursors.up.isDown) ||
-      (this.wasd && this.wasd.up && this.wasd.up.isDown)
+      (this.keyW && this.keyW.isDown) ||
+      (this.keyZ && this.keyZ.isDown)
     );
     const down = Boolean(
       (this.cursors && this.cursors.down && this.cursors.down.isDown) ||
-      (this.wasd && this.wasd.down && this.wasd.down.isDown)
+      (this.keyS && this.keyS.isDown)
     );
 
     if (left) vx -= 1;
@@ -1864,18 +1911,6 @@ export default class WorldScene extends Phaser.Scene {
         closest = obj;
       }
     });
-
-    // Companion Petting Interaction Check
-    if (this.petSprite && this.petSprite.active) {
-      const petDist = Phaser.Math.Distance.Between(this.player.x, this.player.y, this.petSprite.x, this.petSprite.y);
-      if (petDist <= 42 && !closest) {
-        const petNames = { sheepdog: 'Barkley', wisp: 'Lumina', falcon: 'Talon' };
-        closest = {
-          prompt: `[E] Pet ${petNames[this.equippedPet] || 'Companion'} ❤️`,
-          onTrigger: () => this.petCompanion(),
-        };
-      }
-    }
 
     if (closest) {
       if (!this.activePrompt || this.activePrompt.prompt !== closest.prompt) {

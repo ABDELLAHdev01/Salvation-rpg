@@ -405,7 +405,16 @@ export default function PhaserWorldCanvas({
   return (
     <div className={`relative w-full h-full overflow-hidden bg-gray-950 select-none ${className}`}>
       {/* Phaser Canvas Host Container */}
-      <div ref={containerRef} className="absolute inset-0 w-full h-full overflow-hidden" />
+      <div
+        ref={containerRef}
+        tabIndex={0}
+        className="absolute inset-0 w-full h-full overflow-hidden outline-none"
+        onClick={() => {
+          if (gameRef.current?.canvas) {
+            gameRef.current.canvas.focus();
+          }
+        }}
+      />
 
       {/* Zone Title Header Ribbon */}
       <div className="absolute top-4 left-4 z-20 flex items-center gap-2 rounded-2xl border border-yellow-600/40 bg-gray-950/85 px-4 py-2 shadow-xl backdrop-blur">
@@ -447,10 +456,10 @@ export default function PhaserWorldCanvas({
                   ? 'border-emerald-600/40 bg-emerald-950/70 text-emerald-300 hover:border-emerald-400 hover:bg-emerald-900'
                   : 'border-gray-800 bg-gray-900/60 text-gray-500 opacity-70'
               }`}
-              title={potionCount > 0 ? `Drink Healing Elixir (+45 HP) [Q] (${potionCount} in pack)` : 'No healing potions in pack'}
+              title={potionCount > 0 ? `Drink Healing Elixir (+45 HP) [1] (${potionCount} in pack)` : 'No healing potions in pack'}
             >
               <span>🧪</span>
-              <span className="hidden sm:inline">[Q] Heal ({potionCount})</span>
+              <span className="hidden sm:inline">[1] Heal ({potionCount})</span>
             </button>
           );
         })()}
@@ -458,20 +467,28 @@ export default function PhaserWorldCanvas({
 
       {/* Controls Quick Guide */}
       <div className="absolute top-4 right-4 z-20 hidden md:flex items-center gap-2 rounded-2xl border border-yellow-700/30 bg-gray-950/80 px-3 py-1.5 text-[11px] font-mono text-gray-300 backdrop-blur">
-        <span className="text-yellow-400 font-bold">WASD</span> Move ·
+        <span className="text-yellow-400 font-bold">WASD / ZQSD / Click</span> Move ·
         <span className="text-yellow-400 font-bold">Shift</span> Sprint ·
-        <span className="text-yellow-400 font-bold">Space / Click</span> Attack ·
-        <span className="text-yellow-400 font-bold">[E]</span> Interact
+        <span className="text-yellow-400 font-bold">Space</span> Attack ·
+        <span className="text-yellow-400 font-bold">[E]</span> Interact ·
+        <span className="text-yellow-400 font-bold">[1]</span> Heal ·
+        <span className="text-yellow-400 font-bold">Click Pet</span> Morale
       </div>
 
       {/* Floating In-World Contextual Interaction Prompt */}
       {activePrompt && (
-        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-30 flex items-center gap-2.5 rounded-full border-2 border-yellow-400 bg-gray-950/95 px-6 py-2.5 shadow-2xl shadow-yellow-950/60 backdrop-blur animate-bounce cursor-pointer">
+        <button
+          type="button"
+          onClick={() => {
+            gameEventBridge.emit('TRIGGER_ACTIVE_PROMPT');
+          }}
+          className="absolute bottom-6 left-1/2 -translate-x-1/2 z-30 flex items-center gap-2.5 rounded-full border-2 border-yellow-400 bg-gray-950/95 px-6 py-2.5 shadow-2xl shadow-yellow-950/60 backdrop-blur animate-bounce cursor-pointer hover:scale-105 active:scale-95 transition"
+        >
           <span className="text-base text-yellow-400 font-black">⚡</span>
           <span className="font-serif text-xs font-bold text-yellow-300 sm:text-sm">
             {activePrompt}
           </span>
-        </div>
+        </button>
       )}
 
       {/* Seed Selection Modal (When clicking empty plot) */}
