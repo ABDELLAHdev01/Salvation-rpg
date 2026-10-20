@@ -93,8 +93,8 @@ export default class WorldScene extends Phaser.Scene {
   create() {
     // 0. Ensure Camera FX is clean and set mood lighting
     this.cameras.main.resetFX();
-    const bgColors = { homestead: '#528734', forest: '#3b6a26', mine: '#181a20', village: '#3a2718' };
-    this.cameras.main.setBackgroundColor(bgColors[this.currentZone] || '#528734');
+    const bgColors = { homestead: '#3c6624', forest: '#274b1a', mine: '#181a20', village: '#3a2718' };
+    this.cameras.main.setBackgroundColor(bgColors[this.currentZone] || '#3c6624');
     this.cameras.main.fadeIn(250, 0, 0, 0);
 
     // 1. Register Procedural World Textures

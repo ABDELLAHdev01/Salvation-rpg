@@ -33,12 +33,12 @@ export function registerWorldTextures(scene) {
 
   // Tile: Natural Velvet Meadow Grass (Kenney RPG style)
   const grassCanvas = createTileCanvas(TILE_SIZE, TILE_SIZE, (ctx) => {
-    ctx.fillStyle = '#8cc334'; // Natural warm meadow green base
+    ctx.fillStyle = '#709c29'; // Natural warm meadow green base
     ctx.fillRect(0, 0, TILE_SIZE, TILE_SIZE);
-    ctx.fillStyle = '#85bd2f'; // Subtle organic shading
+    ctx.fillStyle = '#679224'; // Subtle organic shading
     ctx.fillRect(6, 8, 3, 2);
     ctx.fillRect(20, 16, 3, 2);
-    ctx.fillStyle = '#94cb3b'; // Soft sunlit blade glints
+    ctx.fillStyle = '#7ba930'; // Soft sunlit blade glints
     ctx.fillRect(7, 7, 2, 1);
     ctx.fillRect(21, 15, 2, 1);
   });

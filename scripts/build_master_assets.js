@@ -59,16 +59,17 @@ async function buildTerrainTiles() {
 
   console.log('Building terrain tiles...');
 
-  // 1. Authentic Smooth RPG Meadow Grass from assets (Kenney CC0)
+  // 1. Authentic Smooth RPG Meadow Grass from assets (Kenney CC0 - Darker tone)
   if (fs.existsSync(path.join(dir, 'RPGpack_sheet.png'))) {
     await sharp(path.join(dir, 'RPGpack_sheet.png'))
       .extract({ left: 3 * 64, top: 2 * 64, width: 64, height: 64 })
       .resize(32, 32, { kernel: 'lanczos3' })
+      .linear(0.80, 0)
       .png()
       .toFile(path.join(dir, 'tile_grass.png'));
   } else {
     const grass = createPixelBuffer(32, 32);
-    grass.rect(0, 0, 32, 32, 140, 195, 52); // Natural meadow green base
+    grass.rect(0, 0, 32, 32, 112, 156, 41); // Richer meadow green base
     for (let y = 0; y < 32; y += 4) {
       for (let x = 0; x < 32; x += 4) {
         const v = (x * 7 + y * 13) % 4;
