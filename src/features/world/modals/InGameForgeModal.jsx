@@ -3,6 +3,7 @@ import toast from 'react-hot-toast';
 import audioManager from '../../../core/audio/AudioManager';
 import characterService from '../../../core/services/CharacterService';
 import { addItems, removeItems } from '../../../core/services/inventoryService';
+import { getItemIcon } from '../../../core/data/itemIcons';
 
 const FORGE_RECIPES = [
   {
@@ -149,8 +150,8 @@ export default function InGameForgeModal({
                   }`}
                 >
                   <div className="flex items-center gap-3">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-yellow-700/30 bg-black/50 text-2xl">
-                      {recipe.icon}
+                    <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-yellow-700/30 bg-black/50 p-1.5 shadow-inner">
+                      <img src={getItemIcon(recipe.output.id)} alt={recipe.name} className="h-8 w-8 object-contain pixelated drop-shadow-md" />
                     </div>
                     <div>
                       <h4 className="font-serif font-bold text-sm text-white">{recipe.name}</h4>
@@ -184,7 +185,7 @@ export default function InGameForgeModal({
           <div className="rounded-2xl border border-yellow-700/30 bg-gray-950/80 p-4 flex flex-col justify-between">
             <div>
               <div className="flex items-center gap-2 text-yellow-300 font-serif font-bold text-sm border-b border-gray-800 pb-2">
-                <span>{selectedRecipe.icon}</span>
+                <img src={getItemIcon(selectedRecipe.output.id)} alt={selectedRecipe.name} className="h-5 w-5 object-contain pixelated" />
                 <span>{selectedRecipe.name}</span>
               </div>
 
@@ -202,7 +203,10 @@ export default function InGameForgeModal({
                         key={inp.id}
                         className="flex items-center justify-between rounded-xl border border-gray-800 bg-gray-900/80 p-2 text-xs"
                       >
-                        <span className="text-gray-300">{inp.name}</span>
+                        <div className="flex items-center gap-2">
+                          <img src={getItemIcon(inp.id)} alt={inp.name} className="h-4 w-4 object-contain pixelated" />
+                          <span className="text-gray-300">{inp.name}</span>
+                        </div>
                         <span
                           className={`font-mono font-bold ${
                             hasEnough ? 'text-emerald-400' : 'text-red-400'

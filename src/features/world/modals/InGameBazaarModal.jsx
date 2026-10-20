@@ -4,6 +4,7 @@ import audioManager from '../../../core/audio/AudioManager';
 import characterService from '../../../core/services/CharacterService';
 import { addItems, removeItems } from '../../../core/services/inventoryService';
 import { farmCrops } from '../../../core/data/farmData';
+import { getItemIcon } from '../../../core/data/itemIcons';
 
 const SELLABLE_GOODS = [
   { id: 'turnip', name: 'Turnip', price: 18, icon: '🥔' },
@@ -152,8 +153,8 @@ export default function InGameBazaarModal({
                 className="flex items-center justify-between rounded-2xl border border-yellow-700/30 bg-gray-900/70 p-3 hover:border-yellow-500/50 transition"
               >
                 <div className="flex items-center gap-3">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-yellow-700/40 bg-black/50 text-2xl">
-                    🌱
+                  <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-yellow-700/40 bg-black/50 p-1.5 shadow-inner">
+                    <img src={getItemIcon(`seed-${crop.id}`)} alt={crop.name} className="h-8 w-8 object-contain pixelated drop-shadow-md" />
                   </div>
                   <div>
                     <h4 className="font-serif font-bold text-sm text-white">{crop.name} Seeds</h4>
@@ -192,8 +193,8 @@ export default function InGameBazaarModal({
                   className="flex items-center justify-between rounded-2xl border border-yellow-700/30 bg-gray-900/70 p-3 hover:border-yellow-500/50 transition"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-yellow-700/40 bg-black/50 text-2xl">
-                      {item.icon}
+                    <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-yellow-700/40 bg-black/50 p-1.5 shadow-inner">
+                      <img src={getItemIcon(item.id)} alt={item.name} className="h-8 w-8 object-contain pixelated drop-shadow-md" />
                     </div>
                     <div>
                       <h4 className="font-serif font-bold text-sm text-white">{item.name}</h4>

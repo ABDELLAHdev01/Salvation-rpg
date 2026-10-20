@@ -1101,3 +1101,12 @@ a[class]:focus-visible::after,
     /* Ensure clearance for fixed mobile toggle */
   }
 }
+
+
+/* Crisp Pixel-Art Image Rendering */
+.pixelated,
+.image-rendering-pixelated {
+  image-rendering: pixelated;
+  image-rendering: -moz-crisp-edges;
+  image-rendering: crisp-edges;
+}

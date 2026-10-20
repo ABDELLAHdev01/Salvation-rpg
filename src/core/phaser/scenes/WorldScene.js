@@ -64,6 +64,19 @@ export default class WorldScene extends Phaser.Scene {
     this.playerDefense = Math.round((this.profile?.stats?.power || 120) * 0.05);
   }
 
+  preload() {
+    // 1. Preload master pixel combat & ambient FX
+    try {
+      this.load.image('fx_slash', '/assets/fx/slash_01.png');
+      this.load.image('fx_spark', '/assets/fx/spark_01.png');
+      this.load.image('fx_magic', '/assets/fx/magic_01.png');
+      this.load.image('fx_flame', '/assets/fx/flame_01.png');
+      this.load.image('fx_smoke', '/assets/fx/smoke_01.png');
+    } catch {
+      // Safe fallback
+    }
+  }
+
   create() {
     // 0. Ensure Camera FX is clean and set mood lighting
     this.cameras.main.resetFX();
@@ -74,11 +87,17 @@ export default class WorldScene extends Phaser.Scene {
     // 1. Register Procedural World Textures
     registerWorldTextures(this);
 
+    // 1b. Setup Enemy Spritesheet Animations
+    this.setupEnemyAnimations();
+
     // 2. Setup Player Dynamic Layered Spritesheet
     this.setupPlayerTexture();
 
     // 3. Build Zone Environment & Props
     this.buildCurrentZone();
+
+    // 3b. Setup Ambient Atmosphere & Lighting
+    this.setupZoneAtmosphere();
 
     // 4. Setup Input Controls
     this.setupControls();
@@ -163,6 +182,86 @@ export default class WorldScene extends Phaser.Scene {
       } catch {
         // Safe guard
       }
+    }
+  }
+
+  setupEnemyAnimations() {
+    const enemyAnims = [
+      { key: 'anim_enemy_slime', sheet: 'enemy_slime', rate: 5 },
+      { key: 'anim_enemy_wolf', sheet: 'enemy_wolf', rate: 6 },
+      { key: 'anim_enemy_skeleton', sheet: 'enemy_skeleton', rate: 4 },
+      { key: 'anim_enemy_goblin', sheet: 'enemy_goblin', rate: 6 },
+    ];
+    enemyAnims.forEach((ea) => {
+      if (this.textures.exists(ea.sheet)) {
+        if (this.anims.exists(ea.key)) this.anims.remove(ea.key);
+        try {
+          this.anims.create({
+            key: ea.key,
+            frames: this.anims.generateFrameNumbers(ea.sheet, { start: 0, end: 3 }),
+            frameRate: ea.rate,
+            repeat: -1,
+          });
+        } catch {
+          // Safe fallback for single-frame textures
+        }
+      }
+    });
+  }
+
+  setupZoneAtmosphere() {
+    try {
+      if (this.currentZone === 'homestead') {
+        const emitter = this.add.particles(640, 480, 'col_invisible', {
+          emitZone: { source: new Phaser.Geom.Rectangle(0, 0, 1280, 960), type: 'random' },
+          speedX: { min: -15, max: -5 },
+          speedY: { min: -10, max: 10 },
+          scale: { start: 1.5, end: 0.5 },
+          alpha: { start: 0.6, end: 0 },
+          tint: 0xfde047,
+          lifespan: 4000,
+          frequency: 250,
+        });
+        emitter.setDepth(28);
+      } else if (this.currentZone === 'forest') {
+        const emitter = this.add.particles(640, 480, 'col_invisible', {
+          emitZone: { source: new Phaser.Geom.Rectangle(0, 0, 1280, 960), type: 'random' },
+          speedX: { min: -10, max: 10 },
+          speedY: { min: -20, max: -5 },
+          scale: { start: 2, end: 0.5 },
+          alpha: { start: 0.7, end: 0 },
+          tint: 0x34d399,
+          lifespan: 3500,
+          frequency: 200,
+        });
+        emitter.setDepth(28);
+      } else if (this.currentZone === 'mine') {
+        const emitter = this.add.particles(640, 480, 'col_invisible', {
+          emitZone: { source: new Phaser.Geom.Rectangle(0, 0, 1280, 960), type: 'random' },
+          speedX: { min: -5, max: 5 },
+          speedY: { min: 5, max: 15 },
+          scale: { start: 1.5, end: 0.5 },
+          alpha: { start: 0.5, end: 0 },
+          tint: 0x38bdf8,
+          lifespan: 3000,
+          frequency: 300,
+        });
+        emitter.setDepth(28);
+      } else if (this.currentZone === 'village') {
+        const emitter = this.add.particles(640, 480, 'col_invisible', {
+          emitZone: { source: new Phaser.Geom.Rectangle(0, 0, 1280, 960), type: 'random' },
+          speedX: { min: -8, max: 8 },
+          speedY: { min: -15, max: -5 },
+          scale: { start: 1.5, end: 0.5 },
+          alpha: { start: 0.5, end: 0 },
+          tint: 0xfbbf24,
+          lifespan: 3500,
+          frequency: 350,
+        });
+        emitter.setDepth(28);
+      }
+    } catch {
+      // Safe fallback
     }
   }
 
@@ -377,7 +476,8 @@ export default class WorldScene extends Phaser.Scene {
 
   buildForestProps() {
     // Sylvan Shrine (Solid obstacle with collision)
-    const shrine = this.obstacles.create(20 * 32, 14 * 32, 'prop_workbench');
+    const shrineTex = this.textures.exists('prop_shrine') ? 'prop_shrine' : 'prop_workbench';
+    const shrine = this.obstacles.create(20 * 32, 14 * 32, shrineTex);
     shrine.setDepth(10);
     shrine.setSize(26, 20);
     this.registerInteractive(20 * 32, 14 * 32, 60, '[E] Commune with Sylvan Shrine ✨', () => {
@@ -412,21 +512,29 @@ export default class WorldScene extends Phaser.Scene {
   }
 
   buildVillageProps() {
+    // Village Plaza Cobblestone Paths
+    for (let x = 6; x < 34; x += 1) {
+      this.add.image(x * 32 + 16, 15 * 32 + 16, 'tile_path');
+    }
+    for (let y = 6; y < 24; y += 1) {
+      this.add.image(18 * 32 + 16, y * 32 + 16, 'tile_path');
+    }
+
     const stalls = [
-      { name: "Old Barnaby's Seeds", x: 10, y: 10, action: 'seed_cart' },
-      { name: "Torvald's Ore Exchange", x: 26, y: 10, action: 'ore_exchange' },
-      { name: "Linnea's Produce Stand", x: 10, y: 20, action: 'produce_stand' },
-      { name: "Garrison's Armory", x: 26, y: 20, action: 'armory' },
+      { name: "Old Barnaby's Seeds", x: 10, y: 10, action: 'seed_cart', prop: 'prop_house' },
+      { name: "Torvald's Ore Exchange", x: 26, y: 10, action: 'ore_exchange', prop: 'prop_workbench' },
+      { name: "Linnea's Produce Stand", x: 10, y: 20, action: 'produce_stand', prop: 'prop_house' },
+      { name: "Garrison's Armory", x: 26, y: 20, action: 'armory', prop: 'prop_workbench' },
     ];
 
     stalls.forEach((stall) => {
       const sx = stall.x * 32;
       const sy = stall.y * 32;
-      const b = this.add.image(sx, sy, 'prop_house');
-      b.setScale(0.7);
+      const b = this.add.image(sx, sy, stall.prop);
+      if (stall.prop === 'prop_house') b.setScale(0.75);
       b.setDepth(10);
       const col = this.obstacles.create(sx, sy + 5, 'col_invisible');
-      col.setSize(50, 24);
+      col.setSize(48, 24);
       col.setVisible(false);
 
       this.registerInteractive(sx, sy, 60, `[E] Trade at ${stall.name} 🪙`, () => {
@@ -450,11 +558,15 @@ export default class WorldScene extends Phaser.Scene {
     const def = MONSTER_TYPES[typeId];
     if (!def || !this.enemies) return null;
 
-    const sprite = this.enemies.create(x, y, def.texture);
+    const sprite = this.enemies.create(x, y, def.texture, 0);
     sprite.setCollideWorldBounds(true);
     sprite.setSize(22, 20);
     sprite.setOffset(5, 10);
     sprite.setDepth(18);
+
+    if (this.anims.exists('anim_' + def.texture)) {
+      sprite.play('anim_' + def.texture);
+    }
 
     sprite.monsterDef = def;
     sprite.hp = def.maxHp;
@@ -512,6 +624,7 @@ export default class WorldScene extends Phaser.Scene {
     if (this.anims.exists(animKey)) {
       this.player.anims.play(animKey, true);
     }
+    this.spawnSlashTrail(this.player.x, this.player.y, this.playerFacing, weapon);
     audioManager.play('strike');
 
     // Strike impact window at swing peak
@@ -672,10 +785,42 @@ export default class WorldScene extends Phaser.Scene {
     });
   }
 
+  spawnSlashTrail(x, y, facing, weapon) {
+    const offsets = {
+      south: { x: 0, y: 16, angle: 90 },
+      north: { x: 0, y: -16, angle: -90 },
+      west: { x: -16, y: 0, angle: 180 },
+      east: { x: 16, y: 0, angle: 0 },
+    };
+    const off = offsets[facing] || offsets.south;
+    const tex = this.textures.exists('fx_slash') ? 'fx_slash' : 'col_invisible';
+    const slash = this.add.image(x + off.x, y + off.y, tex);
+    slash.setDepth(22);
+    slash.setAngle(off.angle);
+    slash.setScale(0.06);
+    const colors = {
+      steel_broadsword: 0x38bdf8,
+      iron_pickaxe: 0xfbbf24,
+      forged_scythe: 0x4ade80,
+      oak_staff: 0xa855f7,
+    };
+    slash.setTint(colors[weapon.id] || 0xffffff);
+    this.tweens.add({
+      targets: slash,
+      scaleX: 0.12,
+      scaleY: 0.12,
+      alpha: 0,
+      duration: 180,
+      ease: 'Cubic.easeOut',
+      onComplete: () => slash.destroy(),
+    });
+  }
+
   spawnHitSparks(x, y) {
-    const emitter = this.add.particles(x, y, 'world_tiles', {
+    const tex = this.textures.exists('fx_spark') ? 'fx_spark' : 'world_tiles';
+    const emitter = this.add.particles(x, y, tex, {
       speed: { min: 50, max: 130 },
-      scale: { start: 0.18, end: 0 },
+      scale: { start: tex === 'fx_spark' ? 0.05 : 0.18, end: 0 },
       blendMode: 'ADD',
       lifespan: 250,
       quantity: 10,

@@ -3,6 +3,7 @@ import toast from 'react-hot-toast';
 import audioManager from '../../../core/audio/AudioManager';
 import characterService from '../../../core/services/CharacterService';
 import gameEventBridge, { gameEvents } from '../../../core/phaser/gameEventBridge';
+import { getItemIcon } from '../../../core/data/itemIcons';
 import {
   SKIN_TONES,
   HAIR_STYLES,
@@ -337,7 +338,7 @@ export default function InGameWardrobeModal({
                     }`}
                   >
                     <div className="flex items-center gap-2">
-                      <span>{opt.icon}</span>
+                      <img src={getItemIcon(opt.id)} alt={opt.name} className="h-4 w-4 object-contain pixelated" />
                       <span>{opt.name}</span>
                     </div>
                     {(custom.equippedTool || custom.tool) === opt.id && <span>✓</span>}

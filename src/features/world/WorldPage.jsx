@@ -4,6 +4,7 @@ import characterService from '../../core/services/CharacterService';
 import PhaserWorldCanvas from '../../core/phaser/PhaserWorldCanvas';
 import gameEventBridge, { gameEvents } from '../../core/phaser/gameEventBridge';
 import audioManager from '../../core/audio/AudioManager';
+import { getItemIcon } from '../../core/data/itemIcons';
 import { EQUIPPED_TOOLS, DEFAULT_CUSTOMIZATION, sanitizeCustomization } from '../../core/phaser/characterCustomizationData';
 import InGameInventoryModal from './modals/InGameInventoryModal';
 import InGameWardrobeModal from './modals/InGameWardrobeModal';
@@ -221,7 +222,7 @@ export default function WorldPage() {
         <div className="pointer-events-auto flex flex-wrap items-center justify-end gap-1.5 sm:gap-2">
           {/* Gold Counter */}
           <div className="flex items-center gap-1.5 rounded-2xl border border-yellow-600/40 bg-gray-950/90 px-3 py-1.5 shadow-xl backdrop-blur-md">
-            <span className="text-sm">🪙</span>
+            <img src={getItemIcon('gold-coin')} alt="Gold" className="h-4 w-4 object-contain pixelated" />
             <span className="font-mono text-xs font-bold text-yellow-300">
               {playerGold}g
             </span>
@@ -240,7 +241,7 @@ export default function WorldPage() {
             className="hidden md:flex items-center gap-1.5 rounded-2xl border border-yellow-600/40 bg-gray-950/90 px-3 py-1.5 shadow-xl backdrop-blur-md"
             title={`Equipped Weapon/Tool: ${toolMeta.name}`}
           >
-            <span className="text-sm">{toolMeta.icon}</span>
+            <img src={getItemIcon(currentToolId)} alt={toolMeta.name} className="h-4 w-4 object-contain pixelated" />
             <span className="font-serif text-xs font-bold text-gray-200">
               {toolMeta.name}
             </span>

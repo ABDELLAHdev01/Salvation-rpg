@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { getItemById } from '../../../core/data/itemsCatalog';
+import { getItemIcon } from '../../../core/data/itemIcons';
 import audioManager from '../../../core/audio/AudioManager';
 
 export default function InGameInventoryModal({
@@ -33,24 +34,6 @@ export default function InGameInventoryModal({
     if (filter === 'ores') return item.id.includes('iron') || item.id.includes('copper') || item.id.includes('gold') || item.id.includes('geode') || item.id.includes('crystal') || item.id.includes('bar');
     return true;
   });
-
-  const getItemIcon = (id) => {
-    if (id.includes('potion') || id.includes('elixir')) return '🧪';
-    if (id.includes('iron-bar') || id.includes('copper-bar') || id.includes('gold-bar')) return '🧱';
-    if (id.includes('iron')) return '⚙️';
-    if (id.includes('copper')) return '🪨';
-    if (id.includes('gold')) return '🪙';
-    if (id.includes('crystal') || id.includes('geode')) return '💎';
-    if (id.includes('seed')) return '🌱';
-    if (id.includes('turnip')) return '🥔';
-    if (id.includes('wheat')) return '🌾';
-    if (id.includes('herb')) return '🌿';
-    if (id.includes('berry')) return '🍇';
-    if (id.includes('root')) return '🥕';
-    if (id.includes('sword')) return '⚔️';
-    if (id.includes('axe') || id.includes('pickaxe')) return '⛏️';
-    return '📦';
-  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-md animate-fadeIn select-none">
@@ -126,8 +109,12 @@ export default function InGameInventoryModal({
                 className="flex items-center justify-between rounded-2xl border border-yellow-700/30 bg-gray-900/70 p-3 hover:border-yellow-500/50 transition backdrop-blur-sm"
               >
                 <div className="flex items-center gap-3">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-yellow-700/40 bg-black/60 text-2xl shadow-inner">
-                    {getItemIcon(item.id)}
+                  <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-yellow-700/40 bg-black/60 shadow-inner p-1.5">
+                    <img
+                      src={getItemIcon(item.id)}
+                      alt={item.name}
+                      className="h-8 w-8 object-contain pixelated drop-shadow-md"
+                    />
                   </div>
                   <div>
                     <h4 className="font-bold text-sm text-white capitalize">{item.name}</h4>
