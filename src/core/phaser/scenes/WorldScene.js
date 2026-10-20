@@ -72,6 +72,19 @@ export default class WorldScene extends Phaser.Scene {
       this.load.image('fx_magic', '/assets/fx/magic_01.png');
       this.load.image('fx_flame', '/assets/fx/flame_01.png');
       this.load.image('fx_smoke', '/assets/fx/smoke_01.png');
+
+      // 2. Preload authentic CC0 terrain assets (normal smooth meadow grass from Kenney RPG assets)
+      this.load.image('tile_grass', '/assets/tilesets/tile_grass.png');
+      this.load.image('tile_path', '/assets/tilesets/tile_path.png');
+      this.load.image('tile_stone', '/assets/tilesets/tile_stone.png');
+      this.load.image('tile_soil', '/assets/tilesets/tile_soil.png');
+      this.load.image('tile_water', '/assets/tilesets/tile_water.png');
+
+      // 3. Preload master scenery props
+      this.load.image('prop_tree', '/assets/tilesets/prop_tree.png');
+      this.load.image('prop_house', '/assets/tilesets/prop_house.png');
+      this.load.image('prop_chest', '/assets/tilesets/prop_chest.png');
+      this.load.image('prop_workbench', '/assets/tilesets/prop_workbench.png');
     } catch {
       // Safe fallback
     }
@@ -80,8 +93,8 @@ export default class WorldScene extends Phaser.Scene {
   create() {
     // 0. Ensure Camera FX is clean and set mood lighting
     this.cameras.main.resetFX();
-    const bgColors = { homestead: '#234d20', forest: '#1b3f19', mine: '#181a20', village: '#3a2718' };
-    this.cameras.main.setBackgroundColor(bgColors[this.currentZone] || '#234d20');
+    const bgColors = { homestead: '#528734', forest: '#3b6a26', mine: '#181a20', village: '#3a2718' };
+    this.cameras.main.setBackgroundColor(bgColors[this.currentZone] || '#528734');
     this.cameras.main.fadeIn(250, 0, 0, 0);
 
     // 1. Register Procedural World Textures

@@ -10,11 +10,11 @@ This manifest documents the production-ready 2D pixel-art assets, audio, and vis
 
 | Asset Key | File Path | Source / Author | License | Dimensions | Usage |
 |---|---|---|---|---|---|
-| `tile_grass` | `/assets/tilesets/tile_grass.png` | Salvation Studio / Kenney CC0 Base | CC0 1.0 Universal | 32×32 px | Homestead & forest terrain |
-| `tile_path` | `/assets/tilesets/tile_path.png` | Salvation Studio / Kenney CC0 Base | CC0 1.0 Universal | 32×32 px | Cobblestone roads & dirt pathways |
-| `tile_stone` | `/assets/tilesets/tile_stone.png` | Salvation Studio / Kenney CC0 Base | CC0 1.0 Universal | 32×32 px | Subterranean cavern stone floor |
+| `tile_grass` | `/assets/tilesets/tile_grass.png` | Kenney RPG Pack (`RPGpack_sheet.png`) | CC0 1.0 Universal | 32×32 px | Smooth natural meadow grass (seamless, velvety) |
+| `tile_path` | `/assets/tilesets/tile_path.png` | Kenney RPG Pack (`RPGpack_sheet.png`) | CC0 1.0 Universal | 32×32 px | Earth dirt & cobblestone pathways |
+| `tile_stone` | `/assets/tilesets/tile_stone.png` | Kenney RPG Pack (`RPGpack_sheet.png`) | CC0 1.0 Universal | 32×32 px | Subterranean cavern stone floor |
 | `tile_soil` | `/assets/tilesets/tile_soil.png` | Salvation Studio | CC0 1.0 Universal | 32×32 px | Tilled farm soil plots |
-| `tile_water` | `/assets/tilesets/tile_water.png` | Salvation Studio | CC0 1.0 Universal | 32×32 px | Shimmering pond & river tiles |
+| `tile_water` | `/assets/tilesets/tile_water.png` | Kenney RPG Pack (`RPGpack_sheet.png`) | CC0 1.0 Universal | 32×32 px | Shimmering pond & river tiles |
 | `prop_house` | `/assets/tilesets/prop_house.png` | Salvation Studio / Kenney RPG | CC0 1.0 Universal | 96×80 px | Gabled timber manor house |
 | `prop_tree` | `/assets/tilesets/prop_tree.png` | Salvation Studio / Kenney RPG | CC0 1.0 Universal | 48×64 px | Layered pine trees with cast shadow |
 | `prop_chest` | `/assets/tilesets/prop_chest.png` | Salvation Studio / Kenney Roguelike | CC0 1.0 Universal | 32×32 px | Vault storage chest |

@@ -31,29 +31,20 @@ export function registerWorldTextures(scene) {
   // 1. TERRAIN TILES (32x32)
   // =========================================================================
 
-  // Tile: Lush Fantasy Meadow Grass with Wild Clover
+  // Tile: Natural Velvet Meadow Grass (Kenney RPG style)
   const grassCanvas = createTileCanvas(TILE_SIZE, TILE_SIZE, (ctx) => {
-    ctx.fillStyle = '#265c2b'; // Deep emerald base
+    ctx.fillStyle = '#8cc334'; // Natural warm meadow green base
     ctx.fillRect(0, 0, TILE_SIZE, TILE_SIZE);
-    ctx.fillStyle = '#347838'; // Sunlit moss
-    ctx.fillRect(1, 1, 30, 30);
-    ctx.fillStyle = '#45994b'; // Midtones
-    ctx.fillRect(3, 3, 10, 8);
-    ctx.fillRect(17, 13, 11, 9);
-    ctx.fillStyle = '#5ab361'; // Fresh grass blades
-    ctx.fillRect(5, 5, 2, 4);
-    ctx.fillRect(19, 15, 2, 4);
-    ctx.fillRect(8, 22, 2, 3);
-    // Wildflower specks
-    ctx.fillStyle = '#fde047'; // Buttercups
-    ctx.fillRect(6, 8, 2, 2);
-    ctx.fillRect(22, 18, 2, 2);
-    ctx.fillStyle = '#f472b6'; // Clover blossoms
-    ctx.fillRect(14, 24, 2, 2);
-    ctx.fillStyle = '#ffffff'; // White daisies
-    ctx.fillRect(26, 6, 2, 2);
+    ctx.fillStyle = '#85bd2f'; // Subtle organic shading
+    ctx.fillRect(6, 8, 3, 2);
+    ctx.fillRect(20, 16, 3, 2);
+    ctx.fillStyle = '#94cb3b'; // Soft sunlit blade glints
+    ctx.fillRect(7, 7, 2, 1);
+    ctx.fillRect(21, 15, 2, 1);
   });
-  scene.textures.addCanvas('tile_grass', grassCanvas);
+  if (!scene.textures.exists('tile_grass')) {
+    scene.textures.addCanvas('tile_grass', grassCanvas);
+  }
 
   // Tile: Sun-Worn Cobblestone Dirt Path
   const pathCanvas = createTileCanvas(TILE_SIZE, TILE_SIZE, (ctx) => {
@@ -81,7 +72,9 @@ export function registerWorldTextures(scene) {
       ctx.fillRect(p.x + p.w - 1, p.y, 1, p.h);
     });
   });
-  scene.textures.addCanvas('tile_path', pathCanvas);
+  if (!scene.textures.exists('tile_path')) {
+    scene.textures.addCanvas('tile_path', pathCanvas);
+  }
 
   // Tile: Deep Cavern Mineral Stone
   const stoneCanvas = createTileCanvas(TILE_SIZE, TILE_SIZE, (ctx) => {
@@ -104,7 +97,9 @@ export function registerWorldTextures(scene) {
     ctx.fillStyle = '#facc15'; // Golden pyrite speck
     ctx.fillRect(24, 7, 2, 2);
   });
-  scene.textures.addCanvas('tile_stone', stoneCanvas);
+  if (!scene.textures.exists('tile_stone')) {
+    scene.textures.addCanvas('tile_stone', stoneCanvas);
+  }
 
   // Tile: Rich Moist Farm Soil
   const soilCanvas = createTileCanvas(TILE_SIZE, TILE_SIZE, (ctx) => {
@@ -121,7 +116,9 @@ export function registerWorldTextures(scene) {
       ctx.fillRect(20, y + 1, 2, 2);
     }
   });
-  scene.textures.addCanvas('tile_soil', soilCanvas);
+  if (!scene.textures.exists('tile_soil')) {
+    scene.textures.addCanvas('tile_soil', soilCanvas);
+  }
 
   // Tile: Shimmering Sylvan Water
   const waterCanvas = createTileCanvas(TILE_SIZE, TILE_SIZE, (ctx) => {
@@ -137,7 +134,9 @@ export function registerWorldTextures(scene) {
     ctx.fillRect(8, 8, 3, 1);
     ctx.fillRect(22, 18, 3, 1);
   });
-  scene.textures.addCanvas('tile_water', waterCanvas);
+  if (!scene.textures.exists('tile_water')) {
+    scene.textures.addCanvas('tile_water', waterCanvas);
+  }
 
   // Composite Master Tileset
   const terrainCanvas = document.createElement('canvas');

@@ -59,64 +59,51 @@ async function buildTerrainTiles() {
 
   console.log('Building terrain tiles...');
 
-  // 1. Lush Fantasy Grass Tile (32x32)
-  const grass = createPixelBuffer(32, 32);
-  grass.rect(0, 0, 32, 32, 42, 98, 46); // Rich forest green base
-  // Subtle darker blades and lighter tufts
-  for (let y = 0; y < 32; y += 4) {
-    for (let x = 0; x < 32; x += 4) {
-      const v = (x * 7 + y * 13) % 5;
-      if (v === 0) grass.rect(x, y, 3, 3, 56, 128, 60);
-      else if (v === 1) grass.rect(x + 1, y + 1, 2, 2, 72, 160, 76);
-      else if (v === 2) grass.rect(x, y, 2, 3, 34, 80, 38);
+  // 1. Authentic Smooth RPG Meadow Grass from assets (Kenney CC0)
+  if (fs.existsSync(path.join(dir, 'RPGpack_sheet.png'))) {
+    await sharp(path.join(dir, 'RPGpack_sheet.png'))
+      .extract({ left: 3 * 64, top: 2 * 64, width: 64, height: 64 })
+      .resize(32, 32, { kernel: 'lanczos3' })
+      .png()
+      .toFile(path.join(dir, 'tile_grass.png'));
+  } else {
+    const grass = createPixelBuffer(32, 32);
+    grass.rect(0, 0, 32, 32, 140, 195, 52); // Natural meadow green base
+    for (let y = 0; y < 32; y += 4) {
+      for (let x = 0; x < 32; x += 4) {
+        const v = (x * 7 + y * 13) % 4;
+        if (v === 0) grass.rect(x, y, 2, 2, 133, 189, 47);
+        else if (v === 1) grass.rect(x + 1, y + 1, 2, 1, 148, 203, 59);
+      }
     }
+    await grass.save(path.join(dir, 'tile_grass.png'));
   }
-  // Scattered tiny clover & buttercups
-  grass.rect(6, 8, 2, 2, 253, 224, 71); // Yellow blossom
-  grass.rect(22, 18, 2, 2, 253, 224, 71);
-  grass.rect(14, 24, 2, 2, 244, 114, 182); // Pink clover
-  grass.rect(26, 6, 2, 2, 255, 255, 255); // White daisy
-  await grass.save(path.join(dir, 'tile_grass.png'));
 
   // 2. Cobblestone / Dirt Path Tile (32x32)
-  const pathTile = createPixelBuffer(32, 32);
-  pathTile.rect(0, 0, 32, 32, 110, 70, 36); // Earth brown grout
-  // Paver stones
-  const pavers = [
-    { x: 2, y: 2, w: 12, h: 8, col: [168, 115, 68] },
-    { x: 16, y: 2, w: 14, h: 8, col: [154, 102, 58] },
-    { x: 2, y: 12, w: 8, h: 8, col: [154, 102, 58] },
-    { x: 12, y: 12, w: 12, h: 8, col: [180, 126, 76] },
-    { x: 26, y: 12, w: 4, h: 8, col: [154, 102, 58] },
-    { x: 2, y: 22, w: 14, h: 8, col: [180, 126, 76] },
-    { x: 18, y: 22, w: 12, h: 8, col: [168, 115, 68] },
-  ];
-  for (const p of pavers) {
-    pathTile.rect(p.x, p.y, p.w, p.h, p.col[0], p.col[1], p.col[2]);
-    // Highlight top-left of paver
-    pathTile.rect(p.x, p.y, p.w, 1, p.col[0] + 25, p.col[1] + 25, p.col[2] + 20);
-    pathTile.rect(p.x, p.y, 1, p.h, p.col[0] + 25, p.col[1] + 25, p.col[2] + 20);
-    // Shadow bottom-right of paver
-    pathTile.rect(p.x, p.y + p.h - 1, p.w, 1, p.col[0] - 30, p.col[1] - 30, p.col[2] - 25);
-    pathTile.rect(p.x + p.w - 1, p.y, 1, p.h, p.col[0] - 30, p.col[1] - 30, p.col[2] - 25);
+  if (fs.existsSync(path.join(dir, 'RPGpack_sheet.png'))) {
+    await sharp(path.join(dir, 'RPGpack_sheet.png'))
+      .extract({ left: 8 * 64, top: 1 * 64, width: 64, height: 64 })
+      .resize(32, 32, { kernel: 'lanczos3' })
+      .png()
+      .toFile(path.join(dir, 'tile_path.png'));
+  } else {
+    const pathTile = createPixelBuffer(32, 32);
+    pathTile.rect(0, 0, 32, 32, 193, 140, 90); // Earth brown dirt
+    await pathTile.save(path.join(dir, 'tile_path.png'));
   }
-  await pathTile.save(path.join(dir, 'tile_path.png'));
 
   // 3. Deep Cavern Stone Tile (32x32)
-  const stone = createPixelBuffer(32, 32);
-  stone.rect(0, 0, 32, 32, 28, 30, 40); // Deep slate
-  // Stone slabs & mineral specks
-  stone.rect(2, 2, 13, 12, 45, 50, 68);
-  stone.rect(17, 2, 13, 12, 54, 60, 80);
-  stone.rect(2, 16, 13, 14, 54, 60, 80);
-  stone.rect(17, 16, 13, 14, 45, 50, 68);
-  // Highlights
-  stone.rect(2, 2, 13, 1, 75, 84, 110);
-  stone.rect(17, 2, 13, 1, 75, 84, 110);
-  // Glowing azure crystal inclusions
-  stone.rect(8, 22, 2, 2, 56, 189, 248);
-  stone.rect(24, 7, 2, 2, 250, 204, 21); // Golden pyrite
-  await stone.save(path.join(dir, 'tile_stone.png'));
+  if (fs.existsSync(path.join(dir, 'RPGpack_sheet.png'))) {
+    await sharp(path.join(dir, 'RPGpack_sheet.png'))
+      .extract({ left: 10 * 64, top: 7 * 64, width: 64, height: 64 })
+      .resize(32, 32, { kernel: 'lanczos3' })
+      .png()
+      .toFile(path.join(dir, 'tile_stone.png'));
+  } else {
+    const stone = createPixelBuffer(32, 32);
+    stone.rect(0, 0, 32, 32, 96, 96, 96); // Slate grey
+    await stone.save(path.join(dir, 'tile_stone.png'));
+  }
 
   // 4. Rich Tilled Farm Soil Tile (32x32)
   const soil = createPixelBuffer(32, 32);
@@ -131,16 +118,17 @@ async function buildTerrainTiles() {
   await soil.save(path.join(dir, 'tile_soil.png'));
 
   // 5. Shimmering Water Tile (32x32)
-  const water = createPixelBuffer(32, 32);
-  water.rect(0, 0, 32, 32, 6, 100, 150); // Deep cerulean
-  water.rect(2, 2, 28, 28, 14, 140, 200);
-  // Water ripples & specular wave reflections
-  water.rect(4, 7, 12, 2, 56, 189, 248);
-  water.rect(18, 17, 10, 2, 56, 189, 248);
-  water.rect(6, 23, 14, 2, 56, 189, 248);
-  water.rect(8, 8, 3, 1, 224, 242, 254); // Sunlight gleam
-  water.rect(22, 18, 3, 1, 224, 242, 254);
-  await water.save(path.join(dir, 'tile_water.png'));
+  if (fs.existsSync(path.join(dir, 'RPGpack_sheet.png'))) {
+    await sharp(path.join(dir, 'RPGpack_sheet.png'))
+      .extract({ left: 13 * 64, top: 1 * 64, width: 64, height: 64 })
+      .resize(32, 32, { kernel: 'lanczos3' })
+      .png()
+      .toFile(path.join(dir, 'tile_water.png'));
+  } else {
+    const water = createPixelBuffer(32, 32);
+    water.rect(0, 0, 32, 32, 104, 198, 206); // Azure water
+    await water.save(path.join(dir, 'tile_water.png'));
+  }
 
   console.log('Terrain tiles built.');
 }
