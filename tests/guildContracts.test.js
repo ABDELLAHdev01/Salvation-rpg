@@ -152,4 +152,69 @@ describe('Guild Contracts & Progression System', () => {
     expect(reClaim.success).toBe(false);
     expect(reClaim.reason).toContain('already been claimed');
   });
+
+  it('records progress across zone visits, prop interactions, and auto-completes non-turn-in contracts', () => {
+    // 1. Test zone_visit and visit_guild on King's Highway contract
+    const roadActive = [
+      {
+        id: 'main_02_road_to_city',
+        objectives: [
+          { id: 'exit_left', current: 0 },
+          { id: 'reach_city', current: 0 },
+          { id: 'visit_guild', current: 0 },
+        ],
+      },
+    ];
+
+    const visitRoad = recordContractProgress('zone:changed', { zone: 'west_road' }, roadActive);
+    expect(visitRoad.updated).toBe(true);
+    expect(visitRoad.activeContracts[0].objectives[0].current).toBe(1);
+
+    const visitCity = recordContractProgress('zone:changed', { zone: 'village' }, visitRoad.activeContracts);
+    expect(visitCity.updated).toBe(true);
+    expect(visitCity.activeContracts[0].objectives[1].current).toBe(1);
+
+    const visitGuild = recordContractProgress('guild:visited', {}, visitCity.activeContracts);
+    expect(visitGuild.updated).toBe(true);
+    expect(visitGuild.activeContracts[0].objectives[2].current).toBe(1);
+
+    // 2. Test Discovery auto-completion (requiresTurnIn: false)
+    const discoveryActive = [
+      {
+        id: 'disc_01_sylvan_shrine',
+        objectives: [{ id: 'commune_shrine', current: 0 }],
+      },
+    ];
+
+    const interactShrine = recordContractProgress(
+      'prop:interacted',
+      { propId: 'prop_shrine' },
+      discoveryActive
+    );
+    expect(interactShrine.updated).toBe(true);
+    expect(interactShrine.autoCompleted).toContain('disc_01_sylvan_shrine');
+    expect(interactShrine.activeContracts.length).toBe(0); // Removed from active, moved to autoCompleted
+  });
+
+  it('tracks mining and forge crafting objectives accurately', () => {
+    const active = [
+      {
+        id: 'main_03_deepforge_investigation',
+        objectives: [
+          { id: 'mine_iron', current: 1 },
+          { id: 'forge_metal', current: 0 },
+        ],
+      },
+    ];
+
+    // Mine iron node
+    const mineStep = recordContractProgress('mine:shatter', { oreId: 'iron' }, active);
+    expect(mineStep.updated).toBe(true);
+    expect(mineStep.activeContracts[0].objectives[0].current).toBe(2);
+
+    // Craft iron bar
+    const craftStep = recordContractProgress('forge:crafted', { itemId: 'iron-bar', count: 1 }, mineStep.activeContracts);
+    expect(craftStep.updated).toBe(true);
+    expect(craftStep.activeContracts[0].objectives[1].current).toBe(1);
+  });
 });

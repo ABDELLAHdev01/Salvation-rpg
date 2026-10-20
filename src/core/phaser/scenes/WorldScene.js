@@ -559,6 +559,7 @@ export default class WorldScene extends Phaser.Scene {
     this.registerInteractive(20 * 32, 14 * 32, 60, '[E] Commune with Sylvan Shrine ✨', () => {
       audioManager.play('levelup');
       this.showFloatingText(20 * 32, 14 * 32 - 20, 'Forest Blessing Granted!', '#a7f3d0');
+      gameEventBridge.emit(gameEvents.PROP_INTERACT, { propId: 'prop_shrine' });
     });
 
     // Trees
