@@ -37,13 +37,7 @@ function App() {
           <Route path="/" element={<WorldPage />} />
           <Route path="/world" element={<WorldPage />} />
           <Route path="/character" element={<CreateCharacter />} />
-
-          {/* All legacy web-card routes redirect directly into the 2D World */}
-          <Route path="/dashboard" element={<Navigate to="/" replace />} />
-          <Route path="/adventure" element={<Navigate to="/" replace />} />
-          <Route path="/expedition-active" element={<Navigate to="/" replace />} />
-          <Route path="/inventory" element={<Navigate to="/" replace />} />
-          <Route path="/character/edit" element={<Navigate to="/" replace />} />
+          <Route path="/character/edit" element={<CreateCharacter />} />
           <Route path="/quests" element={<Navigate to="/" replace />} />
           <Route path="/quests/*" element={<Navigate to="/" replace />} />
           <Route path="/chronicle" element={<Navigate to="/" replace />} />

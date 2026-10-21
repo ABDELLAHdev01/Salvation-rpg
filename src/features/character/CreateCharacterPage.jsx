@@ -1,7 +1,8 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import CharacterService from '../../core/services/CharacterService';
+import authService from '../../core/services/AuthService';
 import audioManager from '../../core/audio/AudioManager';
 import {
   SKIN_TONES,
@@ -47,7 +48,7 @@ export default function CreateCharacter() {
   const navigate = useNavigate();
 
   // Character Identity State
-  const [name, setName] = useState('Valen');
+  const [name, setName] = useState('');
   const [selectedRace, setSelectedRace] = useState('human');
   const [selectedClass, setSelectedClass] = useState('Vanguard');
   const [selectedGender, setSelectedGender] = useState('Male');
@@ -56,7 +57,11 @@ export default function CreateCharacter() {
   // 2D Customization State
   const [customization, setCustomization] = useState({ ...DEFAULT_CUSTOMIZATION });
   const [previewDirection, setPreviewDirection] = useState('south');
-  const [activeTab, setActiveTab] = useState('appearance'); // 'appearance' | 'outfit' | 'identity'
+  const [activeTab, setActiveTab] = useState('identity'); // 'identity' | 'appearance' | 'outfit'
+
+  useEffect(() => {
+    authService.ensureOfflineSession();
+  }, []);
 
   // Update a single customization property
   const updateProp = (field, value) => {
@@ -91,14 +96,17 @@ export default function CreateCharacter() {
     const trimmedName = name.trim();
     if (!trimmedName || trimmedName.length < 2) {
       toast.error('Please enter a valid adventurer name (at least 2 letters).');
+      setActiveTab('identity');
       return;
     }
 
     const characterData = {
       name: trimmedName,
+      characterName: trimmedName,
       race: selectedRace.toUpperCase(),
       raceKey: selectedRace.toLowerCase(),
       sex: selectedGender,
+      gender: selectedGender,
       className: selectedClass,
       characterClass: selectedClass,
       city: selectedCity,
@@ -108,6 +116,7 @@ export default function CreateCharacter() {
 
     try {
       await CharacterService.createCharacter(characterData);
+      localStorage.setItem('hasCreatedCharacter', 'true');
       toast.success(`Welcome to Salvation, ${trimmedName}!`, { icon: '⚔️' });
       navigate(destination);
     } catch (err) {
@@ -222,12 +231,35 @@ export default function CreateCharacter() {
             </div>
 
             {/* Character Summary Pill Badges */}
-            <div className="mt-5 space-y-2 border-t border-yellow-700/30 pt-4 text-xs">
-              <div className="flex items-center justify-between">
-                <span className="text-gray-400">Adventurer:</span>
-                <span className="font-bold text-white">{name || 'Unnamed'}</span>
+            <div className="mt-4 space-y-2 border-t border-yellow-700/30 pt-3 text-xs">
+              <div className="flex flex-col gap-1">
+                <div className="flex items-center justify-between">
+                  <label htmlFor="previewHeroName" className="text-[10px] font-bold uppercase tracking-wider text-yellow-400">
+                    Adventurer Name:
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const random = FANTASY_NAMES[Math.floor(Math.random() * FANTASY_NAMES.length)];
+                      setName(random);
+                      audioManager.play('tap');
+                    }}
+                    className="text-[10px] font-bold text-yellow-400 hover:text-yellow-200 transition"
+                  >
+                    🎲 Random
+                  </button>
+                </div>
+                <input
+                  id="previewHeroName"
+                  type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="Enter hero name..."
+                  className="w-full rounded-xl border border-yellow-700/50 bg-black/70 px-3 py-1.5 text-xs font-serif font-bold text-yellow-100 placeholder:text-gray-500 focus:border-yellow-400 focus:outline-none"
+                />
               </div>
-              <div className="flex items-center justify-between">
+
+              <div className="flex items-center justify-between pt-1">
                 <span className="text-gray-400">Ancestry &amp; Class:</span>
                 <span className="font-semibold text-yellow-300 capitalize">
                   {selectedRace} · {selectedClass}
@@ -271,9 +303,9 @@ export default function CreateCharacter() {
             {/* Category Navigation Tabs */}
             <div className="flex flex-wrap items-center gap-2 border-b border-yellow-700/30 pb-4">
               {[
+                { id: 'identity', label: 'Identity & Lineage', icon: '📜' },
                 { id: 'appearance', label: 'Body & Hair', icon: '👤' },
                 { id: 'outfit', label: 'Garb & Equipment', icon: '🛡️' },
-                { id: 'identity', label: 'Identity & Lineage', icon: '📜' },
               ].map((tab) => (
                 <button
                   key={tab.id}

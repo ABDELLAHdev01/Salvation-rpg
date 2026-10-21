@@ -21,6 +21,7 @@ const STORAGE_KEYS = [
   'workshopFilters',
   'hasSeenOnboarding',
   'hasSeenMovementTutorial',
+  'hasCreatedCharacter',
   'hasSeenDiscordInvite',
 ];
 

@@ -1,4 +1,5 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import audioManager from '../../../core/audio/AudioManager';
 import characterService from '../../../core/services/CharacterService';
@@ -25,9 +26,18 @@ export default function InGameWardrobeModal({
   character,
   onCharacterUpdate = () => {},
 }) {
+  const navigate = useNavigate();
   const [custom, setCustom] = useState(() => sanitizeCustomization(character?.customization));
+  const [heroName, setHeroName] = useState(() => character?.characterName || character?.name || '');
   const [direction, setDirection] = useState('south');
   const [category, setCategory] = useState('hair');
+
+  useEffect(() => {
+    if (isOpen) {
+      setCustom(sanitizeCustomization(character?.customization));
+      setHeroName(character?.characterName || character?.name || '');
+    }
+  }, [character, isOpen]);
 
   const previewUrl = useMemo(() => {
     return renderCharacterPreviewDataUrl(custom, direction, 5);
@@ -50,12 +60,15 @@ export default function InGameWardrobeModal({
     audioManager.play('levelup');
     try {
       const sanitized = sanitizeCustomization(custom);
+      const trimmed = heroName.trim() || character?.characterName || character?.name || 'Warden';
       const updated = await characterService.updateCharacter({
+        name: trimmed,
+        characterName: trimmed,
         customization: sanitized,
       });
       onCharacterUpdate(updated);
       gameEventBridge.emit(gameEvents.REFRESH_CUSTOMIZATION, { customization: sanitized });
-      toast.success('Wardrobe updated in realm!', { icon: '✨' });
+      toast.success('Wardrobe & hero profile updated!', { icon: '✨' });
       onClose();
     } catch {
       toast.error('Failed to update wardrobe appearance.');
@@ -131,12 +144,27 @@ export default function InGameWardrobeModal({
               ))}
             </div>
 
+            {/* Adventurer Name input */}
+            <div className="mt-3 w-full flex flex-col gap-1">
+              <label htmlFor="wardrobeHeroName" className="text-[10px] font-bold uppercase tracking-wider text-amber-300">
+                Adventurer Name:
+              </label>
+              <input
+                id="wardrobeHeroName"
+                type="text"
+                value={heroName}
+                onChange={(e) => setHeroName(e.target.value)}
+                placeholder="Adventurer Name"
+                className="w-full rounded border border-amber-900/60 bg-black/80 px-2 py-1 text-xs font-serif font-bold text-amber-100 focus:border-amber-400 focus:outline-none"
+              />
+            </div>
+
             <button
               type="button"
               onClick={handleRandomize}
-              className="rpg-btn-brown mt-3 w-full py-1 text-xs font-bold"
+              className="rpg-btn-brown mt-2 w-full py-1 text-xs font-bold"
             >
-              🎲 Randomize
+              🎲 Randomize Look
             </button>
           </div>
 
@@ -346,22 +374,37 @@ export default function InGameWardrobeModal({
 
         {/* Footer */}
         <div className="mt-5 flex items-center justify-between border-t border-amber-900/50 pt-4">
-          <button
-            type="button"
-            onClick={() => {
-              audioManager.play('tap');
-              onClose();
-            }}
-            className="rpg-btn-brown text-xs py-1.5 px-4"
-          >
-            Cancel
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => {
+                audioManager.play('tap');
+                onClose();
+              }}
+              className="rpg-btn-brown text-xs py-1.5 px-4"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                audioManager.play('tap');
+                onClose();
+                navigate('/character');
+              }}
+              className="rpg-btn-brown text-xs py-1.5 px-3 flex items-center gap-1.5"
+              title="Open full Character Creation Forge"
+            >
+              <span>⚒️</span>
+              <span className="hidden sm:inline">Character Forge</span>
+            </button>
+          </div>
           <button
             type="button"
             onClick={handleApply}
             className="rpg-btn-beige text-xs py-1.5 px-6 font-serif font-bold text-amber-950"
           >
-            Apply Appearance ✨
+            Apply Changes ✨
           </button>
         </div>
       </div>

@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import authService from '../../core/services/AuthService';
 import characterService from '../../core/services/CharacterService';
@@ -28,6 +29,7 @@ const ZONES = [
 ];
 
 export default function WorldPage() {
+  const navigate = useNavigate();
   const [character, setCharacter] = useState(null);
   const [profile, setProfile] = useState(null);
   const [currentZone, setCurrentZone] = useState('homestead');
@@ -95,22 +97,12 @@ export default function WorldPage() {
     const username = authService.getCurrentUsername() || 'offline-hero';
     let savedCharacter = characterService.getMockCharacter(username);
     let savedProfile = characterService.getMockProfile(username);
+    const hasCreatedCharacter = localStorage.getItem('hasCreatedCharacter') === 'true';
 
-    // Auto-initialize default Warden if none exists so game boots immediately
-    if (!savedCharacter) {
-      savedCharacter = {
-        characterName: 'Valen',
-        race: 'HUMAN',
-        raceKey: 'human',
-        className: 'Vanguard',
-        gender: 'Male',
-        city: 'eldoria',
-        customization: { ...DEFAULT_CUSTOMIZATION },
-        userId: username,
-      };
-      const characters = JSON.parse(localStorage.getItem('mockCharacters') || '{}');
-      characters[username] = savedCharacter;
-      localStorage.setItem('mockCharacters', JSON.stringify(characters));
+    // First time playing: If player hasn't created a character yet, direct them to Character Creation!
+    if (!savedCharacter || !hasCreatedCharacter) {
+      navigate('/character', { replace: true });
+      return;
     }
 
     if (!savedProfile) {
@@ -126,7 +118,7 @@ export default function WorldPage() {
 
     setCharacter(savedCharacter);
     setProfile(savedProfile);
-  }, []);
+  }, [navigate]);
 
   useEffect(() => {
     loadActiveHero();
@@ -303,6 +295,15 @@ export default function WorldPage() {
     audioManager.play('tap');
     gameEventBridge.emit(gameEvents.USE_HEALING_POTION);
   };
+
+  if (!character) {
+    return (
+      <div className="fixed inset-0 bg-stone-950 flex flex-col items-center justify-center text-amber-200 font-serif select-none">
+        <span className="text-3xl animate-bounce mb-2">⚔️</span>
+        <p className="text-sm tracking-wide text-amber-300">Awakening Warden...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="fixed inset-0 w-screen h-screen overflow-hidden bg-black select-none z-0">
