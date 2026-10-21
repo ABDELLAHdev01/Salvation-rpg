@@ -59,26 +59,27 @@ async function buildTerrainTiles() {
 
   console.log('Building terrain tiles...');
 
-  // 1. Authentic Smooth RPG Meadow Grass from assets (Kenney CC0 - Darker tone)
-  if (fs.existsSync(path.join(dir, 'RPGpack_sheet.png'))) {
-    await sharp(path.join(dir, 'RPGpack_sheet.png'))
-      .extract({ left: 3 * 64, top: 2 * 64, width: 64, height: 64 })
-      .resize(32, 32, { kernel: 'lanczos3' })
-      .linear(0.80, 0)
-      .png()
-      .toFile(path.join(dir, 'tile_grass.png'));
-  } else {
-    const grass = createPixelBuffer(32, 32);
-    grass.rect(0, 0, 32, 32, 112, 156, 41); // Richer meadow green base
-    for (let y = 0; y < 32; y += 4) {
-      for (let x = 0; x < 32; x += 4) {
-        const v = (x * 7 + y * 13) % 4;
-        if (v === 0) grass.rect(x, y, 2, 2, 133, 189, 47);
-        else if (v === 1) grass.rect(x + 1, y + 1, 2, 1, 148, 203, 59);
-      }
+  // 1. Lush Multi-Toned Seamless Meadow Grass (32x32)
+  const grass = createPixelBuffer(32, 32);
+  grass.rect(0, 0, 32, 32, 118, 180, 52); // Base vibrant meadow green
+  for (let y = 0; y < 32; y++) {
+    for (let x = 0; x < 32; x++) {
+      const n = (x * 17 + y * 23) % 7;
+      if (n === 0) grass.set(x, y, 106, 166, 44);
+      else if (n === 1) grass.set(x, y, 126, 190, 58);
     }
-    await grass.save(path.join(dir, 'tile_grass.png'));
   }
+  const blades = [
+    { x: 4, y: 6 }, { x: 18, y: 4 }, { x: 12, y: 16 }, { x: 26, y: 14 },
+    { x: 6, y: 24 }, { x: 22, y: 26 }
+  ];
+  for (const b of blades) {
+    grass.rect(b.x, b.y + 2, 3, 1, 88, 142, 32);
+    grass.rect(b.x, b.y, 1, 2, 140, 205, 66);
+    grass.rect(b.x + 1, b.y - 1, 1, 3, 155, 222, 78);
+    grass.rect(b.x + 2, b.y, 1, 2, 134, 198, 60);
+  }
+  await grass.save(path.join(dir, 'tile_grass.png'));
 
   // 2. Cobblestone / Dirt Path Tile (32x32)
   if (fs.existsSync(path.join(dir, 'RPGpack_sheet.png'))) {

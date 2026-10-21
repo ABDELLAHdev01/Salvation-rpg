@@ -111,6 +111,11 @@ export default class WorldScene extends Phaser.Scene {
 
       // 2. Preload authentic CC0 terrain assets (normal smooth meadow grass from Kenney RPG assets)
       this.load.image('tile_grass', '/assets/tilesets/tile_grass.png');
+      this.load.image('tile_grass_flowers', '/assets/tilesets/tile_grass_flowers.png');
+      this.load.image('tile_grass_clovers', '/assets/tilesets/tile_grass_clovers.png');
+      this.load.image('tile_grass_pebbles', '/assets/tilesets/tile_grass_pebbles.png');
+      this.load.image('tile_dirt', '/assets/tilesets/tile_dirt.png');
+      this.load.image('tile_city_stone', '/assets/tilesets/tile_city_stone.png');
       this.load.image('tile_path', '/assets/tilesets/tile_path.png');
       this.load.image('tile_stone', '/assets/tilesets/tile_stone.png');
       this.load.image('tile_soil', '/assets/tilesets/tile_soil.png');
@@ -121,6 +126,15 @@ export default class WorldScene extends Phaser.Scene {
       this.load.image('prop_house', '/assets/tilesets/prop_house.png');
       this.load.image('prop_chest', '/assets/tilesets/prop_chest.png');
       this.load.image('prop_workbench', '/assets/tilesets/prop_workbench.png');
+      this.load.image('prop_fence_h', '/assets/tilesets/prop_fence_h.png');
+      this.load.image('prop_fence_v', '/assets/tilesets/prop_fence_v.png');
+      this.load.image('prop_well', '/assets/tilesets/prop_well.png');
+      this.load.image('prop_bush', '/assets/tilesets/prop_bush.png');
+      this.load.image('prop_berry_bush', '/assets/tilesets/prop_berry_bush.png');
+      this.load.image('prop_rock', '/assets/tilesets/prop_rock.png');
+      this.load.image('prop_reeds', '/assets/tilesets/prop_reeds.png');
+      this.load.image('prop_lilypad', '/assets/tilesets/prop_lilypad.png');
+      this.load.image('prop_flowerbed', '/assets/tilesets/prop_flowerbed.png');
 
       // 4. Preload City, Guild & Open-World Master Props
       this.load.image('prop_guild_board', '/assets/tilesets/prop_guild_board.png');
@@ -141,14 +155,14 @@ export default class WorldScene extends Phaser.Scene {
     // 0. Ensure Camera FX is clean and set mood lighting
     this.cameras.main.resetFX();
     const bgColors = {
-      homestead: '#3c6624',
+      homestead: '#243818',
       homestead_interior: '#2a170b',
-      west_road: '#3c6624',
-      forest: '#274b1a',
+      west_road: '#233418',
+      forest: '#142510',
       mine: '#181a20',
-      village: '#3a2718',
+      village: '#25211d',
     };
-    this.cameras.main.setBackgroundColor(bgColors[this.currentZone] || '#3c6624');
+    this.cameras.main.setBackgroundColor(bgColors[this.currentZone] || '#243818');
     this.cameras.main.fadeIn(250, 0, 0, 0);
 
     // 0b. Regional BGM & Ambience
@@ -627,11 +641,30 @@ export default class WorldScene extends Phaser.Scene {
 
     this.physics.world.setBounds(0, 0, worldW, worldH);
 
-    // Ground Layer - Extended border buffer so terrain seamlessly covers large viewports
-    const baseTile = this.currentZone === 'mine' ? 'tile_stone' : (this.currentZone === 'homestead_interior' ? 'tile_wood_floor' : 'tile_grass');
+    // Ground Layer - Extended border buffer with organic meadow stippling and zone-specific ground
     for (let x = -15; x < mapWidth + 15; x += 1) {
       for (let y = -15; y < mapHeight + 15; y += 1) {
-        this.add.image(x * 32 + 16, y * 32 + 16, baseTile);
+        let tileKey;
+        if (this.currentZone === 'mine') {
+          tileKey = 'tile_stone';
+        } else if (this.currentZone === 'homestead_interior') {
+          tileKey = 'tile_wood_floor';
+        } else if (this.currentZone === 'village') {
+          tileKey = 'tile_city_stone';
+        } else {
+          // Organic meadow variation across terrain
+          const hash = Math.abs(x * 31 + y * 47) % 100;
+          if (hash < 12) {
+            tileKey = 'tile_grass_flowers';
+          } else if (hash < 22) {
+            tileKey = 'tile_grass_clovers';
+          } else if (hash < 30) {
+            tileKey = 'tile_grass_pebbles';
+          } else {
+            tileKey = 'tile_grass';
+          }
+        }
+        this.add.image(x * 32 + 16, y * 32 + 16, tileKey);
       }
     }
 
@@ -725,12 +758,25 @@ export default class WorldScene extends Phaser.Scene {
   }
 
   buildHomesteadProps() {
+    // 0. Stone Terrace & Courtyard in front of Manor House
+    for (let cx = 10; cx <= 18; cx += 1) {
+      for (let cy = 4; cy <= 6; cy += 1) {
+        this.add.image(cx * 32 + 16, cy * 32 + 16, 'tile_stone');
+      }
+    }
+
     // 1. Manor House
     const house = this.add.image(14 * 32 + 16, 4 * 32, 'prop_house');
     house.setDepth(15);
     const houseCollider = this.obstacles.create(14 * 32 + 16, 4 * 32 + 10, 'col_invisible');
     houseCollider.setSize(80, 40);
     houseCollider.setVisible(false);
+
+    // Flowerbed Planters flanking Manor Porch
+    const fbL = this.add.image(11 * 32, 6 * 32 + 16, 'prop_flowerbed');
+    fbL.setDepth(14);
+    const fbR = this.add.image(17 * 32 + 16, 6 * 32 + 16, 'prop_flowerbed');
+    fbR.setDepth(14);
 
     // Front Door Entrance to Cottage Interior
     this.registerInteractive(14 * 32 + 16, 5 * 32 + 10, 50, '[E] Enter Cottage Home 🏡', () => {
@@ -756,7 +802,7 @@ export default class WorldScene extends Phaser.Scene {
       gameEventBridge.emit(gameEvents.WORKBENCH_OPEN);
     });
 
-    // 4. Perimeter Trees
+    // 4. Perimeter Trees & Rustic Timber Fences
     for (let x = 2; x < 38; x += 3) {
       if (x < 12 || x > 18) {
         const t = this.add.image(x * 32, 2 * 32, 'prop_tree');
@@ -766,6 +812,35 @@ export default class WorldScene extends Phaser.Scene {
         col.setVisible(false);
       }
     }
+
+    // Rustic Wood Fences around Farmstead Perimeter
+    for (let fx = 4; fx <= 12; fx += 1) {
+      if (fx !== 10) {
+        const fence = this.obstacles.create(fx * 32 + 16, 16 * 32 + 16, 'prop_fence_h');
+        fence.setDepth(12);
+        fence.setSize(32, 16);
+      }
+    }
+    for (let fy = 17; fy <= 22; fy += 1) {
+      const fenceV = this.obstacles.create(4 * 32 + 16, fy * 32 + 16, 'prop_fence_v');
+      fenceV.setDepth(12);
+      fenceV.setSize(16, 32);
+    }
+
+    // Dirt access trail connecting Manor Road to Farm Plots
+    for (let dx = 6; dx <= 14; dx += 1) {
+      this.add.image(dx * 32 + 16, 17 * 32 + 16, 'tile_dirt');
+    }
+
+    // Stone Water Well beside Farm Plots
+    const well = this.obstacles.create(12 * 32, 19 * 32 + 16, 'prop_well');
+    well.setDepth(15);
+    well.setSize(28, 22);
+    this.registerInteractive(12 * 32, 19 * 32 + 16, 48, '[E] Draw Fresh Well Water 🪣', () => {
+      audioManager.synthSplash();
+      this.showFloatingText(12 * 32, 19 * 32 - 15, '💧 Sweet Spring Water Drawn!', '#38bdf8');
+      gameEventBridge.emit(gameEvents.PROP_INTERACT, { propId: 'prop_well' });
+    });
 
     // 5. Farm Plots Grid
     const plots = this.profile?.farmPlots || [
@@ -822,7 +897,15 @@ export default class WorldScene extends Phaser.Scene {
       gameEventBridge.emit(gameEvents.PROP_INTERACT, { propId: 'prop_road_sign' });
     });
 
-    // 6. Homestead Pond & Fishing Spot
+    // 6. Homestead Pond with Sand Shoreline, Reeds & Water Lily
+    // Natural earthen shoreline surrounding pond water
+    for (let px = 27; px <= 33; px += 1) {
+      for (let py = 19; py <= 24; py += 1) {
+        if (px === 27 || px === 33 || py === 19 || py === 24) {
+          this.add.image(px * 32 + 16, py * 32 + 16, 'tile_dirt');
+        }
+      }
+    }
     for (let px = 28; px <= 32; px += 1) {
       for (let py = 20; py <= 23; py += 1) {
         this.add.image(px * 32 + 16, py * 32 + 16, 'tile_water');
@@ -841,11 +924,37 @@ export default class WorldScene extends Phaser.Scene {
       repeat: -1,
     });
 
+    // Pond shoreline reeds & cattails
+    const reeds1 = this.add.image(28 * 32 + 4, 20 * 32 + 8, 'prop_reeds');
+    reeds1.setDepth(8);
+    const reeds2 = this.add.image(32 * 32 + 12, 23 * 32, 'prop_reeds');
+    reeds2.setDepth(8);
+
+    // Blooming lotus water lilypad
+    const lily = this.add.image(31 * 32, 21 * 32, 'prop_lilypad');
+    lily.setDepth(7);
+
     const fishSpot = this.add.image(30 * 32, 22 * 32, 'prop_fishing_spot');
     fishSpot.setDepth(7);
     this.registerInteractive(30 * 32, 22 * 32, 55, '[E] Cast Fishing Line into Pond 🎣', () => {
       audioManager.synthSplash();
       gameEventBridge.emit('OPEN_IN_GAME_FISHING');
+    });
+
+    // 7. Organic Foliage, Sweetberry Shrubs & Granite Rocks
+    const homesteadDecor = [
+      { x: 8, y: 7, tex: 'prop_bush' },
+      { x: 21, y: 6, tex: 'prop_berry_bush' },
+      { x: 25, y: 10, tex: 'prop_rock' },
+      { x: 7, y: 13, tex: 'prop_berry_bush' },
+      { x: 22, y: 15, tex: 'prop_bush' },
+      { x: 5, y: 24, tex: 'prop_rock' },
+      { x: 26, y: 24, tex: 'prop_berry_bush' },
+    ];
+    homesteadDecor.forEach((d) => {
+      const sp = this.obstacles.create(d.x * 32 + 16, d.y * 32 + 16, d.tex);
+      sp.setDepth(11);
+      sp.setSize(24, 18);
     });
 
     // 7. Wall Torches on Manor House
@@ -1065,11 +1174,20 @@ export default class WorldScene extends Phaser.Scene {
 
   buildWestRoadProps() {
     const mapWidth = 40;
-    // Central cobblestone highway spanning full width
+    // Central cobblestone highway spanning full width with earthen road shoulders
     for (let x = 0; x < mapWidth; x += 1) {
+      this.add.image(x * 32 + 16, 12 * 32 + 16, 'tile_dirt');
       for (let y = 13; y <= 15; y += 1) {
         this.add.image(x * 32 + 16, y * 32 + 16, 'tile_path');
       }
+      this.add.image(x * 32 + 16, 16 * 32 + 16, 'tile_dirt');
+    }
+
+    // Wooden Guard Rails along stream crossing
+    for (let fx = 21; fx <= 27; fx += 1) {
+      const gRail = this.obstacles.create(fx * 32 + 16, 11 * 32 + 16, 'prop_fence_h');
+      gRail.setDepth(11);
+      gRail.setSize(32, 16);
     }
 
     // Northern tree barrier with natural depth
@@ -1183,6 +1301,13 @@ export default class WorldScene extends Phaser.Scene {
       this.add.image(20 * 32 + 16, y * 32 + 16, 'tile_path');
     }
 
+    // City Perimeter Wall (North Border)
+    for (let wx = 0; wx < 40; wx += 1) {
+      const wall = this.obstacles.create(wx * 32 + 16, 16, 'tile_indoor_wall');
+      wall.setDepth(16);
+      wall.setSize(32, 32);
+    }
+
     // 1. CENTER PLAZA: Town Fountain & Notice Board
     const fountain = this.obstacles.create(20 * 32, 14 * 32 + 16, 'prop_town_fountain');
     fountain.setDepth(14);
@@ -1192,6 +1317,14 @@ export default class WorldScene extends Phaser.Scene {
       this.showFloatingText(20 * 32, 14 * 32 - 15, 'Fortune Smiles Upon You! (+1 Renown)', '#fde047');
       gameEventBridge.emit(gameEvents.PROP_INTERACT, { propId: 'prop_town_fountain' });
     });
+
+    // Town Plaza Flowerbeds
+    const fb1 = this.add.image(18 * 32, 14 * 32 + 16, 'prop_flowerbed');
+    fb1.setDepth(15);
+    const fb2 = this.add.image(22 * 32, 14 * 32 + 16, 'prop_flowerbed');
+    fb2.setDepth(15);
+    const fb3 = this.add.image(11 * 32, 9 * 32, 'prop_flowerbed');
+    fb3.setDepth(13);
 
     // Town Fountain Fishing Spot
     const fountainFish = this.add.image(20 * 32, 16 * 32, 'prop_fishing_spot');

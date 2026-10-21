@@ -31,19 +31,165 @@ export function registerWorldTextures(scene) {
   // 1. TERRAIN TILES (32x32)
   // =========================================================================
 
-  // Tile: Natural Velvet Meadow Grass (Kenney RPG style)
+  // Tile: Rich Textured Fantasy Meadow Grass
   const grassCanvas = createTileCanvas(TILE_SIZE, TILE_SIZE, (ctx) => {
-    ctx.fillStyle = '#709c29'; // Natural warm meadow green base
+    ctx.fillStyle = '#76b434'; // Vibrant warm meadow green base
     ctx.fillRect(0, 0, TILE_SIZE, TILE_SIZE);
-    ctx.fillStyle = '#679224'; // Subtle organic shading
-    ctx.fillRect(6, 8, 3, 2);
-    ctx.fillRect(20, 16, 3, 2);
-    ctx.fillStyle = '#7ba930'; // Soft sunlit blade glints
-    ctx.fillRect(7, 7, 2, 1);
-    ctx.fillRect(21, 15, 2, 1);
+
+    // Organic stippled blade texture across tile
+    for (let y = 0; y < TILE_SIZE; y += 1) {
+      for (let x = 0; x < TILE_SIZE; x += 1) {
+        const n = (x * 17 + y * 23) % 7;
+        if (n === 0) {
+          ctx.fillStyle = '#68a42c';
+          ctx.fillRect(x, y, 1, 1);
+        } else if (n === 1) {
+          ctx.fillStyle = '#82be3a';
+          ctx.fillRect(x, y, 1, 1);
+        }
+      }
+    }
+
+    // Pixel grass blade clusters with root shadows
+    const blades = [
+      { x: 4, y: 6 }, { x: 18, y: 4 }, { x: 12, y: 16 }, { x: 26, y: 14 },
+      { x: 6, y: 24 }, { x: 22, y: 26 },
+    ];
+    blades.forEach((b) => {
+      ctx.fillStyle = '#558e20'; // Root shadow
+      ctx.fillRect(b.x, b.y + 2, 3, 1);
+      ctx.fillStyle = '#8ec942'; // Left blade
+      ctx.fillRect(b.x, b.y, 1, 2);
+      ctx.fillStyle = '#9fe04e'; // Tall center highlight blade
+      ctx.fillRect(b.x + 1, b.y - 1, 1, 3);
+      ctx.fillStyle = '#84c238'; // Right blade
+      ctx.fillRect(b.x + 2, b.y, 1, 2);
+    });
   });
   if (!scene.textures.exists('tile_grass')) {
     scene.textures.addCanvas('tile_grass', grassCanvas);
+  }
+
+  // Tile: Meadow Grass with Golden Buttercups & Daisies
+  const grassFlowersCanvas = createTileCanvas(TILE_SIZE, TILE_SIZE, (ctx) => {
+    ctx.drawImage(grassCanvas, 0, 0);
+    // Daisy at (8, 8)
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(8, 7, 1, 3);
+    ctx.fillRect(7, 8, 3, 1);
+    ctx.fillStyle = '#fbbf24';
+    ctx.fillRect(8, 8, 1, 1);
+    // Buttercup at (24, 12)
+    ctx.fillStyle = '#f59e0b';
+    ctx.fillRect(23, 11, 3, 3);
+    ctx.fillStyle = '#d97706';
+    ctx.fillRect(24, 12, 1, 1);
+    // Bluebell at (14, 22)
+    ctx.fillStyle = '#60a5fa';
+    ctx.fillRect(13, 21, 3, 3);
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(14, 22, 1, 1);
+  });
+  if (!scene.textures.exists('tile_grass_flowers')) {
+    scene.textures.addCanvas('tile_grass_flowers', grassFlowersCanvas);
+  }
+
+  // Tile: Meadow Grass with Emerald Clover Patches
+  const grassCloversCanvas = createTileCanvas(TILE_SIZE, TILE_SIZE, (ctx) => {
+    ctx.drawImage(grassCanvas, 0, 0);
+    // Clover 1
+    ctx.fillStyle = '#22c55e';
+    ctx.fillRect(10, 13, 1, 1);
+    ctx.fillRect(9, 14, 1, 1);
+    ctx.fillRect(11, 14, 1, 1);
+    ctx.fillStyle = '#15803d';
+    ctx.fillRect(10, 15, 1, 1);
+    // Clover 2
+    ctx.fillStyle = '#22c55e';
+    ctx.fillRect(22, 7, 1, 1);
+    ctx.fillRect(21, 8, 1, 1);
+    ctx.fillRect(23, 8, 1, 1);
+    ctx.fillStyle = '#15803d';
+    ctx.fillRect(22, 9, 1, 1);
+  });
+  if (!scene.textures.exists('tile_grass_clovers')) {
+    scene.textures.addCanvas('tile_grass_clovers', grassCloversCanvas);
+  }
+
+  // Tile: Meadow Grass with Stepping Pebbles
+  const grassPebblesCanvas = createTileCanvas(TILE_SIZE, TILE_SIZE, (ctx) => {
+    ctx.drawImage(grassCanvas, 0, 0);
+    // River pebble 1
+    ctx.fillStyle = '#9ca3af';
+    ctx.fillRect(15, 12, 3, 2);
+    ctx.fillStyle = '#e5e7eb';
+    ctx.fillRect(15, 11, 2, 1);
+    ctx.fillStyle = '#4b5563';
+    ctx.fillRect(15, 14, 3, 1);
+    // Pebble 2
+    ctx.fillStyle = '#a8a29e';
+    ctx.fillRect(8, 20, 2, 2);
+    ctx.fillStyle = '#57534e';
+    ctx.fillRect(8, 22, 2, 1);
+  });
+  if (!scene.textures.exists('tile_grass_pebbles')) {
+    scene.textures.addCanvas('tile_grass_pebbles', grassPebblesCanvas);
+  }
+
+  // Tile: Rich Loam & Dirt Pathway
+  const dirtCanvas = createTileCanvas(TILE_SIZE, TILE_SIZE, (ctx) => {
+    ctx.fillStyle = '#966035'; // Rich earth base
+    ctx.fillRect(0, 0, TILE_SIZE, TILE_SIZE);
+    for (let y = 0; y < TILE_SIZE; y += 1) {
+      for (let x = 0; x < TILE_SIZE; x += 1) {
+        const v = (x * 19 + y * 31) % 5;
+        if (v === 0) {
+          ctx.fillStyle = '#7e4d26';
+          ctx.fillRect(x, y, 1, 1);
+        } else if (v === 1) {
+          ctx.fillStyle = '#ae7544';
+          ctx.fillRect(x, y, 1, 1);
+        }
+      }
+    }
+    // Soil pebbles
+    ctx.fillStyle = '#d6b38c';
+    ctx.fillRect(6, 10, 2, 1);
+    ctx.fillStyle = '#5a3517';
+    ctx.fillRect(20, 18, 2, 1);
+    ctx.fillStyle = '#c79d72';
+    ctx.fillRect(14, 26, 2, 2);
+  });
+  if (!scene.textures.exists('tile_dirt')) {
+    scene.textures.addCanvas('tile_dirt', dirtCanvas);
+  }
+
+  // Tile: City Plaza Flagstone Pavers
+  const cityStoneCanvas = createTileCanvas(TILE_SIZE, TILE_SIZE, (ctx) => {
+    ctx.fillStyle = '#4e443c'; // Dark mortar grout
+    ctx.fillRect(0, 0, TILE_SIZE, TILE_SIZE);
+    const pavers = [
+      { x: 1, y: 1, w: 14, h: 8, fill: '#9b948c', hi: '#b8b1a8', sh: '#736c64' },
+      { x: 17, y: 1, w: 14, h: 8, fill: '#8c847d', hi: '#a8a098', sh: '#686058' },
+      { x: 1, y: 11, w: 7, h: 9, fill: '#8f8880', hi: '#aaa299', sh: '#6b645c' },
+      { x: 10, y: 11, w: 13, h: 9, fill: '#a59e96', hi: '#c2bbb2', sh: '#7e7770' },
+      { x: 25, y: 11, w: 6, h: 9, fill: '#948c85', hi: '#b0a8a0', sh: '#706861' },
+      { x: 1, y: 22, w: 13, h: 9, fill: '#918a82', hi: '#ada59d', sh: '#6d665f' },
+      { x: 16, y: 22, w: 15, h: 9, fill: '#a09890', hi: '#bcb4ac', sh: '#79726a' },
+    ];
+    pavers.forEach((p) => {
+      ctx.fillStyle = p.fill;
+      ctx.fillRect(p.x, p.y, p.w, p.h);
+      ctx.fillStyle = p.hi;
+      ctx.fillRect(p.x, p.y, p.w, 1);
+      ctx.fillRect(p.x, p.y, 1, p.h);
+      ctx.fillStyle = p.sh;
+      ctx.fillRect(p.x, p.y + p.h - 1, p.w, 1);
+      ctx.fillRect(p.x + p.w - 1, p.y, 1, p.h);
+    });
+  });
+  if (!scene.textures.exists('tile_city_stone')) {
+    scene.textures.addCanvas('tile_city_stone', cityStoneCanvas);
   }
 
   // Tile: Sun-Worn Cobblestone Dirt Path
@@ -734,6 +880,275 @@ export function registerWorldTextures(scene) {
       ctx.fillRect(6, 12, 20, 1);
     });
     scene.textures.addCanvas('prop_doormat', doormatCanvas);
+  }
+
+  // Horizontal Timber Post & Rail Fence (32x32)
+  if (!scene.textures.exists('prop_fence_h')) {
+    const fenceHCanvas = createTileCanvas(32, 32, (ctx) => {
+      // Left Post
+      ctx.fillStyle = '#78350f';
+      ctx.fillRect(2, 6, 4, 24);
+      ctx.fillStyle = '#92400e';
+      ctx.fillRect(2, 6, 1, 24);
+      ctx.fillStyle = '#451a03';
+      ctx.fillRect(5, 6, 1, 24);
+      ctx.fillStyle = '#b45309';
+      ctx.fillRect(1, 4, 6, 3);
+      // Right Post
+      ctx.fillStyle = '#78350f';
+      ctx.fillRect(26, 6, 4, 24);
+      ctx.fillStyle = '#92400e';
+      ctx.fillRect(26, 6, 1, 24);
+      ctx.fillStyle = '#451a03';
+      ctx.fillRect(29, 6, 1, 24);
+      ctx.fillStyle = '#b45309';
+      ctx.fillRect(25, 4, 6, 3);
+      // Top Rail
+      ctx.fillStyle = '#92400e';
+      ctx.fillRect(0, 12, 32, 3);
+      ctx.fillStyle = '#b45309';
+      ctx.fillRect(0, 12, 32, 1);
+      ctx.fillStyle = '#451a03';
+      ctx.fillRect(0, 14, 32, 1);
+      // Bottom Rail
+      ctx.fillStyle = '#92400e';
+      ctx.fillRect(0, 20, 32, 3);
+      ctx.fillStyle = '#b45309';
+      ctx.fillRect(0, 20, 32, 1);
+      ctx.fillStyle = '#451a03';
+      ctx.fillRect(0, 22, 32, 1);
+      // Nails
+      ctx.fillStyle = '#1e293b';
+      ctx.fillRect(4, 13, 1, 1);
+      ctx.fillRect(4, 21, 1, 1);
+      ctx.fillRect(28, 13, 1, 1);
+      ctx.fillRect(28, 21, 1, 1);
+    });
+    scene.textures.addCanvas('prop_fence_h', fenceHCanvas);
+  }
+
+  // Vertical Timber Fence (32x32)
+  if (!scene.textures.exists('prop_fence_v')) {
+    const fenceVCanvas = createTileCanvas(32, 32, (ctx) => {
+      ctx.fillStyle = '#78350f';
+      ctx.fillRect(14, 0, 4, 32);
+      ctx.fillStyle = '#92400e';
+      ctx.fillRect(14, 0, 1, 32);
+      ctx.fillStyle = '#451a03';
+      ctx.fillRect(17, 0, 1, 32);
+      ctx.fillStyle = '#92400e';
+      ctx.fillRect(11, 6, 10, 3);
+      ctx.fillRect(11, 22, 10, 3);
+    });
+    scene.textures.addCanvas('prop_fence_v', fenceVCanvas);
+  }
+
+  // Stone Water Well (32x32)
+  if (!scene.textures.exists('prop_well')) {
+    const wellCanvas = createTileCanvas(32, 32, (ctx) => {
+      // Shadow
+      ctx.fillStyle = 'rgba(0,0,0,0.35)';
+      ctx.beginPath();
+      ctx.ellipse(16, 26, 12, 4, 0, 0, Math.PI * 2);
+      ctx.fill();
+      // Stone Basin
+      ctx.fillStyle = '#6b7280';
+      ctx.beginPath();
+      ctx.ellipse(16, 22, 11, 7, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#9ca3af';
+      ctx.beginPath();
+      ctx.ellipse(16, 21, 10, 6, 0, 0, Math.PI * 2);
+      ctx.fill();
+      // Water center
+      ctx.fillStyle = '#0284c7';
+      ctx.beginPath();
+      ctx.ellipse(16, 21, 8, 4, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#7dd3fc';
+      ctx.fillRect(14, 20, 4, 1);
+      // Posts
+      ctx.fillStyle = '#78350f';
+      ctx.fillRect(6, 8, 2, 14);
+      ctx.fillRect(24, 8, 2, 14);
+      // Winch & bucket
+      ctx.fillStyle = '#92400e';
+      ctx.fillRect(8, 12, 16, 2);
+      ctx.fillStyle = '#fef08a';
+      ctx.fillRect(15, 12, 2, 7);
+      ctx.fillStyle = '#451a03';
+      ctx.fillRect(14, 18, 4, 3);
+      // Pitched Roof
+      for (let r = 0; r < 7; r += 1) {
+        const w = 24 - r * 2;
+        const x = 16 - Math.floor(w / 2);
+        ctx.fillStyle = r % 2 === 0 ? '#b91c1c' : '#991b1b';
+        ctx.fillRect(x, 7 - r, w, 1);
+      }
+      ctx.fillStyle = '#7f1d1d';
+      ctx.fillRect(4, 7, 24, 1);
+    });
+    scene.textures.addCanvas('prop_well', wellCanvas);
+  }
+
+  // Lush Leafy Green Bush (32x32)
+  if (!scene.textures.exists('prop_bush')) {
+    const bushCanvas = createTileCanvas(32, 32, (ctx) => {
+      ctx.fillStyle = 'rgba(0,0,0,0.3)';
+      ctx.beginPath();
+      ctx.ellipse(16, 25, 12, 4, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#15803d';
+      ctx.beginPath();
+      ctx.ellipse(16, 18, 11, 9, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#16a34a';
+      ctx.beginPath();
+      ctx.ellipse(11, 15, 7, 6, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.ellipse(21, 15, 7, 6, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#22c55e';
+      ctx.beginPath();
+      ctx.ellipse(16, 13, 8, 7, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#86efac';
+      ctx.beginPath();
+      ctx.ellipse(16, 11, 5, 3, 0, 0, Math.PI * 2);
+      ctx.fill();
+    });
+    scene.textures.addCanvas('prop_bush', bushCanvas);
+  }
+
+  // Sweetberry Bush with Red Berries (32x32)
+  if (!scene.textures.exists('prop_berry_bush')) {
+    const berryBushCanvas = createTileCanvas(32, 32, (ctx) => {
+      ctx.fillStyle = 'rgba(0,0,0,0.3)';
+      ctx.beginPath();
+      ctx.ellipse(16, 25, 12, 4, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#15803d';
+      ctx.beginPath();
+      ctx.ellipse(16, 18, 11, 9, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#16a34a';
+      ctx.beginPath();
+      ctx.ellipse(11, 15, 7, 6, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.ellipse(21, 15, 7, 6, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#22c55e';
+      ctx.beginPath();
+      ctx.ellipse(16, 13, 8, 7, 0, 0, Math.PI * 2);
+      ctx.fill();
+      // Red sweetberries
+      const bSpots = [
+        { x: 10, y: 15 }, { x: 15, y: 12 }, { x: 21, y: 14 },
+        { x: 13, y: 19 }, { x: 19, y: 18 },
+      ];
+      bSpots.forEach((pt) => {
+        ctx.fillStyle = '#dc2626';
+        ctx.fillRect(pt.x, pt.y, 2, 2);
+        ctx.fillStyle = '#fca5a5';
+        ctx.fillRect(pt.x, pt.y, 1, 1);
+      });
+    });
+    scene.textures.addCanvas('prop_berry_bush', berryBushCanvas);
+  }
+
+  // Mossy Granite Boulder (32x32)
+  if (!scene.textures.exists('prop_rock')) {
+    const rockCanvas = createTileCanvas(32, 32, (ctx) => {
+      ctx.fillStyle = 'rgba(0,0,0,0.35)';
+      ctx.beginPath();
+      ctx.ellipse(16, 24, 10, 4, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#4b5563';
+      ctx.beginPath();
+      ctx.ellipse(16, 19, 9, 7, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#6b7280';
+      ctx.beginPath();
+      ctx.ellipse(15, 17, 7, 5, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#9ca3af';
+      ctx.beginPath();
+      ctx.ellipse(13, 15, 4, 3, 0, 0, Math.PI * 2);
+      ctx.fill();
+      // Green moss cap
+      ctx.fillStyle = '#65a30d';
+      ctx.beginPath();
+      ctx.ellipse(17, 14, 5, 2, 0, 0, Math.PI * 2);
+      ctx.fill();
+    });
+    scene.textures.addCanvas('prop_rock', rockCanvas);
+  }
+
+  // Pond Reeds & Cattails (32x32)
+  if (!scene.textures.exists('prop_reeds')) {
+    const reedsCanvas = createTileCanvas(32, 32, (ctx) => {
+      ctx.fillStyle = '#15803d';
+      ctx.fillRect(8, 8, 1, 20);
+      ctx.fillRect(14, 4, 1, 24);
+      ctx.fillRect(20, 6, 1, 22);
+      ctx.fillRect(25, 10, 1, 18);
+      ctx.fillStyle = '#78350f';
+      ctx.fillRect(7, 8, 3, 8);
+      ctx.fillRect(13, 4, 3, 9);
+      ctx.fillRect(19, 6, 3, 8);
+      ctx.fillRect(24, 10, 3, 7);
+    });
+    scene.textures.addCanvas('prop_reeds', reedsCanvas);
+  }
+
+  // Water Lilypad with Lotus (32x32)
+  if (!scene.textures.exists('prop_lilypad')) {
+    const lilyCanvas = createTileCanvas(32, 32, (ctx) => {
+      ctx.fillStyle = '#16a34a';
+      ctx.beginPath();
+      ctx.ellipse(16, 17, 9, 6, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.clearRect(16, 11, 4, 6);
+      ctx.fillStyle = '#f472b6';
+      ctx.fillRect(15, 14, 3, 3);
+      ctx.fillStyle = '#fdf2f8';
+      ctx.fillRect(15, 13, 1, 1);
+      ctx.fillRect(17, 13, 1, 1);
+      ctx.fillStyle = '#facc15';
+      ctx.fillRect(16, 15, 1, 1);
+    });
+    scene.textures.addCanvas('prop_lilypad', lilyCanvas);
+  }
+
+  // Wooden Garden Planter Flowerbox (32x32)
+  if (!scene.textures.exists('prop_flowerbed')) {
+    const flowerbedCanvas = createTileCanvas(32, 32, (ctx) => {
+      ctx.fillStyle = 'rgba(0,0,0,0.3)';
+      ctx.beginPath();
+      ctx.ellipse(16, 26, 12, 3, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#78350f';
+      ctx.fillRect(3, 16, 26, 10);
+      ctx.fillStyle = '#92400e';
+      ctx.fillRect(3, 16, 26, 1);
+      ctx.fillStyle = '#451a03';
+      ctx.fillRect(3, 25, 26, 1);
+      ctx.fillStyle = '#451a03';
+      ctx.fillRect(5, 14, 22, 3);
+      const cols = ['#ef4444', '#f59e0b', '#ec4899', '#3b82f6', '#ffffff'];
+      for (let i = 0; i < 5; i += 1) {
+        const fx = 6 + i * 4;
+        ctx.fillStyle = cols[i];
+        ctx.fillRect(fx, 11, 3, 3);
+        ctx.fillStyle = '#fde047';
+        ctx.fillRect(fx + 1, 12, 1, 1);
+        ctx.fillStyle = '#16a34a';
+        ctx.fillRect(fx + 1, 14, 1, 2);
+      }
+    });
+    scene.textures.addCanvas('prop_flowerbed', flowerbedCanvas);
   }
 
   // =========================================================================
