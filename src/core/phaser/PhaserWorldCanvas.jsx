@@ -416,30 +416,17 @@ export default function PhaserWorldCanvas({
         }}
       />
 
-      {/* Zone Title Header Ribbon */}
-      <div className="absolute top-4 left-4 z-20 flex items-center gap-2 rounded-2xl border border-yellow-600/40 bg-gray-950/85 px-4 py-2 shadow-xl backdrop-blur">
-        <span className="text-base">🗺️</span>
-        <div>
-          <span className="block text-[9px] font-bold uppercase tracking-wider text-yellow-400/80">
-            Current Region
-          </span>
-          <span className="font-serif text-xs font-bold text-white sm:text-sm">
-            {ZONE_TITLES[currentZone] || currentZone}
-          </span>
-        </div>
-      </div>
-
-      {/* Real-Time Player Health & Potion Bar */}
-      <div className="absolute top-4 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2.5 rounded-2xl border border-red-900/40 bg-gray-950/85 px-3.5 py-1.5 shadow-xl backdrop-blur">
-        <span className="text-base">❤️</span>
+      {/* Real-Time Player Health & Potion Ribbon */}
+      <div className="rpg-panel-brown absolute top-4 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2.5 px-3 py-1.5 backdrop-blur-md">
+        <span className="text-base drop-shadow">❤️</span>
         <div className="flex flex-col">
-          <div className="flex items-center justify-between text-[10px] font-mono leading-none mb-1 text-gray-300">
+          <div className="flex items-center justify-between text-[10px] font-mono leading-none mb-1 text-amber-200">
             <span className="font-bold text-red-400">HEALTH</span>
-            <span className="font-bold text-white ml-2">{playerHp}/{playerMaxHp}</span>
+            <span className="font-bold text-amber-100 ml-2">{playerHp}/{playerMaxHp}</span>
           </div>
-          <div className="h-2 w-24 overflow-hidden rounded-full bg-black/70 sm:w-32">
+          <div className="h-3 w-28 overflow-hidden rounded bg-black/80 sm:w-36 border border-amber-900/60 p-[1px]">
             <div
-              className="h-full rounded-full bg-gradient-to-r from-red-600 via-amber-500 to-emerald-500 transition-all duration-200"
+              className="h-full rounded-sm bg-gradient-to-r from-red-600 via-amber-500 to-emerald-500 transition-all duration-200 shadow-sm"
               style={{ width: `${Math.max(0, Math.min(100, Math.round((playerHp / (playerMaxHp || 1)) * 100)))}%` }}
             />
           </div>
@@ -451,11 +438,9 @@ export default function PhaserWorldCanvas({
             <button
               type="button"
               onClick={handleUsePotion}
-              className={`flex items-center gap-1 rounded-xl border px-2 py-1 text-[11px] font-bold transition active:scale-95 ml-1 ${
-                potionCount > 0
-                  ? 'border-emerald-600/40 bg-emerald-950/70 text-emerald-300 hover:border-emerald-400 hover:bg-emerald-900'
-                  : 'border-gray-800 bg-gray-900/60 text-gray-500 opacity-70'
-              }`}
+              className={`${
+                potionCount > 0 ? 'rpg-btn-beige' : 'rpg-btn-brown opacity-60 cursor-not-allowed'
+              } text-[11px] py-0.5 px-2 ml-1`}
               title={potionCount > 0 ? `Drink Healing Elixir (+45 HP) [1] (${potionCount} in pack)` : 'No healing potions in pack'}
             >
               <span>🧪</span>
@@ -470,22 +455,12 @@ export default function PhaserWorldCanvas({
           onClick={() => {
             gameEventBridge.emit('PET_COMPANION');
           }}
-          className="flex items-center gap-1 rounded-xl border border-amber-600/40 bg-amber-950/70 px-2 py-1 text-[11px] font-bold text-amber-300 hover:border-amber-400 hover:bg-amber-900 transition active:scale-95 ml-1"
+          className="rpg-btn-brown text-[11px] py-0.5 px-2 ml-1"
           title="Pat Companion (+Morale) / Sanctuary [P]"
         >
           <span>🐾</span>
           <span className="hidden sm:inline">Pet</span>
         </button>
-      </div>
-
-      {/* Controls Quick Guide */}
-      <div className="absolute top-4 right-4 z-20 hidden md:flex items-center gap-2 rounded-2xl border border-yellow-700/30 bg-gray-950/80 px-3 py-1.5 text-[11px] font-mono text-gray-300 backdrop-blur">
-        <span className="text-yellow-400 font-bold">WASD / ZQSD / Click</span> Move ·
-        <span className="text-yellow-400 font-bold">Shift</span> Sprint ·
-        <span className="text-yellow-400 font-bold">Space</span> Attack ·
-        <span className="text-yellow-400 font-bold">[E]</span> Interact ·
-        <span className="text-yellow-400 font-bold">[1]</span> Heal ·
-        <span className="text-yellow-400 font-bold">[P]</span> Pet Sanctuary
       </div>
 
       {/* Floating In-World Contextual Interaction Prompt */}
@@ -495,21 +470,19 @@ export default function PhaserWorldCanvas({
           onClick={() => {
             gameEventBridge.emit('TRIGGER_ACTIVE_PROMPT');
           }}
-          className="absolute bottom-6 left-1/2 -translate-x-1/2 z-30 flex items-center gap-2.5 rounded-full border-2 border-yellow-400 bg-gray-950/95 px-6 py-2.5 shadow-2xl shadow-yellow-950/60 backdrop-blur animate-bounce cursor-pointer hover:scale-105 active:scale-95 transition"
+          className="rpg-btn-beige absolute bottom-6 left-1/2 -translate-x-1/2 z-30 flex items-center gap-2.5 px-5 py-2 shadow-2xl animate-bounce cursor-pointer text-xs sm:text-sm font-serif font-bold text-amber-950"
         >
-          <span className="text-base text-yellow-400 font-black">⚡</span>
-          <span className="font-serif text-xs font-bold text-yellow-300 sm:text-sm">
-            {activePrompt}
-          </span>
+          <span className="text-base text-amber-700 font-black">⚡</span>
+          <span>{activePrompt}</span>
         </button>
       )}
 
       {/* Seed Selection Modal (When clicking empty plot) */}
       {activePlotModal && (
-        <div className="absolute inset-0 z-40 flex items-center justify-center bg-black/75 backdrop-blur-sm p-4">
-          <div className="w-full max-w-md rounded-2xl border-2 border-yellow-600/60 bg-gray-950 p-6 shadow-2xl">
-            <div className="flex items-center justify-between border-b border-gray-800 pb-3">
-              <h3 className="font-serif text-base font-bold text-yellow-300">
+        <div className="absolute inset-0 z-40 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+          <div className="rpg-panel-brown w-full max-w-md p-5 shadow-2xl">
+            <div className="flex items-center justify-between border-b border-amber-900/50 pb-3">
+              <h3 className="font-serif text-base font-bold text-amber-100 drop-shadow">
                 Plant Seeds in Soil Plot
               </h3>
               <button
@@ -518,7 +491,7 @@ export default function PhaserWorldCanvas({
                   setActivePlotModal(null);
                   gameEventBridge.emit(gameEvents.UNLOCK_CONTROLS);
                 }}
-                className="text-gray-400 hover:text-white"
+                className="rpg-btn-square-brown h-7 w-7 text-xs font-bold text-amber-200"
               >
                 ✕
               </button>
@@ -528,18 +501,18 @@ export default function PhaserWorldCanvas({
               {farmCrops.map((crop) => (
                 <div
                   key={crop.id}
-                  className="flex items-center justify-between rounded-xl border border-yellow-700/30 bg-gray-900/60 p-3 text-xs hover:border-yellow-500/50 transition"
+                  className="rpg-slot-inset flex items-center justify-between p-2.5 text-xs bg-black/40"
                 >
                   <div>
-                    <p className="font-bold text-white">{crop.name}</p>
-                    <p className="text-[11px] text-gray-400">
+                    <p className="font-bold text-amber-100">{crop.name}</p>
+                    <p className="text-[11px] text-amber-300/70">
                       Seed Cost: {crop.seedCost}g · Grow Time: {Math.round(crop.growMs / 60000)}m
                     </p>
                   </div>
                   <button
                     type="button"
                     onClick={() => handlePlantSeed(crop.id)}
-                    className="rounded-lg bg-yellow-500 px-3 py-1.5 text-xs font-bold text-gray-950 hover:brightness-110 shadow"
+                    className="rpg-btn-beige text-xs py-1 px-3"
                   >
                     Plant
                   </button>

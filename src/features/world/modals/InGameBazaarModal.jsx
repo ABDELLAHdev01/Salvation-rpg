@@ -80,22 +80,22 @@ export default function InGameBazaarModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-md animate-fadeIn select-none">
-      <div className="relative w-full max-w-2xl rounded-3xl border-2 border-yellow-600/70 bg-gradient-to-b from-gray-950 via-gray-900 to-gray-950 p-6 shadow-2xl shadow-yellow-950/50">
+      <div className="rpg-panel-brown relative w-full max-w-2xl p-6 shadow-2xl">
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-yellow-700/40 pb-4">
+        <div className="flex items-center justify-between border-b border-amber-900/50 pb-4">
           <div className="flex items-center gap-3">
-            <span className="text-3xl">🏛️</span>
+            <span className="text-3xl drop-shadow">🏛️</span>
             <div>
-              <h2 className="font-serif text-lg font-bold text-yellow-300 tracking-wide sm:text-xl">
+              <h2 className="font-serif text-lg font-bold text-amber-100 tracking-wide sm:text-xl drop-shadow">
                 Merchant Bazaar Trading Post
               </h2>
-              <p className="text-xs text-gray-400">
+              <p className="text-xs text-amber-300/70">
                 Purchase farm seeds and trade harvested goods for imperial gold
               </p>
             </div>
           </div>
           <div className="flex items-center gap-3">
-            <div className="flex items-center gap-1.5 rounded-xl border border-yellow-600/40 bg-yellow-950/60 px-3 py-1 font-mono text-xs font-bold text-yellow-300">
+            <div className="rpg-slot-inset flex items-center gap-1.5 px-3 py-1 font-mono text-xs font-bold text-amber-300 bg-stone-950/80">
               <span>🪙</span>
               <span>{gold} Gold</span>
             </div>
@@ -105,7 +105,7 @@ export default function InGameBazaarModal({
                 audioManager.play('tap');
                 onClose();
               }}
-              className="flex h-8 w-8 items-center justify-center rounded-xl border border-yellow-700/40 bg-gray-900 text-gray-400 hover:text-white transition"
+              className="rpg-btn-square-brown h-8 w-8 text-xs font-bold text-amber-200"
             >
               ✕
             </button>
@@ -120,11 +120,7 @@ export default function InGameBazaarModal({
               audioManager.play('tap');
               setTab('buy');
             }}
-            className={`rounded-xl px-4 py-1.5 text-xs font-bold transition ${
-              tab === 'buy'
-                ? 'border border-yellow-400 bg-yellow-500/20 text-yellow-200 shadow'
-                : 'border border-yellow-700/20 bg-gray-900/60 text-gray-400 hover:text-white'
-            }`}
+            className={`${tab === 'buy' ? 'rpg-btn-beige active' : 'rpg-btn-brown'} text-xs py-1 px-4`}
           >
             🌱 Buy Farm Seeds
           </button>
@@ -134,11 +130,7 @@ export default function InGameBazaarModal({
               audioManager.play('tap');
               setTab('sell');
             }}
-            className={`rounded-xl px-4 py-1.5 text-xs font-bold transition ${
-              tab === 'sell'
-                ? 'border border-yellow-400 bg-yellow-500/20 text-yellow-200 shadow'
-                : 'border border-yellow-700/20 bg-gray-900/60 text-gray-400 hover:text-white'
-            }`}
+            className={`${tab === 'sell' ? 'rpg-btn-beige active' : 'rpg-btn-brown'} text-xs py-1 px-4`}
           >
             🪙 Sell Crops &amp; Minerals
           </button>
@@ -150,33 +142,33 @@ export default function InGameBazaarModal({
             farmCrops.map((crop) => (
               <div
                 key={crop.id}
-                className="flex items-center justify-between rounded-2xl border border-yellow-700/30 bg-gray-900/70 p-3 hover:border-yellow-500/50 transition"
+                className="rpg-slot-inset flex items-center justify-between p-2.5 bg-stone-950/70 hover:brightness-110 transition"
               >
                 <div className="flex items-center gap-3">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-yellow-700/40 bg-black/50 p-1.5 shadow-inner">
+                  <div className="flex h-11 w-11 items-center justify-center rounded bg-black/60 border border-amber-900/60 p-1.5 shadow-inner">
                     <img src={getItemIcon(`seed-${crop.id}`)} alt={crop.name} className="h-8 w-8 object-contain pixelated drop-shadow-md" />
                   </div>
                   <div>
-                    <h4 className="font-serif font-bold text-sm text-white">{crop.name} Seeds</h4>
-                    <p className="text-[11px] text-gray-400">
+                    <h4 className="font-serif font-bold text-sm text-amber-100">{crop.name} Seeds</h4>
+                    <p className="text-[11px] text-amber-300/70">
                       Matures in {Math.round(crop.growMs / 60000)}m · Yields ~{crop.yieldAmount} crops
                     </p>
                   </div>
                 </div>
 
                 <div className="flex items-center gap-3">
-                  <span className="font-mono text-xs font-bold text-yellow-300">
+                  <span className="font-mono text-xs font-bold text-amber-300">
                     🪙 {crop.seedCost}g
                   </span>
                   <button
                     type="button"
                     disabled={gold < crop.seedCost}
                     onClick={() => handleBuySeed(crop)}
-                    className={`rounded-xl px-3.5 py-1.5 text-xs font-bold transition active:scale-95 ${
+                    className={`${
                       gold >= crop.seedCost
-                        ? 'bg-yellow-500 text-black hover:bg-yellow-400 shadow'
-                        : 'bg-gray-800 text-gray-500 cursor-not-allowed opacity-60'
-                    }`}
+                        ? 'rpg-btn-beige'
+                        : 'rpg-btn-brown opacity-60 cursor-not-allowed'
+                    } text-xs py-1 px-3.5`}
                   >
                     Buy 1
                   </button>
@@ -190,33 +182,33 @@ export default function InGameBazaarModal({
               return (
                 <div
                   key={item.id}
-                  className="flex items-center justify-between rounded-2xl border border-yellow-700/30 bg-gray-900/70 p-3 hover:border-yellow-500/50 transition"
+                  className="rpg-slot-inset flex items-center justify-between p-2.5 bg-stone-950/70 hover:brightness-110 transition"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-yellow-700/40 bg-black/50 p-1.5 shadow-inner">
+                    <div className="flex h-11 w-11 items-center justify-center rounded bg-black/60 border border-amber-900/60 p-1.5 shadow-inner">
                       <img src={getItemIcon(item.id)} alt={item.name} className="h-8 w-8 object-contain pixelated drop-shadow-md" />
                     </div>
                     <div>
-                      <h4 className="font-serif font-bold text-sm text-white">{item.name}</h4>
-                      <p className="text-[11px] text-gray-400">
-                        Pouch Stock: <span className="font-mono font-bold text-yellow-300">{owned}</span>
+                      <h4 className="font-serif font-bold text-sm text-amber-100">{item.name}</h4>
+                      <p className="text-[11px] text-amber-300/70">
+                        Pouch Stock: <span className="font-mono font-bold text-amber-300">{owned}</span>
                       </p>
                     </div>
                   </div>
 
                   <div className="flex items-center gap-3">
-                    <span className="font-mono text-xs font-bold text-yellow-300">
+                    <span className="font-mono text-xs font-bold text-amber-300">
                       +{item.price}g
                     </span>
                     <button
                       type="button"
                       disabled={owned <= 0}
                       onClick={() => handleSellItem(item)}
-                      className={`rounded-xl px-3.5 py-1.5 text-xs font-bold transition active:scale-95 ${
+                      className={`${
                         owned > 0
-                          ? 'bg-yellow-500 text-black hover:bg-yellow-400 shadow'
-                          : 'bg-gray-800 text-gray-500 cursor-not-allowed opacity-60'
-                      }`}
+                          ? 'rpg-btn-beige'
+                          : 'rpg-btn-brown opacity-60 cursor-not-allowed'
+                      } text-xs py-1 px-3.5`}
                     >
                       Sell 1
                     </button>
@@ -228,7 +220,7 @@ export default function InGameBazaarModal({
         </div>
 
         {/* Footer */}
-        <div className="mt-5 flex items-center justify-between border-t border-yellow-700/40 pt-4 text-xs text-gray-400">
+        <div className="mt-5 flex items-center justify-between border-t border-amber-900/50 pt-4 text-xs text-amber-300/70">
           <span>Stalls active at Valorian Bazaar</span>
           <button
             type="button"
@@ -236,7 +228,7 @@ export default function InGameBazaarModal({
               audioManager.play('tap');
               onClose();
             }}
-            className="rounded-xl bg-gray-900 border border-yellow-700/30 px-4 py-2 font-serif text-xs font-bold text-yellow-300 hover:text-white transition"
+            className="rpg-btn-brown text-xs py-1.5 px-4"
           >
             Back to Realm
           </button>

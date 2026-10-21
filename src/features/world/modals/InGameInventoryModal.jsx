@@ -37,22 +37,22 @@ export default function InGameInventoryModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-md animate-fadeIn select-none">
-      <div className="relative w-full max-w-2xl rounded-3xl border-2 border-yellow-600/70 bg-gradient-to-b from-gray-950 via-gray-900 to-gray-950 p-6 shadow-2xl shadow-yellow-950/50">
+      <div className="rpg-panel-brown relative w-full max-w-2xl p-6 shadow-2xl">
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-yellow-700/40 pb-4">
+        <div className="flex items-center justify-between border-b border-amber-900/50 pb-4">
           <div className="flex items-center gap-3">
-            <span className="text-3xl">🎒</span>
+            <span className="text-3xl drop-shadow">🎒</span>
             <div>
-              <h2 className="font-serif text-lg font-bold text-yellow-300 tracking-wide sm:text-xl">
+              <h2 className="font-serif text-lg font-bold text-amber-100 tracking-wide sm:text-xl drop-shadow">
                 Adventurer&apos;s Vault Pouch
               </h2>
-              <p className="text-xs text-gray-400">
+              <p className="text-xs text-amber-300/70">
                 In-World Resource Storage · {items.length} Unique Item Slots
               </p>
             </div>
           </div>
           <div className="flex items-center gap-3">
-            <div className="flex items-center gap-1.5 rounded-xl border border-yellow-600/40 bg-yellow-950/60 px-3 py-1 font-mono text-xs font-bold text-yellow-300">
+            <div className="rpg-slot-inset flex items-center gap-1.5 px-3 py-1 font-mono text-xs font-bold text-amber-300 bg-stone-950/80">
               <span>🪙</span>
               <span>{gold} Gold</span>
             </div>
@@ -62,7 +62,7 @@ export default function InGameInventoryModal({
                 audioManager.play('tap');
                 onClose();
               }}
-              className="flex h-8 w-8 items-center justify-center rounded-xl border border-yellow-700/40 bg-gray-900 text-gray-400 hover:text-white transition"
+              className="rpg-btn-square-brown h-8 w-8 text-xs font-bold text-amber-200"
               title="Close [Esc]"
             >
               ✕
@@ -85,11 +85,9 @@ export default function InGameInventoryModal({
                 audioManager.play('tap');
                 setFilter(cat.id);
               }}
-              className={`rounded-xl px-3 py-1 text-xs font-bold transition ${
-                filter === cat.id
-                  ? 'border border-yellow-400 bg-yellow-500/20 text-yellow-200 shadow'
-                  : 'border border-yellow-700/20 bg-gray-900/60 text-gray-400 hover:text-gray-200'
-              }`}
+              className={`${
+                filter === cat.id ? 'rpg-btn-beige active' : 'rpg-btn-brown'
+              } text-xs py-1 px-3`}
             >
               {cat.label}
             </button>
@@ -99,17 +97,17 @@ export default function InGameInventoryModal({
         {/* Item Grid */}
         <div className="mt-4 max-h-[380px] overflow-y-auto space-y-2 pr-1 custom-scrollbar">
           {filteredItems.length === 0 ? (
-            <div className="py-12 text-center text-sm text-gray-400">
+            <div className="py-12 text-center text-sm text-amber-200/60 font-serif">
               No items in this category. Mine cavern seams or harvest crops to gather resources!
             </div>
           ) : (
             filteredItems.map((item) => (
               <div
                 key={item.id}
-                className="flex items-center justify-between rounded-2xl border border-yellow-700/30 bg-gray-900/70 p-3 hover:border-yellow-500/50 transition backdrop-blur-sm"
+                className="rpg-slot-inset flex items-center justify-between p-2.5 bg-stone-950/70 hover:brightness-110 transition"
               >
                 <div className="flex items-center gap-3">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-yellow-700/40 bg-black/60 shadow-inner p-1.5">
+                  <div className="flex h-11 w-11 items-center justify-center rounded bg-black/60 border border-amber-900/60 p-1.5 shadow-inner">
                     <img
                       src={getItemIcon(item.id)}
                       alt={item.name}
@@ -117,8 +115,8 @@ export default function InGameInventoryModal({
                     />
                   </div>
                   <div>
-                    <h4 className="font-bold text-sm text-white capitalize">{item.name}</h4>
-                    <p className="text-[11px] text-gray-400">{item.description || item.category}</p>
+                    <h4 className="font-bold text-sm text-amber-100 capitalize">{item.name}</h4>
+                    <p className="text-[11px] text-amber-300/70">{item.description || item.category}</p>
                   </div>
                 </div>
 
@@ -127,13 +125,13 @@ export default function InGameInventoryModal({
                     <button
                       type="button"
                       onClick={() => onUseItem(item.id)}
-                      className="rounded-xl border border-emerald-500/40 bg-emerald-950/70 px-3 py-1.5 text-xs font-bold text-emerald-300 hover:bg-emerald-900 transition active:scale-95"
+                      className="rpg-btn-beige text-xs py-1 px-3"
                     >
                       Drink (+45 HP)
                     </button>
                   )}
                   <div className="text-right">
-                    <span className="font-mono text-base font-bold text-yellow-300">
+                    <span className="font-mono text-base font-bold text-amber-300 drop-shadow">
                       ×{item.count}
                     </span>
                   </div>
@@ -144,15 +142,15 @@ export default function InGameInventoryModal({
         </div>
 
         {/* Footer */}
-        <div className="mt-5 flex items-center justify-between border-t border-yellow-700/40 pt-4 text-xs text-gray-400">
-          <span>Press <kbd className="rounded border border-gray-700 bg-gray-800 px-1 font-mono text-yellow-300">Esc</kbd> or <kbd className="rounded border border-gray-700 bg-gray-800 px-1 font-mono text-yellow-300">I</kbd> to close</span>
+        <div className="mt-5 flex items-center justify-between border-t border-amber-900/50 pt-4 text-xs text-amber-300/80">
+          <span>Press <kbd className="rounded border border-amber-900/80 bg-stone-900 px-1 font-mono text-amber-300">Esc</kbd> or <kbd className="rounded border border-amber-900/80 bg-stone-900 px-1 font-mono text-amber-300">I</kbd> to close</span>
           <button
             type="button"
             onClick={() => {
               audioManager.play('tap');
               onClose();
             }}
-            className="rounded-xl bg-yellow-500 px-5 py-2 font-serif text-xs font-bold text-black hover:bg-yellow-400 transition shadow"
+            className="rpg-btn-beige text-xs py-1.5 px-5 font-serif font-bold text-amber-950"
           >
             Back to Realm
           </button>

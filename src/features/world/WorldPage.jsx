@@ -255,21 +255,21 @@ export default function WorldPage() {
         {/* Top Left: Region Title & Fast Travel Navigation */}
         <div className="pointer-events-auto flex flex-col gap-2">
           {/* Current Region Card */}
-          <div className="flex items-center gap-2 rounded-2xl border border-yellow-600/50 bg-gray-950/90 px-3.5 py-1.5 shadow-2xl backdrop-blur-md">
+          <div className="rpg-panel-brown flex items-center gap-2.5 px-3 py-1.5 backdrop-blur-md">
             <span className="text-xl">{activeZoneMeta.icon}</span>
             <div>
-              <span className="block text-[9px] font-bold uppercase tracking-wider text-yellow-400/80 leading-none">
+              <span className="block text-[9px] font-bold uppercase tracking-wider text-amber-400/90 leading-none">
                 {activeZoneMeta.kicker}
               </span>
-              <span className="font-serif text-xs font-bold text-white sm:text-sm leading-tight">
+              <span className="font-serif text-xs font-bold text-amber-100 sm:text-sm leading-tight drop-shadow">
                 {activeZoneMeta.label}
               </span>
             </div>
           </div>
 
           {/* Fast-Travel Quick Bar */}
-          <div className="hidden sm:flex items-center gap-1.5 rounded-2xl border border-yellow-700/30 bg-gray-950/80 p-1.5 shadow-xl backdrop-blur-md">
-            <span className="px-1.5 text-[9px] font-bold uppercase tracking-wider text-yellow-500/70">
+          <div className="rpg-panel-brown hidden sm:flex items-center gap-1.5 p-1 backdrop-blur-md">
+            <span className="px-1.5 text-[9px] font-bold uppercase tracking-wider text-amber-400">
               Travel:
             </span>
             {ZONES.map((zone) => {
@@ -279,11 +279,7 @@ export default function WorldPage() {
                   key={zone.id}
                   type="button"
                   onClick={() => handleSwitchZone(zone.id)}
-                  className={`flex items-center gap-1 rounded-xl px-2.5 py-1 text-xs font-bold transition-all ${
-                    isActive
-                      ? 'border border-yellow-400 bg-yellow-500/25 text-yellow-200 shadow'
-                      : 'border border-transparent text-gray-400 hover:text-white hover:bg-gray-900'
-                  }`}
+                  className={`${isActive ? 'rpg-btn-beige active' : 'rpg-btn-brown'} text-[11px] py-1 px-2.5`}
                   title={`Fast-travel to ${zone.label}`}
                 >
                   <span>{zone.icon}</span>
@@ -297,20 +293,20 @@ export default function WorldPage() {
         {/* Top Right: Player Stats & In-Game Action Menus */}
         <div className="pointer-events-auto flex flex-wrap items-center justify-end gap-1.5 sm:gap-2">
           {/* Day/Night & Weather Clock */}
-          <div className="hidden sm:flex items-center gap-1.5 rounded-2xl border border-yellow-600/40 bg-gray-950/90 px-3 py-1.5 shadow-xl backdrop-blur-md">
+          <div className="rpg-panel-brown hidden sm:flex items-center gap-1.5 px-3 py-1 text-xs text-amber-200">
             <span className="text-sm">
               {worldClock.timeOfDay === 'night' ? '🌙' : worldClock.timeOfDay === 'dusk' ? '🌅' : '☀️'}
             </span>
-            <span className="font-mono text-xs font-bold text-yellow-300">
+            <span className="font-mono text-xs font-bold text-amber-300">
               {String(worldClock.hour).padStart(2, '0')}:{String(worldClock.minute).padStart(2, '0')}
             </span>
-            <span className="text-[10px] text-gray-400 border-l border-yellow-700/40 pl-1.5">
+            <span className="text-[10px] text-amber-300/60 border-l border-amber-800/60 pl-1.5">
               {worldClock.weather === 'rain' ? '🌧️ Rain' : worldClock.weather === 'thunderstorm' ? '⚡ Storm' : worldClock.weather === 'fog' ? '🌫️ Fog' : '☀️ Clear'}
             </span>
           </div>
 
           {/* Gold Counter */}
-          <div className="flex items-center gap-1.5 rounded-2xl border border-yellow-600/40 bg-gray-950/90 px-3 py-1.5 shadow-xl backdrop-blur-md">
+          <div className="rpg-panel-brown flex items-center gap-1.5 px-3 py-1 text-xs">
             <img src={getItemIcon('gold-coin')} alt="Gold" className="h-4 w-4 object-contain pixelated" />
             <span className="font-mono text-xs font-bold text-yellow-300">
               {playerGold}g
@@ -318,20 +314,20 @@ export default function WorldPage() {
           </div>
 
           {/* Level & XP */}
-          <div className="hidden sm:flex items-center gap-1.5 rounded-2xl border border-yellow-600/40 bg-gray-950/90 px-3 py-1.5 shadow-xl backdrop-blur-md">
+          <div className="rpg-panel-brown hidden sm:flex items-center gap-1.5 px-3 py-1 text-xs">
             <span className="text-sm">⭐</span>
-            <span className="font-mono text-xs font-bold text-yellow-300">
+            <span className="font-mono text-xs font-bold text-amber-200">
               Lvl {playerLevel} ({playerXp} XP)
             </span>
           </div>
 
           {/* Equipped Weapon / Tool */}
           <div
-            className="hidden md:flex items-center gap-1.5 rounded-2xl border border-yellow-600/40 bg-gray-950/90 px-3 py-1.5 shadow-xl backdrop-blur-md"
+            className="rpg-panel-brown hidden md:flex items-center gap-1.5 px-3 py-1 text-xs"
             title={`Equipped Weapon/Tool: ${toolMeta.name}`}
           >
             <img src={getItemIcon(currentToolId)} alt={toolMeta.name} className="h-4 w-4 object-contain pixelated" />
-            <span className="font-serif text-xs font-bold text-gray-200">
+            <span className="font-serif text-xs font-bold text-amber-100">
               {toolMeta.name}
             </span>
           </div>
@@ -340,11 +336,7 @@ export default function WorldPage() {
           <button
             type="button"
             onClick={handleReturnHome}
-            className={`flex items-center gap-1.5 rounded-2xl border px-3 py-1.5 text-xs font-bold shadow-xl backdrop-blur-md transition active:scale-95 ${
-              currentZone === 'homestead'
-                ? 'border-gray-800 bg-gray-900/60 text-gray-500 opacity-60 cursor-default'
-                : 'border-yellow-600/40 bg-gray-950/90 text-yellow-300 hover:border-yellow-400 hover:bg-yellow-500/15'
-            }`}
+            className={`rpg-btn-beige text-xs ${currentZone === 'homestead' ? 'opacity-60 cursor-default' : ''}`}
             title="Return Home to Sunforge Homestead [H]"
           >
             <span>🏡</span>
@@ -358,7 +350,7 @@ export default function WorldPage() {
               audioManager.play('tap');
               setIsGuildOpen(true);
             }}
-            className="flex items-center gap-1.5 rounded-2xl border border-yellow-600/40 bg-gray-950/90 px-3 py-1.5 text-xs font-bold text-yellow-300 shadow-xl backdrop-blur-md hover:border-yellow-400 hover:bg-yellow-500/15 transition active:scale-95"
+            className="rpg-btn-brown text-xs"
             title="Adventurers' Guild Board & Renown [G]"
           >
             <span>⚔️</span>
@@ -371,7 +363,7 @@ export default function WorldPage() {
               audioManager.play('tap');
               setIsInventoryOpen(true);
             }}
-            className="flex items-center gap-1.5 rounded-2xl border border-yellow-600/40 bg-gray-950/90 px-3 py-1.5 text-xs font-bold text-yellow-300 shadow-xl backdrop-blur-md hover:border-yellow-400 hover:bg-yellow-500/15 transition active:scale-95"
+            className="rpg-btn-brown text-xs"
             title="Open Adventurer Pouch [I]"
           >
             <span>🎒</span>
@@ -384,7 +376,7 @@ export default function WorldPage() {
               audioManager.play('tap');
               setIsWardrobeOpen(true);
             }}
-            className="flex items-center gap-1.5 rounded-2xl border border-yellow-600/40 bg-gray-950/90 px-3 py-1.5 text-xs font-bold text-yellow-300 shadow-xl backdrop-blur-md hover:border-yellow-400 hover:bg-yellow-500/15 transition active:scale-95"
+            className="rpg-btn-brown text-xs"
             title="Warden's Wardrobe Customizer [C]"
           >
             <span>🎨</span>
@@ -397,7 +389,7 @@ export default function WorldPage() {
               audioManager.play('tap');
               setIsPetOpen(true);
             }}
-            className="flex items-center gap-1.5 rounded-2xl border border-amber-600/50 bg-gray-950/90 px-3 py-1.5 text-xs font-bold text-amber-300 shadow-xl backdrop-blur-md hover:border-amber-400 hover:bg-amber-500/15 transition active:scale-95"
+            className="rpg-btn-brown text-xs"
             title="Warden Companion Sanctuary [P]"
           >
             <span>{equippedPetMeta.icon}</span>
@@ -410,7 +402,7 @@ export default function WorldPage() {
               audioManager.play('tap');
               setIsFishingOpen(true);
             }}
-            className="flex items-center gap-1.5 rounded-2xl border border-cyan-600/50 bg-gray-950/90 px-3 py-1.5 text-xs font-bold text-cyan-300 shadow-xl backdrop-blur-md hover:border-cyan-400 hover:bg-cyan-500/15 transition active:scale-95"
+            className="rpg-btn-brown text-xs"
             title="Angler Fishing [F]"
           >
             <span>🎣</span>
@@ -423,7 +415,7 @@ export default function WorldPage() {
               audioManager.play('tap');
               setIsForgeOpen(true);
             }}
-            className="flex items-center gap-1.5 rounded-2xl border border-yellow-600/40 bg-gray-950/90 px-3 py-1.5 text-xs font-bold text-yellow-300 shadow-xl backdrop-blur-md hover:border-yellow-400 hover:bg-yellow-500/15 transition active:scale-95"
+            className="rpg-btn-brown text-xs"
             title="Artisan Forge & Smelter"
           >
             <span>⚒️</span>
@@ -436,7 +428,7 @@ export default function WorldPage() {
               audioManager.play('tap');
               setIsBazaarOpen(true);
             }}
-            className="flex items-center gap-1.5 rounded-2xl border border-yellow-600/40 bg-gray-950/90 px-3 py-1.5 text-xs font-bold text-yellow-300 shadow-xl backdrop-blur-md hover:border-yellow-400 hover:bg-yellow-500/15 transition active:scale-95"
+            className="rpg-btn-brown text-xs"
             title="Merchant Bazaar & Seed Shop"
           >
             <span>🏛️</span>
@@ -449,7 +441,7 @@ export default function WorldPage() {
               audioManager.play('tap');
               setIsSaveOpen(true);
             }}
-            className="flex items-center gap-1 rounded-2xl border border-yellow-600/40 bg-gray-950/90 px-2.5 py-1.5 text-xs font-bold text-yellow-300 shadow-xl backdrop-blur-md hover:border-yellow-400 hover:bg-yellow-500/15 transition active:scale-95"
+            className="rpg-btn-square-brown h-8 w-8 text-xs"
             title="Save / Load Game"
           >
             <span>💾</span>
@@ -461,7 +453,7 @@ export default function WorldPage() {
               audioManager.play('tap');
               setIsHelpOpen(true);
             }}
-            className="flex items-center gap-1 rounded-2xl border border-yellow-600/40 bg-gray-950/90 px-2.5 py-1.5 text-xs font-bold text-yellow-300 shadow-xl backdrop-blur-md hover:border-yellow-400 hover:bg-yellow-500/15 transition active:scale-95"
+            className="rpg-btn-square-brown h-8 w-8 text-xs"
             title="Game Controls & Help [?]"
           >
             <span>❓</span>
@@ -471,15 +463,10 @@ export default function WorldPage() {
           <button
             type="button"
             onClick={toggleFullscreen}
-            className={`flex items-center gap-1 rounded-2xl border px-3 py-1.5 text-xs font-bold shadow-xl backdrop-blur-md transition active:scale-95 ${
-              isFullscreen
-                ? 'border-yellow-400 bg-yellow-500/30 text-yellow-200'
-                : 'border-yellow-600/40 bg-gray-950/90 text-yellow-300 hover:border-yellow-400 hover:bg-yellow-500/15'
-            }`}
+            className="rpg-btn-square-brown h-8 w-8 text-xs"
             title="Toggle Borderless Fullscreen Mode [F11]"
           >
             <span>{isFullscreen ? '↙️' : '⛶'}</span>
-            <span className="hidden sm:inline">{isFullscreen ? 'Window' : 'Fullscreen'}</span>
           </button>
         </div>
       </header>
@@ -487,7 +474,7 @@ export default function WorldPage() {
       {/* =========================================================================
           BOTTOM HUD CONTROLS HINT (MINIMAL & NON-INTRUSIVE)
           ========================================================================= */}
-      <footer className="pointer-events-none fixed bottom-3 left-4 z-20 hidden md:flex items-center gap-2 rounded-2xl border border-yellow-700/30 bg-gray-950/80 px-3.5 py-1 text-[11px] font-mono text-gray-300 backdrop-blur-md shadow-xl">
+      <footer className="rpg-panel-brown pointer-events-none fixed bottom-3 left-4 z-20 hidden md:flex items-center gap-2 px-3.5 py-1 text-[11px] font-mono text-amber-200 backdrop-blur-md">
         <span className="text-yellow-400 font-bold">WASD / ZQSD / Click</span> Walk ·
         <span className="text-yellow-400 font-bold">Shift</span> Sprint ·
         <span className="text-yellow-400 font-bold">Space</span> Attack ·

@@ -70,16 +70,16 @@ export default function InGameSaveModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-md animate-fadeIn select-none">
-      <div className="relative w-full max-w-md rounded-3xl border-2 border-yellow-600/70 bg-gradient-to-b from-gray-950 via-gray-900 to-gray-950 p-6 shadow-2xl shadow-yellow-950/50">
+      <div className="rpg-panel-brown relative w-full max-w-md p-6 shadow-2xl">
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-yellow-700/40 pb-4">
+        <div className="flex items-center justify-between border-b border-amber-900/50 pb-4">
           <div className="flex items-center gap-3">
-            <span className="text-3xl">💾</span>
+            <span className="text-3xl drop-shadow">💾</span>
             <div>
-              <h2 className="font-serif text-lg font-bold text-yellow-300 tracking-wide">
+              <h2 className="font-serif text-lg font-bold text-amber-100 tracking-wide drop-shadow">
                 Save &amp; Load Realm State
               </h2>
-              <p className="text-xs text-gray-400">
+              <p className="text-xs text-amber-300/70">
                 Offline Persistence · Version {CURRENT_SAVE_SCHEMA_VERSION}
               </p>
             </div>
@@ -90,23 +90,23 @@ export default function InGameSaveModal({
               audioManager.play('tap');
               onClose();
             }}
-            className="flex h-8 w-8 items-center justify-center rounded-xl border border-yellow-700/40 bg-gray-900 text-gray-400 hover:text-white transition"
+            className="rpg-btn-square-brown h-8 w-8 text-xs font-bold text-amber-200"
           >
             ✕
           </button>
         </div>
 
         {/* Character Info Snippet */}
-        <div className="mt-4 rounded-2xl border border-yellow-700/30 bg-gray-900/60 p-3.5 flex items-center justify-between">
+        <div className="rpg-slot-inset mt-4 p-3 bg-stone-950/70 flex items-center justify-between">
           <div>
-            <h4 className="font-bold text-sm text-white">
+            <h4 className="font-bold text-sm text-amber-100">
               {character?.characterName || 'Warden'} (Lvl {profile?.stats?.level || 1})
             </h4>
-            <p className="text-[11px] text-gray-400">
+            <p className="text-[11px] text-amber-300/70 font-mono">
               Gold: {profile?.stats?.gold || 0}g · XP: {profile?.stats?.xp || 0}
             </p>
           </div>
-          <span className="rounded-lg bg-emerald-950/80 border border-emerald-600/40 px-2 py-0.5 text-[10px] font-mono font-bold text-emerald-300">
+          <span className="rounded bg-emerald-950/80 border border-emerald-600/40 px-2 py-0.5 text-[10px] font-mono font-bold text-emerald-300">
             Auto-Saved
           </span>
         </div>
@@ -116,34 +116,34 @@ export default function InGameSaveModal({
           <button
             type="button"
             onClick={handleManualSave}
-            className="w-full flex items-center justify-between rounded-xl border border-yellow-500/40 bg-yellow-500/15 p-3 font-serif font-bold text-xs text-yellow-200 hover:bg-yellow-500/25 transition active:scale-95"
+            className="rpg-btn-beige w-full flex items-center justify-between p-2.5 text-xs text-amber-950"
           >
             <div className="flex items-center gap-2">
               <span className="text-base">💾</span>
               <span>Quick Save Now</span>
             </div>
-            <span className="text-[10px] text-yellow-400/80 font-mono">LocalStorage</span>
+            <span className="text-[10px] font-mono text-amber-800">LocalStorage</span>
           </button>
 
           <button
             type="button"
             disabled={isExporting}
             onClick={handleExportJSON}
-            className="w-full flex items-center justify-between rounded-xl border border-gray-700 bg-gray-900/80 p-3 font-serif font-bold text-xs text-gray-200 hover:text-white hover:border-gray-500 transition active:scale-95"
+            className="rpg-btn-brown w-full flex items-center justify-between p-2.5 text-xs text-amber-100"
           >
             <div className="flex items-center gap-2">
               <span className="text-base">📥</span>
               <span>Export Save JSON File</span>
             </div>
-            <span className="text-[10px] text-gray-400 font-mono">Download</span>
+            <span className="text-[10px] font-mono text-amber-300/70">Download</span>
           </button>
 
-          <label className="w-full flex items-center justify-between rounded-xl border border-gray-700 bg-gray-900/80 p-3 font-serif font-bold text-xs text-gray-200 hover:text-white hover:border-gray-500 transition active:scale-95 cursor-pointer">
+          <label className="rpg-btn-brown w-full flex items-center justify-between p-2.5 text-xs text-amber-100 cursor-pointer">
             <div className="flex items-center gap-2">
               <span className="text-base">📤</span>
               <span>Import Save JSON File</span>
             </div>
-            <span className="text-[10px] text-gray-400 font-mono">Upload</span>
+            <span className="text-[10px] font-mono text-amber-300/70">Upload</span>
             <input
               type="file"
               accept=".json"
@@ -154,7 +154,7 @@ export default function InGameSaveModal({
         </div>
 
         {/* Footer */}
-        <div className="mt-6 flex items-center justify-between border-t border-yellow-700/40 pt-4 text-xs text-gray-400">
+        <div className="mt-6 flex items-center justify-between border-t border-amber-900/50 pt-4 text-xs text-amber-300/70">
           <span>Saves are stored locally in browser storage</span>
           <button
             type="button"
@@ -162,7 +162,7 @@ export default function InGameSaveModal({
               audioManager.play('tap');
               onClose();
             }}
-            className="rounded-xl bg-gray-900 border border-yellow-700/30 px-4 py-2 font-serif text-xs font-bold text-yellow-300 hover:text-white transition"
+            className="rpg-btn-brown text-xs py-1.5 px-4"
           >
             Resume Game
           </button>

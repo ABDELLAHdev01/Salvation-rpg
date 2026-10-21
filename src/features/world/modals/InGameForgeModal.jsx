@@ -113,16 +113,16 @@ export default function InGameForgeModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-md animate-fadeIn select-none">
-      <div className="relative w-full max-w-3xl rounded-3xl border-2 border-yellow-600/70 bg-gradient-to-b from-gray-950 via-gray-900 to-gray-950 p-6 shadow-2xl shadow-yellow-950/50">
+      <div className="rpg-panel-brown relative w-full max-w-3xl p-6 shadow-2xl">
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-yellow-700/40 pb-4">
+        <div className="flex items-center justify-between border-b border-amber-900/50 pb-4">
           <div className="flex items-center gap-3">
-            <span className="text-3xl">⚒️</span>
+            <span className="text-3xl drop-shadow">⚒️</span>
             <div>
-              <h2 className="font-serif text-lg font-bold text-yellow-300 tracking-wide sm:text-xl">
+              <h2 className="font-serif text-lg font-bold text-amber-100 tracking-wide sm:text-xl drop-shadow">
                 Artisan Forge &amp; Crucible
               </h2>
-              <p className="text-xs text-gray-400">
+              <p className="text-xs text-amber-300/70">
                 Smelt ores, forge tempered blades, and brew restorative elixirs
               </p>
             </div>
@@ -133,7 +133,7 @@ export default function InGameForgeModal({
               audioManager.play('tap');
               onClose();
             }}
-            className="flex h-8 w-8 items-center justify-center rounded-xl border border-yellow-700/40 bg-gray-900 text-gray-400 hover:text-white transition"
+            className="rpg-btn-square-brown h-8 w-8 text-xs font-bold text-amber-200"
           >
             ✕
           </button>
@@ -151,19 +151,19 @@ export default function InGameForgeModal({
                 <div
                   key={recipe.id}
                   onClick={() => setSelectedRecipe(recipe)}
-                  className={`flex items-center justify-between rounded-2xl border p-3.5 cursor-pointer transition ${
+                  className={`rpg-slot-inset flex items-center justify-between p-3.5 cursor-pointer transition ${
                     isSelected
-                      ? 'border-yellow-400 bg-yellow-500/15 shadow-md shadow-yellow-950/50'
-                      : 'border-yellow-700/20 bg-gray-900/60 hover:border-yellow-600/40'
+                      ? 'bg-amber-950/40 ring-1 ring-amber-400'
+                      : 'bg-stone-950/70 hover:brightness-110'
                   }`}
                 >
                   <div className="flex items-center gap-3">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-yellow-700/30 bg-black/50 p-1.5 shadow-inner">
+                    <div className="flex h-11 w-11 items-center justify-center rounded bg-black/60 border border-amber-900/60 p-1.5 shadow-inner">
                       <img src={getItemIcon(recipe.output.id)} alt={recipe.name} className="h-8 w-8 object-contain pixelated drop-shadow-md" />
                     </div>
                     <div>
-                      <h4 className="font-serif font-bold text-sm text-white">{recipe.name}</h4>
-                      <p className="text-[11px] text-gray-400">{recipe.desc}</p>
+                      <h4 className="font-serif font-bold text-sm text-amber-100">{recipe.name}</h4>
+                      <p className="text-[11px] text-amber-300/70">{recipe.desc}</p>
                     </div>
                   </div>
 
@@ -175,11 +175,11 @@ export default function InGameForgeModal({
                         e.stopPropagation();
                         handleCraft(recipe);
                       }}
-                      className={`rounded-xl px-3.5 py-1.5 text-xs font-bold transition active:scale-95 ${
+                      className={`${
                         craftable
-                          ? 'bg-yellow-500 text-black hover:bg-yellow-400 shadow'
-                          : 'bg-gray-800 text-gray-500 cursor-not-allowed opacity-60'
-                      }`}
+                          ? 'rpg-btn-beige'
+                          : 'rpg-btn-brown opacity-60 cursor-not-allowed'
+                      } text-xs py-1 px-3`}
                     >
                       Forge
                     </button>
@@ -190,15 +190,15 @@ export default function InGameForgeModal({
           </div>
 
           {/* Recipe Details Panel */}
-          <div className="rounded-2xl border border-yellow-700/30 bg-gray-950/80 p-4 flex flex-col justify-between">
+          <div className="rpg-slot-inset p-4 bg-stone-950/80 flex flex-col justify-between">
             <div>
-              <div className="flex items-center gap-2 text-yellow-300 font-serif font-bold text-sm border-b border-gray-800 pb-2">
+              <div className="flex items-center gap-2 text-amber-300 font-serif font-bold text-sm border-b border-amber-900/50 pb-2">
                 <img src={getItemIcon(selectedRecipe.output.id)} alt={selectedRecipe.name} className="h-5 w-5 object-contain pixelated" />
                 <span>{selectedRecipe.name}</span>
               </div>
 
               <div className="mt-3">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-amber-300">
                   Required Materials:
                 </span>
                 <div className="mt-2 space-y-2">
@@ -209,11 +209,11 @@ export default function InGameForgeModal({
                     return (
                       <div
                         key={inp.id}
-                        className="flex items-center justify-between rounded-xl border border-gray-800 bg-gray-900/80 p-2 text-xs"
+                        className="rpg-slot-inset flex items-center justify-between p-2 text-xs bg-stone-900/70"
                       >
                         <div className="flex items-center gap-2">
                           <img src={getItemIcon(inp.id)} alt={inp.name} className="h-4 w-4 object-contain pixelated" />
-                          <span className="text-gray-300">{inp.name}</span>
+                          <span className="text-amber-100">{inp.name}</span>
                         </div>
                         <span
                           className={`font-mono font-bold ${
@@ -228,8 +228,8 @@ export default function InGameForgeModal({
                 </div>
               </div>
 
-              <div className="mt-4 rounded-xl border border-yellow-700/20 bg-yellow-950/20 p-2.5 text-[11px] text-yellow-300/80">
-                ⭐ Grants <span className="font-bold text-yellow-300">+{selectedRecipe.xp} Workshop XP</span> on completion.
+              <div className="mt-4 rounded border border-amber-900/50 bg-amber-950/30 p-2.5 text-[11px] text-amber-300/90 font-serif">
+                ⭐ Grants <span className="font-bold text-amber-200">+{selectedRecipe.xp} Workshop XP</span> on completion.
               </div>
             </div>
 
@@ -237,11 +237,11 @@ export default function InGameForgeModal({
               type="button"
               disabled={!canCraft(selectedRecipe)}
               onClick={() => handleCraft(selectedRecipe)}
-              className={`mt-4 w-full rounded-xl py-2.5 font-serif text-xs font-bold transition shadow ${
+              className={`${
                 canCraft(selectedRecipe)
-                  ? 'bg-yellow-500 text-black hover:bg-yellow-400 active:scale-95'
-                  : 'bg-gray-800 text-gray-500 cursor-not-allowed opacity-60'
-              }`}
+                  ? 'rpg-btn-beige text-amber-950'
+                  : 'rpg-btn-brown opacity-60 cursor-not-allowed'
+              } mt-4 w-full py-2 font-serif text-xs font-bold`}
             >
               Forge {selectedRecipe.name} ⚒️
             </button>
@@ -249,7 +249,7 @@ export default function InGameForgeModal({
         </div>
 
         {/* Footer */}
-        <div className="mt-5 flex items-center justify-between border-t border-yellow-700/40 pt-4 text-xs text-gray-400">
+        <div className="mt-5 flex items-center justify-between border-t border-amber-900/50 pt-4 text-xs text-amber-300/70">
           <span>Workshop Forge active in Sunforge Homestead</span>
           <button
             type="button"
@@ -257,7 +257,7 @@ export default function InGameForgeModal({
               audioManager.play('tap');
               onClose();
             }}
-            className="rounded-xl bg-gray-900 border border-yellow-700/30 px-4 py-2 font-serif text-xs font-bold text-yellow-300 hover:text-white transition"
+            className="rpg-btn-brown text-xs py-1.5 px-4"
           >
             Back to Realm
           </button>

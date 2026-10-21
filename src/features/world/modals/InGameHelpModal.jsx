@@ -19,16 +19,16 @@ export default function InGameHelpModal({ isOpen, onClose }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-md animate-fadeIn select-none">
-      <div className="relative w-full max-w-lg rounded-3xl border-2 border-yellow-600/70 bg-gradient-to-b from-gray-950 via-gray-900 to-gray-950 p-6 shadow-2xl shadow-yellow-950/50">
+      <div className="rpg-panel-brown relative w-full max-w-lg p-6 shadow-2xl">
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-yellow-700/40 pb-4">
+        <div className="flex items-center justify-between border-b border-amber-900/50 pb-4">
           <div className="flex items-center gap-3">
-            <span className="text-3xl">🎮</span>
+            <span className="text-3xl drop-shadow">🎮</span>
             <div>
-              <h2 className="font-serif text-lg font-bold text-yellow-300 tracking-wide">
+              <h2 className="font-serif text-lg font-bold text-amber-100 tracking-wide drop-shadow">
                 Realm Controls &amp; Guide
               </h2>
-              <p className="text-xs text-gray-400">
+              <p className="text-xs text-amber-300/70">
                 Action RPG Movement, Combat &amp; Gathering
               </p>
             </div>
@@ -39,7 +39,7 @@ export default function InGameHelpModal({ isOpen, onClose }) {
               audioManager.play('tap');
               onClose();
             }}
-            className="flex h-8 w-8 items-center justify-center rounded-xl border border-yellow-700/40 bg-gray-900 text-gray-400 hover:text-white transition"
+            className="rpg-btn-square-brown h-8 w-8 text-xs font-bold text-amber-200"
           >
             ✕
           </button>
@@ -50,18 +50,18 @@ export default function InGameHelpModal({ isOpen, onClose }) {
           {CONTROLS.map((ctrl) => (
             <div
               key={ctrl.key}
-              className="flex items-center justify-between rounded-xl border border-yellow-700/20 bg-gray-900/60 p-2.5 text-xs"
+              className="rpg-slot-inset flex items-center justify-between p-2 text-xs bg-stone-950/70"
             >
-              <kbd className="rounded-lg border border-yellow-700/40 bg-gray-950 px-2.5 py-1 font-mono font-bold text-yellow-300 shadow">
+              <kbd className="rpg-slot-inset px-2.5 py-0.5 font-mono font-bold text-amber-300 bg-black/80">
                 {ctrl.key}
               </kbd>
-              <span className="text-gray-300 text-right ml-3">{ctrl.action}</span>
+              <span className="text-amber-100 text-right ml-3 font-serif">{ctrl.action}</span>
             </div>
           ))}
         </div>
 
         {/* Footer */}
-        <div className="mt-5 flex items-center justify-between border-t border-yellow-700/40 pt-4 text-xs text-gray-400">
+        <div className="mt-5 flex items-center justify-between border-t border-amber-900/50 pt-4 text-xs text-amber-300/70">
           <span>Fully playable offline in browser</span>
           <button
             type="button"
@@ -69,7 +69,7 @@ export default function InGameHelpModal({ isOpen, onClose }) {
               audioManager.play('tap');
               onClose();
             }}
-            className="rounded-xl bg-yellow-500 px-5 py-2 font-serif text-xs font-bold text-black hover:bg-yellow-400 transition shadow"
+            className="rpg-btn-beige text-xs py-1.5 px-5 font-serif font-bold text-amber-950"
           >
             Got It!
           </button>

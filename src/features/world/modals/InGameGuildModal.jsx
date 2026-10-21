@@ -89,25 +89,25 @@ export default function InGameGuildModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-md animate-fadeIn select-none">
-      <div className="relative flex flex-col h-[600px] w-full max-w-4xl rounded-3xl border-2 border-yellow-600/70 bg-gradient-to-b from-gray-950 via-gray-900 to-gray-950 p-6 shadow-2xl shadow-yellow-950/50">
+      <div className="rpg-panel-brown relative flex flex-col h-[600px] w-full max-w-4xl p-6 shadow-2xl">
         
         {/* Header: Guild Crest & NPC Greeting */}
-        <div className="flex items-center justify-between border-b border-yellow-700/40 pb-4">
+        <div className="flex items-center justify-between border-b border-amber-900/50 pb-4">
           <div className="flex items-center gap-3">
             <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-yellow-500/50 bg-yellow-500/10 text-2xl shadow-inner">
               ⚔️
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h2 className="font-serif text-lg font-bold text-yellow-300 tracking-wide sm:text-xl">
+                <h2 className="font-serif text-lg font-bold text-amber-100 tracking-wide sm:text-xl drop-shadow">
                   The Adventurers' Guild
                 </h2>
-                <span className="rounded-md border border-yellow-600/40 bg-yellow-950/60 px-2 py-0.5 text-[10px] font-mono text-yellow-400">
+                <span className="rounded-md border border-amber-700/40 bg-amber-950/60 px-2 py-0.5 text-[10px] font-mono text-amber-300">
                   Sunforge Chapter
                 </span>
               </div>
-              <p className="text-xs text-gray-400">
-                Guild Warden Michelle: <span className="italic text-gray-300">"Honorable Warden, contract bounties and realm renown await."</span>
+              <p className="text-xs text-amber-300/70">
+                Guild Warden Michelle: <span className="italic text-amber-100">"Honorable Warden, contract bounties and realm renown await."</span>
               </p>
             </div>
           </div>
@@ -117,14 +117,14 @@ export default function InGameGuildModal({
               audioManager.play('tap');
               onClose();
             }}
-            className="flex h-8 w-8 items-center justify-center rounded-xl border border-yellow-700/40 bg-gray-900 text-gray-400 hover:text-white transition"
+            className="rpg-btn-square-brown h-8 w-8 text-xs font-bold text-amber-200"
           >
             ✕
           </button>
         </div>
 
         {/* Guild Rank & Renown Progress Banner */}
-        <div className="my-3 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 rounded-2xl border border-yellow-700/30 bg-gray-950/80 p-3.5 backdrop-blur-md">
+        <div className="rpg-slot-inset my-3 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-3.5 bg-stone-950/70">
           <div className="flex items-center gap-3">
             <div
               className="flex h-10 w-10 items-center justify-center rounded-xl font-bold font-mono text-sm border shadow"
@@ -162,7 +162,7 @@ export default function InGameGuildModal({
         </div>
 
         {/* Navigation Tabs */}
-        <div className="flex items-center justify-between border-b border-gray-800 pb-2">
+        <div className="flex items-center justify-between border-b border-amber-900/50 pb-2">
           <div className="flex items-center gap-2">
             <button
               type="button"
@@ -170,11 +170,9 @@ export default function InGameGuildModal({
                 audioManager.play('tap');
                 setActiveTab('available');
               }}
-              className={`rounded-xl px-3.5 py-1.5 text-xs font-bold transition ${
-                activeTab === 'available'
-                  ? 'border border-yellow-400 bg-yellow-500/20 text-yellow-200'
-                  : 'border border-transparent text-gray-400 hover:text-white'
-              }`}
+              className={`${
+                activeTab === 'available' ? 'rpg-btn-beige active' : 'rpg-btn-brown'
+              } text-xs py-1 px-3`}
             >
               Contract Board ({boardState.available.length})
             </button>
@@ -184,15 +182,13 @@ export default function InGameGuildModal({
                 audioManager.play('tap');
                 setActiveTab('active');
               }}
-              className={`rounded-xl px-3.5 py-1.5 text-xs font-bold transition flex items-center gap-1.5 ${
-                activeTab === 'active'
-                  ? 'border border-yellow-400 bg-yellow-500/20 text-yellow-200'
-                  : 'border border-transparent text-gray-400 hover:text-white'
-              }`}
+              className={`${
+                activeTab === 'active' ? 'rpg-btn-beige active' : 'rpg-btn-brown'
+              } text-xs py-1 px-3 flex items-center gap-1.5`}
             >
               <span>Active Contracts</span>
               {boardState.active.length > 0 && (
-                <span className="rounded-full bg-yellow-400 px-1.5 py-0.2 text-[10px] font-mono text-black font-bold">
+                <span className="rounded-full bg-amber-300 px-1.5 py-0.2 text-[10px] font-mono text-black font-bold">
                   {boardState.active.length}
                 </span>
               )}
@@ -203,11 +199,9 @@ export default function InGameGuildModal({
                 audioManager.play('tap');
                 setActiveTab('completed');
               }}
-              className={`rounded-xl px-3.5 py-1.5 text-xs font-bold transition ${
-                activeTab === 'completed'
-                  ? 'border border-yellow-400 bg-yellow-500/20 text-yellow-200'
-                  : 'border border-transparent text-gray-400 hover:text-white'
-              }`}
+              className={`${
+                activeTab === 'completed' ? 'rpg-btn-beige active' : 'rpg-btn-brown'
+              } text-xs py-1 px-3`}
             >
               History ({boardState.completed.length})
             </button>
@@ -215,32 +209,32 @@ export default function InGameGuildModal({
 
           {activeTab === 'available' && (
             <div className="hidden sm:flex items-center gap-1.5 text-[11px] font-mono">
-              <span className="text-gray-500">Filter:</span>
+              <span className="text-amber-300/70">Filter:</span>
               <button
                 type="button"
                 onClick={() => setCategoryFilter('all')}
-                className={`rounded-lg px-2 py-0.5 ${categoryFilter === 'all' ? 'bg-yellow-500/30 text-yellow-200 font-bold' : 'text-gray-400 hover:text-white'}`}
+                className={`${categoryFilter === 'all' ? 'rpg-btn-beige active' : 'rpg-btn-brown'} text-[10px] py-0.5 px-2`}
               >
                 All
               </button>
               <button
                 type="button"
                 onClick={() => setCategoryFilter(CONTRACT_CATEGORIES.MAIN)}
-                className={`rounded-lg px-2 py-0.5 ${categoryFilter === CONTRACT_CATEGORIES.MAIN ? 'bg-yellow-500/30 text-yellow-200 font-bold' : 'text-gray-400 hover:text-white'}`}
+                className={`${categoryFilter === CONTRACT_CATEGORIES.MAIN ? 'rpg-btn-beige active' : 'rpg-btn-brown'} text-[10px] py-0.5 px-2`}
               >
                 Story
               </button>
               <button
                 type="button"
                 onClick={() => setCategoryFilter(CONTRACT_CATEGORIES.GUILD)}
-                className={`rounded-lg px-2 py-0.5 ${categoryFilter === CONTRACT_CATEGORIES.GUILD ? 'bg-yellow-500/30 text-yellow-200 font-bold' : 'text-gray-400 hover:text-white'}`}
+                className={`${categoryFilter === CONTRACT_CATEGORIES.GUILD ? 'rpg-btn-beige active' : 'rpg-btn-brown'} text-[10px] py-0.5 px-2`}
               >
                 Bounties
               </button>
               <button
                 type="button"
                 onClick={() => setCategoryFilter(CONTRACT_CATEGORIES.DISCOVERY)}
-                className={`rounded-lg px-2 py-0.5 ${categoryFilter === CONTRACT_CATEGORIES.DISCOVERY ? 'bg-yellow-500/30 text-yellow-200 font-bold' : 'text-gray-400 hover:text-white'}`}
+                className={`${categoryFilter === CONTRACT_CATEGORIES.DISCOVERY ? 'rpg-btn-beige active' : 'rpg-btn-brown'} text-[10px] py-0.5 px-2`}
               >
                 Discoveries
               </button>
@@ -289,12 +283,12 @@ export default function InGameGuildModal({
                           <button
                             type="button"
                             onClick={() => handleAccept(c.id)}
-                            className="rounded-xl bg-yellow-500 px-4 py-1.5 font-serif text-xs font-bold text-black hover:bg-yellow-400 transition active:scale-95 shadow"
+                            className="rpg-btn-beige text-xs py-1.5 px-4 font-serif font-bold text-amber-950"
                           >
                             Accept Contract ✍️
                           </button>
                         ) : (
-                          <span className="rounded-xl border border-gray-700 bg-gray-900 px-3 py-1 text-[11px] font-mono text-gray-400">
+                          <span className="rpg-btn-brown opacity-60 text-[11px] py-1 px-3 cursor-not-allowed">
                             🔒 Rank: {c.minRank}
                           </span>
                         )}
@@ -302,15 +296,15 @@ export default function InGameGuildModal({
                     </div>
 
                     {/* Objectives & Rewards Row */}
-                    <div className="mt-3.5 flex flex-wrap items-center justify-between gap-3 border-t border-gray-800/80 pt-3 text-xs">
+                    <div className="mt-3.5 flex flex-wrap items-center justify-between gap-3 border-t border-amber-900/40 pt-3 text-xs">
                       <div className="flex flex-col gap-1">
-                        <span className="font-mono text-[10px] font-bold uppercase tracking-wider text-gray-400">
+                        <span className="font-mono text-[10px] font-bold uppercase tracking-wider text-amber-300">
                           Objectives:
                         </span>
                         <ul className="space-y-0.5">
                           {c.objectives.map((obj) => (
-                            <li key={obj.id} className="text-[11px] text-gray-300 flex items-center gap-1.5">
-                              <span className="text-yellow-400">•</span>
+                            <li key={obj.id} className="text-[11px] text-amber-100 flex items-center gap-1.5 font-serif">
+                              <span className="text-amber-400">•</span>
                               <span>{obj.label} ({obj.target} required)</span>
                             </li>
                           ))}
@@ -318,15 +312,15 @@ export default function InGameGuildModal({
                       </div>
 
                       <div className="flex items-center gap-3">
-                        <div className="flex items-center gap-1 text-yellow-300 font-mono font-bold">
+                        <div className="rpg-slot-inset px-2 py-0.5 flex items-center gap-1 text-amber-300 font-mono font-bold bg-stone-950/80">
                           <img src={getItemIcon('gold-coin')} alt="Gold" className="h-3.5 w-3.5 pixelated" />
                           <span>+{c.rewards.gold}g</span>
                         </div>
-                        <div className="flex items-center gap-1 text-purple-300 font-mono font-bold">
+                        <div className="rpg-slot-inset px-2 py-0.5 flex items-center gap-1 text-purple-300 font-mono font-bold bg-stone-950/80">
                           <span>⭐</span>
                           <span>+{c.rewards.xp} XP</span>
                         </div>
-                        <div className="flex items-center gap-1 text-blue-300 font-mono font-bold">
+                        <div className="rpg-slot-inset px-2 py-0.5 flex items-center gap-1 text-amber-200 font-mono font-bold bg-stone-950/80">
                           <span>★</span>
                           <span>+{c.rewards.renown} Renown</span>
                         </div>
@@ -342,8 +336,8 @@ export default function InGameGuildModal({
           {activeTab === 'active' && (
             <>
               {boardState.active.length === 0 ? (
-                <div className="flex h-48 flex-col items-center justify-center text-gray-400">
-                  <span className="text-3xl mb-2">📋</span>
+                <div className="flex h-48 flex-col items-center justify-center text-amber-200/60 font-serif">
+                  <span className="text-3xl mb-2 drop-shadow">📋</span>
                   <p className="text-xs">No active guild contracts. Pick an open contract from the Board!</p>
                 </div>
               ) : (
@@ -352,29 +346,25 @@ export default function InGameGuildModal({
                   return (
                     <div
                       key={c.id}
-                      className={`rounded-2xl border p-4 transition ${
-                        isReady
-                          ? 'border-green-500/60 bg-green-950/20 shadow-lg shadow-green-950/20'
-                          : 'border-yellow-700/30 bg-gray-900/60'
-                      }`}
+                      className="rpg-slot-inset p-4 transition bg-stone-950/70"
                     >
                       <div className="flex items-start justify-between gap-3">
                         <div>
                           <div className="flex items-center gap-2 mb-1">
                             {getCategoryBadge(c.category)}
-                            <span className="font-mono text-[10px] text-gray-400 uppercase tracking-wider">
+                            <span className="font-mono text-[10px] text-amber-300 uppercase tracking-wider">
                               {c.kicker}
                             </span>
                             {isReady && (
-                              <span className="rounded-md bg-green-500/20 border border-green-500/40 px-2 py-0.5 text-[10px] font-bold text-green-300 animate-pulse">
+                              <span className="rounded-md bg-emerald-500/20 border border-emerald-500/50 px-2 py-0.5 text-[10px] font-bold text-emerald-300 animate-pulse">
                                 Ready for Turn-In!
                               </span>
                             )}
                           </div>
-                          <h3 className="font-serif text-sm font-bold text-white sm:text-base">
+                          <h3 className="font-serif text-sm font-bold text-amber-100 sm:text-base drop-shadow">
                             {c.title}
                           </h3>
-                          <p className="text-xs text-gray-300 mt-1">
+                          <p className="text-xs text-amber-200/70 mt-1">
                             {c.summary}
                           </p>
                         </div>
@@ -383,7 +373,7 @@ export default function InGameGuildModal({
                           <button
                             type="button"
                             onClick={() => handleClaim(c.id)}
-                            className="rounded-xl bg-green-500 px-4 py-2 font-serif text-xs font-bold text-black hover:bg-green-400 transition active:scale-95 shadow animate-bounce"
+                            className="rpg-btn-beige text-xs py-2 px-4 font-serif font-bold text-amber-950 animate-bounce"
                           >
                             Turn In &amp; Claim 🎁
                           </button>
@@ -391,23 +381,23 @@ export default function InGameGuildModal({
                       </div>
 
                       {/* Interactive Progress Tracking */}
-                      <div className="mt-3.5 space-y-2 border-t border-gray-800/80 pt-3">
-                        <span className="font-mono text-[10px] font-bold uppercase tracking-wider text-gray-400">
+                      <div className="mt-3.5 space-y-2 border-t border-amber-900/40 pt-3">
+                        <span className="font-mono text-[10px] font-bold uppercase tracking-wider text-amber-300">
                           Progress Tracker:
                         </span>
                         {c.objectives.map((obj) => (
                           <div key={obj.id} className="space-y-1">
-                            <div className="flex justify-between text-xs">
-                              <span className={obj.isFinished ? 'text-green-300 font-bold line-through' : 'text-gray-300'}>
+                            <div className="flex justify-between text-xs font-serif">
+                              <span className={obj.isFinished ? 'text-emerald-300 font-bold line-through' : 'text-amber-100'}>
                                 {obj.label}
                               </span>
-                              <span className="font-mono font-bold text-yellow-300">
+                              <span className="font-mono font-bold text-amber-300">
                                 {obj.current} / {obj.target}
                               </span>
                             </div>
-                            <div className="h-1.5 w-full rounded-full bg-gray-800 overflow-hidden">
+                            <div className="h-2 w-full rounded bg-black/80 overflow-hidden border border-amber-900/60 p-[1px]">
                               <div
-                                className={`h-full transition-all duration-300 ${obj.isFinished ? 'bg-green-400' : 'bg-yellow-400'}`}
+                                className={`h-full rounded-sm transition-all duration-300 ${obj.isFinished ? 'bg-emerald-400' : 'bg-amber-400'}`}
                                 style={{ width: `${Math.min(100, Math.round((obj.current / obj.target) * 100))}%` }}
                               />
                             </div>
@@ -425,32 +415,32 @@ export default function InGameGuildModal({
           {activeTab === 'completed' && (
             <>
               {boardState.completed.length === 0 ? (
-                <div className="flex h-48 flex-col items-center justify-center text-gray-400">
-                  <span className="text-3xl mb-2">🏆</span>
+                <div className="flex h-48 flex-col items-center justify-center text-amber-200/60 font-serif">
+                  <span className="text-3xl mb-2 drop-shadow">🏆</span>
                   <p className="text-xs">No completed contracts in guild records yet.</p>
                 </div>
               ) : (
                 boardState.completed.map((c) => (
                   <div
                     key={c.id}
-                    className="flex items-center justify-between rounded-2xl border border-gray-800 bg-gray-950/60 p-3.5 text-xs"
+                    className="rpg-slot-inset flex items-center justify-between p-3.5 text-xs bg-stone-950/60 opacity-80"
                   >
                     <div>
                       <div className="flex items-center gap-2 mb-0.5">
-                        <span className="text-green-400 font-bold">✓</span>
-                        <h4 className="font-serif font-bold text-gray-200">
+                        <span className="text-emerald-400 font-bold">✓</span>
+                        <h4 className="font-serif font-bold text-amber-100">
                           {c.title}
                         </h4>
                         {getCategoryBadge(c.category)}
                       </div>
-                      <p className="text-[11px] text-gray-400 ml-5">
+                      <p className="text-[11px] text-amber-300/70 ml-5">
                         {c.summary}
                       </p>
                     </div>
 
-                    <div className="flex items-center gap-3 font-mono text-[11px] text-gray-400">
-                      <span className="text-yellow-400/80">+{c.rewards.gold}g</span>
-                      <span className="text-blue-400/80">+{c.rewards.renown} Renown</span>
+                    <div className="flex items-center gap-3 font-mono text-[11px] text-amber-300">
+                      <span>+{c.rewards.gold}g</span>
+                      <span>+{c.rewards.renown} Renown</span>
                     </div>
                   </div>
                 ))
@@ -460,8 +450,8 @@ export default function InGameGuildModal({
         </div>
 
         {/* Footer */}
-        <div className="mt-4 flex items-center justify-between border-t border-yellow-700/40 pt-3 text-xs">
-          <span className="text-gray-400">
+        <div className="mt-4 flex items-center justify-between border-t border-amber-900/50 pt-3 text-xs">
+          <span className="text-amber-200/70 font-serif">
             Accept contracts, fulfill goals in the realm, and return here to claim your bounty.
           </span>
           <button
@@ -470,7 +460,7 @@ export default function InGameGuildModal({
               audioManager.play('tap');
               onClose();
             }}
-            className="rounded-xl border border-gray-700 bg-gray-900 px-5 py-2 font-serif text-xs font-semibold text-gray-300 hover:text-white transition"
+            className="rpg-btn-brown text-xs py-1.5 px-4"
           >
             Leave Guildhall
           </button>

@@ -182,17 +182,17 @@ export default function InGameFishingModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-md select-none animate-fadeIn">
-      <div className="relative flex flex-col items-center w-full max-w-md rounded-3xl border-2 border-cyan-500/60 bg-gradient-to-b from-gray-950 via-slate-900 to-gray-950 p-6 shadow-2xl shadow-cyan-950/60 text-white">
+      <div className="rpg-panel-blue relative flex flex-col items-center w-full max-w-md p-6 shadow-2xl text-white">
         
         {/* Header */}
         <div className="flex items-center justify-between w-full border-b border-cyan-700/40 pb-3 mb-4">
           <div className="flex items-center gap-2">
-            <span className="text-2xl">🎣</span>
+            <span className="text-2xl drop-shadow">🎣</span>
             <div>
-              <h3 className="font-serif text-base font-bold text-cyan-300">
+              <h3 className="font-serif text-base font-bold text-cyan-200 drop-shadow">
                 Salvation Angler Waters
               </h3>
-              <p className="text-[11px] text-gray-400">
+              <p className="text-[11px] text-cyan-300/70">
                 Patience, timing, and rod tension
               </p>
             </div>
@@ -200,7 +200,7 @@ export default function InGameFishingModal({
           <button
             type="button"
             onClick={onClose}
-            className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-800/80 text-gray-400 hover:text-white"
+            className="rpg-btn-square-brown h-8 w-8 text-xs font-bold text-amber-200"
           >
             ✕
           </button>
@@ -231,17 +231,17 @@ export default function InGameFishingModal({
               </div>
             </div>
 
-            <p className="font-serif text-sm text-cyan-200 font-semibold">
+            <p className="font-serif text-sm text-cyan-200 font-semibold drop-shadow">
               {gameState === 'nibble' ? 'STRIKE NOW! Click or press [Space]!' : 'Watching the bobber ripple...'}
             </p>
 
             <button
               type="button"
               onClick={handleStrike}
-              className={`w-full py-3 rounded-2xl font-serif text-sm font-bold shadow-lg transition active:scale-95 ${
+              className={`w-full py-2.5 font-serif text-sm font-bold shadow-lg transition active:scale-95 ${
                 gameState === 'nibble'
-                  ? 'bg-gradient-to-r from-red-500 to-amber-500 text-black hover:brightness-110 animate-bounce'
-                  : 'border border-cyan-600/40 bg-cyan-950/60 text-cyan-300 hover:bg-cyan-900/60'
+                  ? 'rpg-btn-beige text-amber-950 animate-bounce'
+                  : 'rpg-btn-brown opacity-80'
               }`}
             >
               {gameState === 'nibble' ? '⚡ STRIKE! Hook the Fish!' : 'Waiting for Nibble...'}
@@ -325,14 +325,14 @@ export default function InGameFishingModal({
               <button
                 type="button"
                 onClick={startCasting}
-                className="flex-1 py-2.5 rounded-xl bg-cyan-500 text-black font-serif text-xs font-bold hover:bg-cyan-400 transition"
+                className="rpg-btn-beige flex-1 py-2 font-serif text-xs font-bold text-amber-950"
               >
                 Cast Again 🎣
               </button>
               <button
                 type="button"
                 onClick={onClose}
-                className="flex-1 py-2.5 rounded-xl border border-gray-700 bg-gray-800 text-gray-300 font-serif text-xs font-semibold hover:text-white transition"
+                className="rpg-btn-brown flex-1 py-2 font-serif text-xs font-bold"
               >
                 Pocket Catch
               </button>
@@ -355,7 +355,7 @@ export default function InGameFishingModal({
             <button
               type="button"
               onClick={startCasting}
-              className="w-full py-2.5 rounded-xl bg-cyan-600 text-white font-serif text-xs font-bold hover:bg-cyan-500 transition"
+              className="rpg-btn-brown w-full py-2 font-serif text-xs font-bold"
             >
               Cast Again 🎣
             </button>

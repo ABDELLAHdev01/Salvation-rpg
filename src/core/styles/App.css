@@ -1110,3 +1110,148 @@ a[class]:focus-visible::after,
   image-rendering: -moz-crisp-edges;
   image-rendering: crisp-edges;
 }
+
+/* =========================================================================
+   AUTHENTIC 2D RPG UI PACK (KENNEY CC0 EXPANSION)
+   ========================================================================= */
+
+/* RPG Panels (9-slice border-image) */
+.rpg-panel-brown {
+  border-style: solid;
+  border-width: 10px;
+  border-image-source: url('/assets/ui/rpg/panel_brown.png');
+  border-image-slice: 16 fill;
+  border-image-repeat: stretch;
+  box-shadow: 0 8px 24px -4px rgba(0, 0, 0, 0.7);
+}
+
+.rpg-panel-beige {
+  border-style: solid;
+  border-width: 10px;
+  border-image-source: url('/assets/ui/rpg/panel_beige.png');
+  border-image-slice: 16 fill;
+  border-image-repeat: stretch;
+}
+
+.rpg-panel-blue {
+  border-style: solid;
+  border-width: 10px;
+  border-image-source: url('/assets/ui/rpg/panel_blue.png');
+  border-image-slice: 16 fill;
+  border-image-repeat: stretch;
+}
+
+.rpg-slot-inset {
+  border-style: solid;
+  border-width: 6px;
+  border-image-source: url('/assets/ui/rpg/panelInset_brown.png');
+  border-image-slice: 10 fill;
+  border-image-repeat: stretch;
+}
+
+/* RPG Buttons */
+.rpg-btn-brown {
+  border-style: solid;
+  border-width: 6px;
+  border-image-source: url('/assets/ui/rpg/buttonLong_brown.png');
+  border-image-slice: 12 fill;
+  border-image-repeat: stretch;
+  color: #fef3c7;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.9);
+  font-family: inherit;
+  font-weight: 700;
+  transition: transform 0.08s ease, filter 0.08s ease;
+  user-select: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  padding: 0.25rem 0.75rem;
+}
+
+.rpg-btn-brown:hover {
+  filter: brightness(1.15);
+}
+
+.rpg-btn-brown:active,
+.rpg-btn-brown.active {
+  border-image-source: url('/assets/ui/rpg/buttonLong_brown_pressed.png');
+  transform: translateY(1px);
+}
+
+.rpg-btn-beige {
+  border-style: solid;
+  border-width: 6px;
+  border-image-source: url('/assets/ui/rpg/buttonLong_beige.png');
+  border-image-slice: 12 fill;
+  border-image-repeat: stretch;
+  color: #451a03;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.4);
+  font-family: inherit;
+  font-weight: 700;
+  transition: transform 0.08s ease, filter 0.08s ease;
+  user-select: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  padding: 0.25rem 0.75rem;
+}
+
+.rpg-btn-beige:hover {
+  filter: brightness(1.1);
+}
+
+.rpg-btn-beige:active,
+.rpg-btn-beige.active {
+  border-image-source: url('/assets/ui/rpg/buttonLong_beige_pressed.png');
+  transform: translateY(1px);
+}
+
+/* RPG Square Buttons (Hotbar / Icons / Close) */
+.rpg-btn-square-brown {
+  border-style: solid;
+  border-width: 6px;
+  border-image-source: url('/assets/ui/rpg/buttonSquare_brown.png');
+  border-image-slice: 10 fill;
+  border-image-repeat: stretch;
+  color: #fde68a;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.08s ease, filter 0.08s ease;
+  user-select: none;
+}
+
+.rpg-btn-square-brown:hover {
+  filter: brightness(1.15);
+}
+
+.rpg-btn-square-brown:active,
+.rpg-btn-square-brown.active {
+  border-image-source: url('/assets/ui/rpg/buttonSquare_brown_pressed.png');
+  transform: translateY(1px);
+}
+
+.rpg-btn-square-beige {
+  border-style: solid;
+  border-width: 6px;
+  border-image-source: url('/assets/ui/rpg/buttonSquare_beige.png');
+  border-image-slice: 10 fill;
+  border-image-repeat: stretch;
+  color: #451a03;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.08s ease, filter 0.08s ease;
+  user-select: none;
+}
+
+.rpg-btn-square-beige:hover {
+  filter: brightness(1.1);
+}
+
+.rpg-btn-square-beige:active {
+  border-image-source: url('/assets/ui/rpg/buttonSquare_beige_pressed.png');
+  transform: translateY(1px);
+}

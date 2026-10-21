@@ -112,12 +112,12 @@ export default function WorldMinimap({
             audioManager.play('tap');
             onReturnHome();
           }}
-          className="flex items-center gap-1.5 rounded-2xl border border-yellow-500/50 bg-gray-950/90 px-3 py-1.5 text-xs font-bold text-yellow-300 shadow-2xl backdrop-blur-md hover:border-yellow-400 hover:bg-yellow-500/20 active:scale-95 transition"
+          className="rpg-btn-beige text-xs py-1 px-3 shadow-xl"
           title="Recall Home to Homestead Cottage [H]"
         >
           <span>🏡</span>
           <span>Return Home</span>
-          <kbd className="rounded border border-yellow-700/60 bg-gray-900 px-1 font-mono text-[9px] text-yellow-400">
+          <kbd className="rounded border border-amber-900/60 bg-amber-950/80 px-1 font-mono text-[9px] text-amber-200 ml-1">
             H
           </kbd>
         </button>
@@ -128,26 +128,26 @@ export default function WorldMinimap({
             audioManager.play('tap');
             setIsExpanded(true);
           }}
-          className="group relative h-36 w-36 sm:h-40 sm:w-40 cursor-pointer overflow-hidden rounded-3xl border-2 border-yellow-600/70 bg-gradient-to-b from-gray-950/95 via-gray-900/95 to-gray-950/95 p-1 shadow-2xl shadow-yellow-950/50 backdrop-blur-md transition hover:border-yellow-400 hover:shadow-yellow-500/20"
+          className="rpg-panel-brown group relative h-36 w-36 sm:h-40 sm:w-40 cursor-pointer overflow-hidden p-1.5 shadow-2xl backdrop-blur-md hover:brightness-105"
           title="Click or press [M] to open World Atlas"
         >
           {/* Compass Rose Ring */}
-          <div className="absolute inset-1 rounded-[22px] border border-yellow-700/20 pointer-events-none" />
-          <span className="absolute top-1 left-1/2 -translate-x-1/2 font-mono text-[8px] font-bold text-yellow-500/80">
+          <div className="absolute inset-1 rounded border border-amber-700/30 pointer-events-none" />
+          <span className="absolute top-1 left-1/2 -translate-x-1/2 font-mono text-[8px] font-bold text-amber-300">
             N
           </span>
-          <span className="absolute bottom-1 left-1/2 -translate-x-1/2 font-mono text-[8px] font-bold text-yellow-500/80">
+          <span className="absolute bottom-1 left-1/2 -translate-x-1/2 font-mono text-[8px] font-bold text-amber-300">
             S
           </span>
-          <span className="absolute right-1.5 top-1/2 -translate-y-1/2 font-mono text-[8px] font-bold text-yellow-500/80">
+          <span className="absolute right-1.5 top-1/2 -translate-y-1/2 font-mono text-[8px] font-bold text-amber-300">
             E
           </span>
-          <span className="absolute left-1.5 top-1/2 -translate-y-1/2 font-mono text-[8px] font-bold text-yellow-500/80">
+          <span className="absolute left-1.5 top-1/2 -translate-y-1/2 font-mono text-[8px] font-bold text-amber-300">
             W
           </span>
 
           {/* Connected Region Geography Diagram */}
-          <div className="relative h-full w-full rounded-[20px] bg-emerald-950/40 p-2 overflow-hidden">
+          <div className="relative h-full w-full rounded bg-stone-950/70 p-2 overflow-hidden border border-amber-900/40">
             {/* Walkway lines */}
             <svg className="absolute inset-0 h-full w-full pointer-events-none opacity-40" viewBox="0 0 100 100">
               {/* West Road highway connecting City, Road, Homestead */}
@@ -225,16 +225,16 @@ export default function WorldMinimap({
           ===================================================================== */}
       {isExpanded && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 p-4 backdrop-blur-md animate-fadeIn select-none">
-          <div className="relative flex flex-col h-[600px] w-full max-w-4xl rounded-3xl border-2 border-yellow-600/70 bg-gradient-to-b from-gray-950 via-gray-900 to-gray-950 p-6 shadow-2xl shadow-yellow-950/50">
+          <div className="rpg-panel-brown relative flex flex-col h-[600px] w-full max-w-4xl p-6 shadow-2xl">
             {/* Header */}
-            <div className="flex items-center justify-between border-b border-yellow-700/40 pb-4">
+            <div className="flex items-center justify-between border-b border-amber-900/50 pb-4">
               <div className="flex items-center gap-3">
-                <span className="text-3xl">🗺️</span>
+                <span className="text-3xl drop-shadow">🗺️</span>
                 <div>
-                  <h2 className="font-serif text-xl font-bold text-yellow-300 tracking-wide">
+                  <h2 className="font-serif text-xl font-bold text-amber-100 tracking-wide drop-shadow">
                     Salvation World Atlas
                   </h2>
-                  <p className="text-xs text-gray-400">
+                  <p className="text-xs text-amber-200/70">
                     Connected realm geography, landmarks, roads, and active contracts
                   </p>
                 </div>
@@ -245,14 +245,14 @@ export default function WorldMinimap({
                   audioManager.play('tap');
                   setIsExpanded(false);
                 }}
-                className="flex h-8 w-8 items-center justify-center rounded-xl border border-yellow-700/40 bg-gray-900 text-gray-400 hover:text-white transition"
+                className="rpg-btn-square-brown h-8 w-8 text-xs font-bold text-amber-200"
               >
                 ✕
               </button>
             </div>
 
             {/* Map Canvas Diagram */}
-            <div className="relative my-4 flex-1 rounded-2xl border border-yellow-800/40 bg-gray-950 p-4 overflow-hidden">
+            <div className="rpg-slot-inset relative my-4 flex-1 p-4 overflow-hidden bg-stone-950/90">
               {/* Atmospheric grid lines */}
               <div className="absolute inset-0 bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] [background-size:24px_24px] opacity-10 pointer-events-none" />
 
@@ -327,10 +327,10 @@ export default function WorldMinimap({
             </div>
 
             {/* Region Details Footer */}
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-t border-yellow-700/40 pt-3 text-xs">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-t border-amber-900/50 pt-3 text-xs">
               <div>
                 <div className="flex items-center gap-2">
-                  <span className="text-[10px] font-mono uppercase tracking-wider text-yellow-400 font-bold">
+                  <span className="text-[10px] font-mono uppercase tracking-wider text-amber-300 font-bold">
                     Current Territory:
                   </span>
                   {activeContracts.length > 0 && (
@@ -339,8 +339,8 @@ export default function WorldMinimap({
                     </span>
                   )}
                 </div>
-                <p className="text-gray-300 font-serif">
-                  <span className="font-bold text-white">{activeZoneMeta.name}</span> — {activeZoneMeta.description}
+                <p className="text-amber-100 font-serif">
+                  <span className="font-bold text-amber-300">{activeZoneMeta.name}</span> — {activeZoneMeta.description}
                 </p>
               </div>
 
@@ -352,7 +352,7 @@ export default function WorldMinimap({
                     setIsExpanded(false);
                     onReturnHome();
                   }}
-                  className="flex items-center gap-1.5 rounded-xl bg-yellow-500 px-4 py-2 font-serif text-xs font-bold text-black hover:bg-yellow-400 transition"
+                  className="rpg-btn-beige text-xs py-1.5 px-3"
                 >
                   <span>🏡</span>
                   <span>Return Home [H]</span>
@@ -363,7 +363,7 @@ export default function WorldMinimap({
                     audioManager.play('tap');
                     setIsExpanded(false);
                   }}
-                  className="rounded-xl border border-gray-700 bg-gray-900 px-4 py-2 text-xs font-semibold text-gray-300 hover:text-white transition"
+                  className="rpg-btn-brown text-xs py-1.5 px-3"
                 >
                   Close
                 </button>
