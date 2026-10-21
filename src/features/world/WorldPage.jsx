@@ -49,6 +49,35 @@ export default function WorldPage() {
   const [playerHp, setPlayerHp] = useState(100);
   const [playerMaxHp, setPlayerMaxHp] = useState(100);
 
+  // First-time player movement tutorial banner (only shown on first play)
+  const [showMovementTutorial, setShowMovementTutorial] = useState(() => {
+    try {
+      const seen = localStorage.getItem('hasSeenMovementTutorial') || localStorage.getItem('hasSeenOnboarding');
+      return !seen;
+    } catch {
+      return false;
+    }
+  });
+
+  const dismissMovementTutorial = useCallback(() => {
+    setShowMovementTutorial(false);
+    try {
+      localStorage.setItem('hasSeenMovementTutorial', 'true');
+      localStorage.setItem('hasSeenOnboarding', 'true');
+    } catch {
+      // ignore
+    }
+  }, []);
+
+  const resetMovementTutorial = useCallback(() => {
+    setShowMovementTutorial(true);
+    try {
+      localStorage.removeItem('hasSeenMovementTutorial');
+    } catch {
+      // ignore
+    }
+  }, []);
+
   // In-Game Modal Overlays
   const [isInventoryOpen, setIsInventoryOpen] = useState(false);
   const [isWardrobeOpen, setIsWardrobeOpen] = useState(false);
@@ -206,6 +235,23 @@ export default function WorldPage() {
       window.removeEventListener('keydown', handleKeyDown);
     };
   }, [currentZone]);
+
+  // Auto-dismiss first-time movement guide after player moves and explores
+  useEffect(() => {
+    if (!showMovementTutorial) return;
+    let timer = null;
+    const unsub = gameEventBridge.on(gameEvents.PLAYER_MOVED, () => {
+      if (!timer) {
+        timer = setTimeout(() => {
+          dismissMovementTutorial();
+        }, 12000);
+      }
+    });
+    return () => {
+      unsub();
+      if (timer) clearTimeout(timer);
+    };
+  }, [showMovementTutorial, dismissMovementTutorial]);
 
   const handleReturnHome = () => {
     if (currentZone === 'homestead') {
@@ -523,20 +569,66 @@ export default function WorldPage() {
       </header>
 
       {/* =========================================================================
-          BOTTOM HUD CONTROLS HINT (MINIMAL & NON-INTRUSIVE)
+          FIRST-TIME PLAYING MOVEMENT & CONTROLS TUTORIAL (SHOWN ONLY ON FIRST PLAY)
           ========================================================================= */}
-      <footer className="rpg-panel-brown pointer-events-none fixed bottom-3 left-4 z-20 hidden md:flex items-center gap-2 px-3.5 py-1 text-[11px] font-mono text-amber-200 backdrop-blur-md">
-        <span className="text-yellow-400 font-bold">WASD / ZQSD / Click</span> Walk ·
-        <span className="text-yellow-400 font-bold">Shift</span> Sprint ·
-        <span className="text-yellow-400 font-bold">Space</span> Attack ·
-        <span className="text-yellow-400 font-bold">[E]</span> Interact ·
-        <span className="text-yellow-400 font-bold">[1]</span> Heal ·
-        <span className="text-yellow-400 font-bold">[H]</span> Home ·
-        <span className="text-yellow-400 font-bold">[G]</span> Guild ·
-        <span className="text-yellow-400 font-bold">[P]</span> Pet Sanctuary ·
-        <span className="text-yellow-400 font-bold">[F]</span> Fish ·
-        <span className="text-yellow-400 font-bold">[M]</span> Map
-      </footer>
+      {showMovementTutorial && (
+        <aside
+          className="rpg-panel-brown pointer-events-auto fixed bottom-3 left-4 z-30 flex flex-col gap-2 p-3 shadow-2xl backdrop-blur-md max-w-xl animate-fadeIn border-2 border-amber-600/80"
+          aria-label="First-time movement guide"
+        >
+          <div className="flex items-center justify-between border-b border-amber-900/50 pb-1.5 gap-4">
+            <div className="flex items-center gap-2">
+              <span className="text-base">🧭</span>
+              <span className="font-serif text-xs font-bold text-amber-100">
+                Movement &amp; Controls Guide
+              </span>
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                audioManager.play('tap');
+                dismissMovementTutorial();
+              }}
+              className="rpg-btn-beige text-[10px] py-0.5 px-2 font-bold font-serif"
+              title="Dismiss guide (shown once on first play)"
+            >
+              Got It! ✕
+            </button>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5 text-[11px] font-mono text-amber-200">
+            <div className="rpg-slot-inset p-1.5 bg-black/60 flex flex-col">
+              <span className="text-yellow-400 font-bold font-mono">WASD / ZQSD / Click</span>
+              <span className="text-[10px] text-amber-100/80 font-serif">Walk &amp; Pathfind</span>
+            </div>
+            <div className="rpg-slot-inset p-1.5 bg-black/60 flex flex-col">
+              <span className="text-yellow-400 font-bold font-mono">Shift (Hold)</span>
+              <span className="text-[10px] text-amber-100/80 font-serif">Sprint fast</span>
+            </div>
+            <div className="rpg-slot-inset p-1.5 bg-black/60 flex flex-col">
+              <span className="text-yellow-400 font-bold font-mono">Space / Click</span>
+              <span className="text-[10px] text-amber-100/80 font-serif">Attack foes</span>
+            </div>
+            <div className="rpg-slot-inset p-1.5 bg-black/60 flex flex-col">
+              <span className="text-yellow-400 font-bold font-mono">[E] / Click Prompt</span>
+              <span className="text-[10px] text-amber-100/80 font-serif">Interact &amp; Gather</span>
+            </div>
+            <div className="rpg-slot-inset p-1.5 bg-black/60 flex flex-col">
+              <span className="text-yellow-400 font-bold font-mono">[1] Quick Heal</span>
+              <span className="text-[10px] text-amber-100/80 font-serif">Drink potion (+45 HP)</span>
+            </div>
+            <div className="rpg-slot-inset p-1.5 bg-black/60 flex flex-col">
+              <span className="text-yellow-400 font-bold font-mono">[M] Map · [I] Pouch</span>
+              <span className="text-[10px] text-amber-100/80 font-serif">Atlas &amp; Inventory</span>
+            </div>
+          </div>
+
+          <div className="flex items-center justify-between text-[9px] text-amber-300/70 pt-0.5">
+            <span>Shown only on your first play</span>
+            <span>Click [❓] anytime for full guide</span>
+          </div>
+        </aside>
+      )}
 
       {/* =========================================================================
           PERMANENT MINIMAP & EXPANDED WORLD ATLAS
@@ -600,6 +692,7 @@ export default function WorldPage() {
       <InGameHelpModal
         isOpen={isHelpOpen}
         onClose={() => setIsHelpOpen(false)}
+        onResetMovementTutorial={resetMovementTutorial}
       />
 
       <InGameFishingModal

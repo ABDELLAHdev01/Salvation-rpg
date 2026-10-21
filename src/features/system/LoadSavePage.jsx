@@ -20,6 +20,7 @@ const STORAGE_KEYS = [
   'marketBulkSellConfirmDisabled',
   'workshopFilters',
   'hasSeenOnboarding',
+  'hasSeenMovementTutorial',
   'hasSeenDiscordInvite',
 ];
 

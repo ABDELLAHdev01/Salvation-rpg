@@ -1,18 +1,23 @@
 import React from 'react';
 import audioManager from '../../../core/audio/AudioManager';
 
-export default function InGameHelpModal({ isOpen, onClose }) {
+export default function InGameHelpModal({ isOpen, onClose, onResetMovementTutorial }) {
   if (!isOpen) return null;
 
   const CONTROLS = [
-    { key: 'W, A, S, D / Arrows', action: 'Move avatar in 8 directions across terrain' },
+    { key: 'W, A, S, D / Z, Q, S, D / Arrows', action: 'Move avatar in 8 directions across terrain' },
     { key: 'Mouse Click (Ground)', action: 'Click-to-move pathing to destination' },
     { key: 'Shift (Hold)', action: 'Sprint (boosts velocity from 135 to 210 px/s)' },
     { key: 'Space / Click Enemy', action: 'Swing equipped weapon in facing direction' },
     { key: 'E / Click Prompt', action: 'Interact with crops, ore deposits, NPCs, chests, forge' },
-    { key: 'Q', action: 'Quick drink Health Elixir from pouch (+45 HP)' },
+    { key: '1', action: 'Quick drink Health Elixir from pouch (+45 HP)' },
     { key: 'I / B', action: 'Toggle Adventurer Pouch Inventory' },
+    { key: 'G', action: 'Toggle Adventurers\' Guild & Renown Bounties' },
     { key: 'C', action: 'Toggle Mirror & Wardrobe customizer' },
+    { key: 'P', action: 'Companion Sanctuary & Morale' },
+    { key: 'F', action: 'Angler Fishing in coastal waterways' },
+    { key: 'M', action: 'Toggle Full-Screen Realm Atlas' },
+    { key: 'H', action: 'Fast Recall to Sunforge Homestead' },
     { key: 'F11 / ⛶', action: 'Toggle Fullscreen Mode' },
     { key: 'Esc', action: 'Close active modal / menu' },
   ];
@@ -62,7 +67,22 @@ export default function InGameHelpModal({ isOpen, onClose }) {
 
         {/* Footer */}
         <div className="mt-5 flex items-center justify-between border-t border-amber-900/50 pt-4 text-xs text-amber-300/70">
-          <span>Fully playable offline in browser</span>
+          {onResetMovementTutorial ? (
+            <button
+              type="button"
+              onClick={() => {
+                audioManager.play('tap');
+                onResetMovementTutorial();
+                onClose();
+              }}
+              className="rpg-btn-brown text-[11px] py-1 px-3"
+              title="Pin the movement controls guide back to the bottom of the screen"
+            >
+              🧭 Pin Movement Tips to Screen
+            </button>
+          ) : (
+            <span>Fully playable offline in browser</span>
+          )}
           <button
             type="button"
             onClick={() => {
