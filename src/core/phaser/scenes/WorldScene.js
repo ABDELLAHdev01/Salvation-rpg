@@ -140,7 +140,14 @@ export default class WorldScene extends Phaser.Scene {
   create() {
     // 0. Ensure Camera FX is clean and set mood lighting
     this.cameras.main.resetFX();
-    const bgColors = { homestead: '#3c6624', west_road: '#3c6624', forest: '#274b1a', mine: '#181a20', village: '#3a2718' };
+    const bgColors = {
+      homestead: '#3c6624',
+      homestead_interior: '#2a170b',
+      west_road: '#3c6624',
+      forest: '#274b1a',
+      mine: '#181a20',
+      village: '#3a2718',
+    };
     this.cameras.main.setBackgroundColor(bgColors[this.currentZone] || '#3c6624');
     this.cameras.main.fadeIn(250, 0, 0, 0);
 
@@ -257,6 +264,9 @@ export default class WorldScene extends Phaser.Scene {
       { key: 'anim_enemy_wolf', sheet: 'enemy_wolf', rate: 6 },
       { key: 'anim_enemy_skeleton', sheet: 'enemy_skeleton', rate: 4 },
       { key: 'anim_enemy_goblin', sheet: 'enemy_goblin', rate: 6 },
+      { key: 'anim_enemy_bat', sheet: 'enemy_bat', rate: 6 },
+      { key: 'anim_enemy_spider', sheet: 'enemy_spider', rate: 5 },
+      { key: 'anim_enemy_orc', sheet: 'enemy_orc', rate: 5 },
       { key: 'anim_boss_slime_king', sheet: 'boss_slime_king', rate: 4 },
       { key: 'anim_boss_drakmor', sheet: 'boss_drakmor', rate: 4 },
       { key: 'anim_pet_sheepdog', sheet: 'pet_sheepdog', rate: 6 },
@@ -618,7 +628,7 @@ export default class WorldScene extends Phaser.Scene {
     this.physics.world.setBounds(0, 0, worldW, worldH);
 
     // Ground Layer - Extended border buffer so terrain seamlessly covers large viewports
-    const baseTile = this.currentZone === 'mine' ? 'tile_stone' : 'tile_grass';
+    const baseTile = this.currentZone === 'mine' ? 'tile_stone' : (this.currentZone === 'homestead_interior' ? 'tile_wood_floor' : 'tile_grass');
     for (let x = -15; x < mapWidth + 15; x += 1) {
       for (let y = -15; y < mapHeight + 15; y += 1) {
         this.add.image(x * 32 + 16, y * 32 + 16, baseTile);
@@ -646,6 +656,8 @@ export default class WorldScene extends Phaser.Scene {
 
     if (this.currentZone === 'homestead') {
       this.buildHomesteadProps();
+    } else if (this.currentZone === 'homestead_interior') {
+      this.buildHomesteadInteriorProps();
     } else if (this.currentZone === 'west_road') {
       this.buildWestRoadProps();
     } else if (this.currentZone === 'mine') {
@@ -662,6 +674,9 @@ export default class WorldScene extends Phaser.Scene {
     if (this.customSpawn) {
       spawnX = this.customSpawn.x;
       spawnY = this.customSpawn.y;
+    } else if (this.currentZone === 'homestead_interior') {
+      spawnX = 20 * 32;
+      spawnY = 20 * 32;
     } else if (this.currentZone === 'homestead') {
       spawnX = 15 * 32;
       spawnY = 14 * 32;
@@ -716,6 +731,12 @@ export default class WorldScene extends Phaser.Scene {
     const houseCollider = this.obstacles.create(14 * 32 + 16, 4 * 32 + 10, 'col_invisible');
     houseCollider.setSize(80, 40);
     houseCollider.setVisible(false);
+
+    // Front Door Entrance to Cottage Interior
+    this.registerInteractive(14 * 32 + 16, 5 * 32 + 10, 50, '[E] Enter Cottage Home 🏡', () => {
+      audioManager.play('tap');
+      this.switchZone('homestead_interior', { spawnX: 20 * 32, spawnY: 20 * 32 });
+    });
 
     // 2. Storage Vault Chest (Solid obstacle with collision)
     const chest = this.obstacles.create(18 * 32, 5 * 32 + 16, 'prop_chest');
@@ -853,6 +874,83 @@ export default class WorldScene extends Phaser.Scene {
     });
   }
 
+  buildHomesteadInteriorProps() {
+    // 1. Interior Room Walls (Cozy 18x14 room from x=11 to 29, y=8 to 22)
+    for (let x = 11; x <= 29; x += 1) {
+      const topWall = this.obstacles.create(x * 32 + 16, 8 * 32 + 16, 'tile_indoor_wall');
+      topWall.setDepth(15);
+      if (x !== 20) {
+        const btmWall = this.obstacles.create(x * 32 + 16, 22 * 32 + 16, 'tile_indoor_wall');
+        btmWall.setDepth(15);
+      }
+    }
+    for (let y = 8; y <= 22; y += 1) {
+      const leftWall = this.obstacles.create(11 * 32 + 16, y * 32 + 16, 'tile_indoor_wall');
+      leftWall.setDepth(15);
+      const rightWall = this.obstacles.create(29 * 32 + 16, y * 32 + 16, 'tile_indoor_wall');
+      rightWall.setDepth(15);
+    }
+
+    // 2. Cozy Bed (Restores Full Health)
+    const bed = this.obstacles.create(14 * 32, 11 * 32, 'prop_inn_bed');
+    bed.setDepth(16);
+    bed.setSize(28, 26);
+    this.registerInteractive(14 * 32, 11 * 32, 50, '[E] Sleep in Bed (+Restore Full Health) 🛏️', () => {
+      this.restAtInn();
+      gameEventBridge.emit('RESTED_IN_BED');
+    });
+
+    // 3. Fireplace Hearth
+    const fireplace = this.obstacles.create(20 * 32, 9 * 32, 'prop_fireplace');
+    fireplace.setDepth(16);
+    fireplace.setSize(44, 30);
+    this.lightSources.push({
+      x: 20 * 32,
+      y: 9 * 32,
+      radius: 200,
+      color: 0xf59e0b,
+      intensity: 1.25,
+      flickerSpeed: 0.12,
+      flickerAmount: 20,
+    });
+
+    // 4. Velvet Rug
+    const rug = this.add.image(20 * 32, 15 * 32, 'prop_indoor_rug');
+    rug.setDepth(5);
+
+    // 5. Dining Table & Stool
+    const diningTable = this.obstacles.create(25 * 32, 15 * 32, 'prop_table_chair');
+    diningTable.setDepth(16);
+    diningTable.setSize(42, 24);
+
+    // 6. Arcane Bookshelf
+    const bookshelf = this.obstacles.create(26 * 32, 10 * 32, 'prop_bookshelf');
+    bookshelf.setDepth(16);
+    bookshelf.setSize(28, 38);
+    this.registerInteractive(26 * 32, 10 * 32, 45, '[E] Read Sunforge Chronicles', () => {
+      audioManager.play('tap');
+      this.showFloatingText(26 * 32, 10 * 32 - 20, '📜 Ancient Warden Lore recorded!', '#fde047');
+      gameEventBridge.emit('PROP_INTERACT', { propId: 'chronicle_lore' });
+    });
+
+    // 7. Storage Vault Chest
+    const chest = this.obstacles.create(14 * 32, 16 * 32, 'prop_chest');
+    chest.setDepth(16);
+    chest.setSize(24, 20);
+    this.registerInteractive(14 * 32, 16 * 32, 45, '[E] Open Storage Vault [I]', () => {
+      audioManager.play('tap');
+      gameEventBridge.emit(gameEvents.CHEST_OPEN);
+    });
+
+    // 8. Welcome Doormat & Exit to Yard
+    const doormat = this.add.image(20 * 32, 22 * 32, 'prop_doormat');
+    doormat.setDepth(6);
+    this.registerInteractive(20 * 32, 22 * 32, 45, '[E] Exit to Homestead Yard 🚪', () => {
+      audioManager.play('tap');
+      this.switchZone('homestead', { spawnX: 14 * 32 + 16, spawnY: 5 * 32 + 24 });
+    });
+  }
+
   buildMineProps() {
     // Perimeter Cave Colliders
     for (let x = 0; x < 40; x += 1) {
@@ -889,11 +987,15 @@ export default class WorldScene extends Phaser.Scene {
       });
     });
 
-    // Deepforge Cavern Enemies (Skeletons & Goblins)
+    // Deepforge Cavern Enemies (Skeletons, Goblins, Bats, Spiders)
     this.spawnEnemy('skeleton_cavern', 16 * 32, 12 * 32);
     this.spawnEnemy('skeleton_cavern', 28 * 32, 16 * 32);
     this.spawnEnemy('goblin_raider', 22 * 32, 24 * 32);
     this.spawnEnemy('goblin_raider', 14 * 32, 24 * 32);
+    this.spawnEnemy('bat_shadow', 10 * 32, 16 * 32);
+    this.spawnEnemy('bat_shadow', 24 * 32, 12 * 32);
+    this.spawnEnemy('spider_cavern', 30 * 32, 10 * 32);
+    this.spawnEnemy('spider_cavern', 18 * 32, 26 * 32);
 
     // World Boss Encounter: Drakmor Bone-Lord Sanctum
     this.spawnBoss('boss_drakmor', 32 * 32, 24 * 32);
@@ -938,12 +1040,13 @@ export default class WorldScene extends Phaser.Scene {
       }
     }
 
-    // Hostile Forest Monsters (Emerald Slimes & Shadow Wolves)
+    // Hostile Forest Monsters (Emerald Slimes, Shadow Wolves, Cavern Spiders)
     this.spawnEnemy('slime_forest', 12 * 32, 8 * 32);
     this.spawnEnemy('slime_forest', 26 * 32, 10 * 32);
     this.spawnEnemy('slime_forest', 15 * 32, 22 * 32);
     this.spawnEnemy('wolf_shadow', 26 * 32, 22 * 32);
     this.spawnEnemy('wolf_shadow', 32 * 32, 16 * 32);
+    this.spawnEnemy('spider_cavern', 8 * 32, 18 * 32);
 
     // World Boss Encounter: Slime King Colossus
     this.spawnBoss('boss_slime_king', 32 * 32, 8 * 32);
@@ -1065,6 +1168,8 @@ export default class WorldScene extends Phaser.Scene {
     // Roadside Monsters
     this.spawnEnemy('slime_forest', 12 * 32, 9 * 32);
     this.spawnEnemy('wolf_shadow', 28 * 32, 20 * 32);
+    this.spawnEnemy('orc_marauder', 18 * 32, 22 * 32);
+    this.spawnEnemy('orc_marauder', 30 * 32, 8 * 32);
   }
 
   buildVillageProps() {

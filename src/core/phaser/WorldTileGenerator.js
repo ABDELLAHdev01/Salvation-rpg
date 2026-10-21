@@ -138,6 +138,47 @@ export function registerWorldTextures(scene) {
     scene.textures.addCanvas('tile_water', waterCanvas);
   }
 
+  // Tile: Polished Oak Interior Floorboards
+  const woodFloorCanvas = createTileCanvas(TILE_SIZE, TILE_SIZE, (ctx) => {
+    ctx.fillStyle = '#784318'; // Oak wood base
+    ctx.fillRect(0, 0, TILE_SIZE, TILE_SIZE);
+    // 4 horizontal floor planks
+    for (let p = 0; p < 4; p += 1) {
+      const py = p * 8;
+      ctx.fillStyle = p % 2 === 0 ? '#8c5222' : '#965a28';
+      ctx.fillRect(0, py + 1, TILE_SIZE, 6);
+      ctx.fillStyle = '#a66833'; // Highlight top of plank
+      ctx.fillRect(0, py + 1, TILE_SIZE, 1);
+      ctx.fillStyle = '#542c0c'; // Shadow seam between planks
+      ctx.fillRect(0, py + 7, TILE_SIZE, 1);
+      // Nail heads
+      ctx.fillStyle = '#331a06';
+      ctx.fillRect(3, py + 3, 1, 1);
+      ctx.fillRect(28, py + 3, 1, 1);
+    }
+  });
+  if (!scene.textures.exists('tile_wood_floor')) {
+    scene.textures.addCanvas('tile_wood_floor', woodFloorCanvas);
+  }
+
+  // Tile: Cozy Cottage Timber Wall
+  const indoorWallCanvas = createTileCanvas(TILE_SIZE, TILE_SIZE, (ctx) => {
+    ctx.fillStyle = '#4a2810'; // Dark timber framing
+    ctx.fillRect(0, 0, TILE_SIZE, TILE_SIZE);
+    // Warm plaster / brick infill
+    ctx.fillStyle = '#c7b08b';
+    ctx.fillRect(2, 4, 12, 24);
+    ctx.fillRect(18, 4, 12, 24);
+    // Wood grain studs
+    ctx.fillStyle = '#5a3315';
+    ctx.fillRect(0, 0, TILE_SIZE, 4); // Top moulding
+    ctx.fillRect(0, 28, TILE_SIZE, 4); // Baseboard moulding
+    ctx.fillRect(14, 0, 4, TILE_SIZE); // Center vertical beam
+  });
+  if (!scene.textures.exists('tile_indoor_wall')) {
+    scene.textures.addCanvas('tile_indoor_wall', indoorWallCanvas);
+  }
+
   // Composite Master Tileset
   const terrainCanvas = document.createElement('canvas');
   terrainCanvas.width = TILE_SIZE * 8;
@@ -577,6 +618,124 @@ export function registerWorldTextures(scene) {
     scene.textures.addCanvas('prop_road_sign', roadSignCanvas);
   }
 
+  // 10. prop_fireplace (48x48) - Cozy stone hearth with burning logs
+  if (!scene.textures.exists('prop_fireplace')) {
+    const fireplaceCanvas = createTileCanvas(48, 48, (ctx) => {
+      // Hearth stone base
+      ctx.fillStyle = '#334155';
+      ctx.fillRect(4, 8, 40, 36);
+      ctx.fillStyle = '#475569';
+      ctx.fillRect(6, 10, 36, 32);
+      ctx.fillStyle = '#1e293b'; // Firebox arch interior
+      ctx.fillRect(12, 18, 24, 24);
+      // Burning logs
+      ctx.fillStyle = '#78350f';
+      ctx.fillRect(14, 34, 20, 6);
+      ctx.fillStyle = '#92400e';
+      ctx.fillRect(16, 30, 16, 5);
+      // Glowing embers
+      ctx.fillStyle = '#ea580c';
+      ctx.fillRect(16, 32, 16, 4);
+      ctx.fillStyle = '#f59e0b';
+      ctx.fillRect(18, 28, 12, 5);
+      ctx.fillStyle = '#fde047';
+      ctx.fillRect(20, 24, 8, 5);
+      // Stone mantle shelf
+      ctx.fillStyle = '#64748b';
+      ctx.fillRect(2, 6, 44, 4);
+    });
+    scene.textures.addCanvas('prop_fireplace', fireplaceCanvas);
+  }
+
+  // 11. prop_bookshelf (32x48) - Carved wooden bookcase packed with tomes
+  if (!scene.textures.exists('prop_bookshelf')) {
+    const bookshelfCanvas = createTileCanvas(32, 48, (ctx) => {
+      // Wood frame
+      ctx.fillStyle = '#451a03';
+      ctx.fillRect(2, 4, 28, 42);
+      ctx.fillStyle = '#78350f';
+      ctx.fillRect(4, 6, 24, 38);
+      // 3 shelves of books
+      const shelvesY = [14, 26, 38];
+      const colors = ['#dc2626', '#2563eb', '#16a34a', '#d97706', '#9333ea', '#0284c7'];
+      shelvesY.forEach((sy, sIdx) => {
+        ctx.fillStyle = '#451a03';
+        ctx.fillRect(4, sy, 24, 2); // shelf wood plank
+        for (let b = 0; b < 5; b += 1) {
+          ctx.fillStyle = colors[(sIdx * 3 + b) % colors.length];
+          ctx.fillRect(6 + b * 4, sy - 7, 3, 7);
+          ctx.fillStyle = '#fef08a'; // gold foil spine
+          ctx.fillRect(6 + b * 4, sy - 5, 3, 1);
+        }
+      });
+    });
+    scene.textures.addCanvas('prop_bookshelf', bookshelfCanvas);
+  }
+
+  // 12. prop_table_chair (48x32) - Dining table with stool and plate
+  if (!scene.textures.exists('prop_table_chair')) {
+    const tableCanvas = createTileCanvas(48, 32, (ctx) => {
+      // Shadow
+      ctx.fillStyle = 'rgba(0,0,0,0.3)';
+      ctx.beginPath();
+      ctx.ellipse(24, 26, 20, 5, 0, Math.PI * 2);
+      ctx.fill();
+      // Table top
+      ctx.fillStyle = '#5c2b05';
+      ctx.fillRect(10, 10, 28, 14);
+      ctx.fillStyle = '#854d0e';
+      ctx.fillRect(11, 11, 26, 12);
+      // Legs
+      ctx.fillStyle = '#451a03';
+      ctx.fillRect(12, 22, 3, 6);
+      ctx.fillRect(33, 22, 3, 6);
+      // Food plate & candle
+      ctx.fillStyle = '#f8fafc';
+      ctx.fillRect(20, 13, 6, 6);
+      ctx.fillStyle = '#f59e0b';
+      ctx.fillRect(22, 15, 2, 2);
+      // Chair stool
+      ctx.fillStyle = '#78350f';
+      ctx.fillRect(4, 14, 6, 10);
+      ctx.fillRect(38, 14, 6, 10);
+    });
+    scene.textures.addCanvas('prop_table_chair', tableCanvas);
+  }
+
+  // 13. prop_indoor_rug (64x40) - Ornate crimson velvet rug
+  if (!scene.textures.exists('prop_indoor_rug')) {
+    const rugCanvas = createTileCanvas(64, 40, (ctx) => {
+      // Crimson base
+      ctx.fillStyle = '#7f1d1d';
+      ctx.fillRect(2, 2, 60, 36);
+      // Gold fringe border
+      ctx.fillStyle = '#eab308';
+      ctx.strokeRect(4, 4, 56, 32);
+      // Inner pattern
+      ctx.fillStyle = '#991b1b';
+      ctx.fillRect(8, 8, 48, 24);
+      // Center gold medallion
+      ctx.fillStyle = '#fde047';
+      ctx.fillRect(28, 16, 8, 8);
+    });
+    scene.textures.addCanvas('prop_indoor_rug', rugCanvas);
+  }
+
+  // 14. prop_doormat (32x20) - Welcome straw mat
+  if (!scene.textures.exists('prop_doormat')) {
+    const doormatCanvas = createTileCanvas(32, 20, (ctx) => {
+      ctx.fillStyle = '#854d0e';
+      ctx.fillRect(2, 2, 28, 16);
+      ctx.fillStyle = '#a16207';
+      ctx.fillRect(4, 4, 24, 12);
+      // Straw weave lines
+      ctx.fillStyle = '#713f12';
+      ctx.fillRect(6, 7, 20, 1);
+      ctx.fillRect(6, 12, 20, 1);
+    });
+    scene.textures.addCanvas('prop_doormat', doormatCanvas);
+  }
+
   // =========================================================================
   // 3. MINING ORE BOULDERS
   // =========================================================================
@@ -834,6 +993,134 @@ export function registerWorldTextures(scene) {
     ctx.fillRect(ox + 17, 24 + bob, 2, 5);
   });
   scene.textures.addSpriteSheet('enemy_goblin', goblinCanvas, { frameWidth: 32, frameHeight: 32 });
+
+  // 5. Cavern Shadow Bat (enemy_bat)
+  const batCanvas = createEnemySheetCanvas((ctx, ox, f) => {
+    const wingY = (f === 0) ? -4 : (f === 2) ? 4 : 0;
+    // Ambient shadow
+    ctx.fillStyle = 'rgba(0,0,0,0.25)';
+    ctx.beginPath();
+    ctx.ellipse(ox + 16, 28, 8, 3, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Body & Head
+    ctx.fillStyle = '#1e1b4b';
+    ctx.fillRect(ox + 13, 12, 6, 8);
+    // Ears
+    ctx.fillRect(ox + 12, 9, 2, 4);
+    ctx.fillRect(ox + 18, 9, 2, 4);
+    // Red glowing eyes
+    ctx.fillStyle = '#ef4444';
+    ctx.fillRect(ox + 14, 14, 1, 1);
+    ctx.fillRect(ox + 17, 14, 1, 1);
+    // Tiny fangs
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(ox + 14, 18, 1, 1);
+    ctx.fillRect(ox + 17, 18, 1, 1);
+
+    // Left Wing
+    ctx.fillStyle = '#0f172a';
+    ctx.beginPath();
+    ctx.moveTo(ox + 13, 14);
+    ctx.lineTo(ox + 4, 10 + wingY);
+    ctx.lineTo(ox + 2, 16 + wingY);
+    ctx.lineTo(ox + 8, 18);
+    ctx.closePath();
+    ctx.fill();
+
+    // Right Wing
+    ctx.beginPath();
+    ctx.moveTo(ox + 19, 14);
+    ctx.lineTo(ox + 28, 10 + wingY);
+    ctx.lineTo(ox + 30, 16 + wingY);
+    ctx.lineTo(ox + 24, 18);
+    ctx.closePath();
+    ctx.fill();
+  });
+  scene.textures.addSpriteSheet('enemy_bat', batCanvas, { frameWidth: 32, frameHeight: 32 });
+
+  // 6. Cavern Webspinner Spider (enemy_spider)
+  const spiderCanvas = createEnemySheetCanvas((ctx, ox, f) => {
+    const step = (f % 2 === 0) ? 2 : -2;
+    // Ground shadow
+    ctx.fillStyle = 'rgba(0,0,0,0.3)';
+    ctx.beginPath();
+    ctx.ellipse(ox + 16, 27, 9, 4, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    // 8 Spidery Legs
+    ctx.fillStyle = '#1c1917';
+    ctx.fillRect(ox + 5, 14 + step, 6, 2);
+    ctx.fillRect(ox + 5, 20 - step, 6, 2);
+    ctx.fillRect(ox + 21, 14 - step, 6, 2);
+    ctx.fillRect(ox + 21, 20 + step, 6, 2);
+
+    ctx.fillRect(ox + 7, 11 + step, 5, 2);
+    ctx.fillRect(ox + 7, 23 - step, 5, 2);
+    ctx.fillRect(ox + 20, 11 - step, 5, 2);
+    ctx.fillRect(ox + 20, 23 + step, 5, 2);
+
+    // Bulbous Abdomen
+    ctx.fillStyle = '#292524';
+    ctx.fillRect(ox + 11, 11, 10, 12);
+    ctx.fillStyle = '#44403c';
+    ctx.fillRect(ox + 13, 12, 6, 10);
+    // Yellow venom hourglass marking
+    ctx.fillStyle = '#eab308';
+    ctx.fillRect(ox + 15, 15, 2, 4);
+
+    // Head & Fangs
+    ctx.fillStyle = '#0c0a09';
+    ctx.fillRect(ox + 13, 22, 6, 4);
+    // Cluster red eyes
+    ctx.fillStyle = '#dc2626';
+    ctx.fillRect(ox + 14, 23, 1, 1);
+    ctx.fillRect(ox + 17, 23, 1, 1);
+  });
+  scene.textures.addSpriteSheet('enemy_spider', spiderCanvas, { frameWidth: 32, frameHeight: 32 });
+
+  // 7. Savage Orc Marauder (enemy_orc)
+  const orcCanvas = createEnemySheetCanvas((ctx, ox, f) => {
+    const bob = (f === 1 || f === 3) ? -1 : 0;
+    // Shadow
+    ctx.fillStyle = 'rgba(0,0,0,0.4)';
+    ctx.beginPath();
+    ctx.ellipse(ox + 16, 29, 10, 4, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Muscle Orc Green Flesh
+    ctx.fillStyle = '#3f6212';
+    ctx.fillRect(ox + 10, 9 + bob, 12, 9);
+    ctx.fillRect(ox + 8, 17 + bob, 16, 8); // Wide chest
+
+    // Red ferocious eyes & tusks
+    ctx.fillStyle = '#ef4444';
+    ctx.fillRect(ox + 12, 12 + bob, 2, 2);
+    ctx.fillRect(ox + 18, 12 + bob, 2, 2);
+    ctx.fillStyle = '#f8fafc'; // White tusks
+    ctx.fillRect(ox + 12, 16 + bob, 2, 3);
+    ctx.fillRect(ox + 18, 16 + bob, 2, 3);
+
+    // Spiked Iron Pauldrons & Belt
+    ctx.fillStyle = '#475569';
+    ctx.fillRect(ox + 6, 16 + bob, 4, 5);
+    ctx.fillRect(ox + 22, 16 + bob, 4, 5);
+    ctx.fillStyle = '#78350f'; // Leather loincloth
+    ctx.fillRect(ox + 11, 23 + bob, 10, 3);
+
+    // Heavy Battleaxe
+    const axeY = (f === 2) ? 6 : 9;
+    ctx.fillStyle = '#5c2b05'; // Handle
+    ctx.fillRect(ox + 24, axeY + bob, 2, 16);
+    ctx.fillStyle = '#94a3b8'; // Steel blade
+    ctx.fillRect(ox + 22, axeY + bob, 6, 6);
+
+    // Heavy Boots
+    ctx.fillStyle = '#1c1917';
+    ctx.fillRect(ox + 11, 25 + bob, 4, 5);
+    ctx.fillRect(ox + 17, 25 + bob, 4, 5);
+  });
+  scene.textures.addSpriteSheet('enemy_orc', orcCanvas, { frameWidth: 32, frameHeight: 32 });
 
   // =========================================================================
   // 6. WORLD BOSS ANIMATED SPRITESHEETS (256x64, 4 frames of 64x64)

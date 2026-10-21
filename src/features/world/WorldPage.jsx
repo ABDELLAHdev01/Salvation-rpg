@@ -19,9 +19,11 @@ import InGameFishingModal from './modals/InGameFishingModal';
 import InGamePetModal from './modals/InGamePetModal';
 import { COMPANIONS } from '../../core/data/companionData';
 import WorldMinimap from './components/WorldMinimap';
+import BeginnerTutorialStepper from './components/BeginnerTutorialStepper';
 
 const ZONES = [
   { id: 'homestead', label: 'Homestead', icon: '🏡', kicker: 'Sunforge Estate' },
+  { id: 'homestead_interior', label: 'Cottage Home', icon: '🛋️', kicker: 'Homestead Manor' },
   { id: 'west_road', label: 'West Road', icon: '🛣️', kicker: "King's Highway" },
   { id: 'village', label: 'Sunforge City', icon: '🏛️', kicker: "Adventurers' Plaza" },
   { id: 'forest', label: 'Whispering Forest', icon: '🌲', kicker: 'Enchanted Grove' },
@@ -51,30 +53,89 @@ export default function WorldPage() {
   const [playerHp, setPlayerHp] = useState(100);
   const [playerMaxHp, setPlayerMaxHp] = useState(100);
 
-  // First-time player movement tutorial banner (only shown on first play)
-  const [showMovementTutorial, setShowMovementTutorial] = useState(() => {
+  // First-time player interactive beginner tutorial stepper state
+  const [tutorialStep, setTutorialStep] = useState(() => {
     try {
-      const seen = localStorage.getItem('hasSeenMovementTutorial') || localStorage.getItem('hasSeenOnboarding');
-      return !seen;
+      const saved = localStorage.getItem('wardenTutorialStep');
+      return saved !== null ? parseInt(saved, 10) : 0;
+    } catch {
+      return 0;
+    }
+  });
+
+  const [isTutorialCompleted, setIsTutorialCompleted] = useState(() => {
+    try {
+      return localStorage.getItem('wardenTutorialCompleted') === 'true';
+    } catch {
+      return false;
+    }
+  });
+
+  const [isTutorialCollapsed, setIsTutorialCollapsed] = useState(false);
+
+  const [isTutorialHidden, setIsTutorialHidden] = useState(() => {
+    try {
+      return localStorage.getItem('wardenTutorialHidden') === 'true';
     } catch {
       return false;
     }
   });
 
   const dismissMovementTutorial = useCallback(() => {
-    setShowMovementTutorial(false);
+    setIsTutorialHidden(true);
     try {
-      localStorage.setItem('hasSeenMovementTutorial', 'true');
-      localStorage.setItem('hasSeenOnboarding', 'true');
+      localStorage.setItem('wardenTutorialHidden', 'true');
     } catch {
       // ignore
     }
   }, []);
 
   const resetMovementTutorial = useCallback(() => {
-    setShowMovementTutorial(true);
+    setTutorialStep(0);
+    setIsTutorialCompleted(false);
+    setIsTutorialHidden(false);
+    setIsTutorialCollapsed(false);
     try {
-      localStorage.removeItem('hasSeenMovementTutorial');
+      localStorage.removeItem('wardenTutorialStep');
+      localStorage.removeItem('wardenTutorialCompleted');
+      localStorage.removeItem('wardenTutorialHidden');
+    } catch {
+      // ignore
+    }
+    toast('Warden Journey Stepper restarted!', { icon: '📜' });
+  }, []);
+
+  const handleClaimTutorialReward = useCallback(() => {
+    audioManager.play('levelup');
+    setProfile((prev) => {
+      if (!prev) return prev;
+      const currentStats = prev.stats || { level: 1, xp: 0, power: 120, gold: 350 };
+      const updated = {
+        ...prev,
+        stats: {
+          ...currentStats,
+          gold: (currentStats.gold || 0) + 50,
+          xp: (currentStats.xp || 0) + 50,
+        },
+      };
+      try {
+        const username = authService.getCurrentUsername() || 'offline-hero';
+        const profiles = JSON.parse(localStorage.getItem('mockProfiles') || '{}');
+        profiles[username] = updated;
+        localStorage.setItem('mockProfiles', JSON.stringify(profiles));
+      } catch {
+        // ignore
+      }
+      return updated;
+    });
+    toast.success('🎉 +50 Gold & +50 XP Awarded! Apprentice Warden Badge Acquired!', {
+      duration: 5000,
+      icon: '🏆',
+    });
+    setIsTutorialHidden(true);
+    try {
+      localStorage.setItem('wardenTutorialHidden', 'true');
+      localStorage.setItem('wardenTutorialCompleted', 'true');
     } catch {
       // ignore
     }
@@ -228,22 +289,81 @@ export default function WorldPage() {
     };
   }, [currentZone]);
 
-  // Auto-dismiss first-time movement guide after player moves and explores
+  // Interactive Beginner Tutorial Stepper step progressions
+  // Step 1 -> Step 2: First Steps (Movement)
   useEffect(() => {
-    if (!showMovementTutorial) return;
-    let timer = null;
+    if (tutorialStep !== 0 || isTutorialCompleted || isTutorialHidden) return;
     const unsub = gameEventBridge.on(gameEvents.PLAYER_MOVED, () => {
-      if (!timer) {
-        timer = setTimeout(() => {
-          dismissMovementTutorial();
-        }, 12000);
+      setTutorialStep(1);
+      try {
+        localStorage.setItem('wardenTutorialStep', '1');
+      } catch {
+        // ignore
       }
+      toast('First steps taken! Walk up to your Manor House front door [E]', { icon: '🏡' });
     });
-    return () => {
-      unsub();
-      if (timer) clearTimeout(timer);
-    };
-  }, [showMovementTutorial, dismissMovementTutorial]);
+    return () => unsub();
+  }, [tutorialStep, isTutorialCompleted, isTutorialHidden]);
+
+  // Step 2 -> Step 3: Enter Homestead Cottage
+  useEffect(() => {
+    if (tutorialStep !== 1 || isTutorialCompleted || isTutorialHidden) return;
+    if (currentZone === 'homestead_interior') {
+      setTutorialStep(2);
+      try {
+        localStorage.setItem('wardenTutorialStep', '2');
+      } catch {
+        // ignore
+      }
+      toast('Welcome inside Cottage! Sleep in the cozy bed to restore full HP [E]', { icon: '🛏️' });
+    }
+  }, [currentZone, tutorialStep, isTutorialCompleted, isTutorialHidden]);
+
+  // Step 3 -> Step 4: Rest in Bed
+  useEffect(() => {
+    if (tutorialStep !== 2 || isTutorialCompleted || isTutorialHidden) return;
+    const unsub = gameEventBridge.on('RESTED_IN_BED', () => {
+      setTutorialStep(3);
+      try {
+        localStorage.setItem('wardenTutorialStep', '3');
+      } catch {
+        // ignore
+      }
+      toast('Full vitality restored! Press [I] to inspect your Adventurer Pouch', { icon: '🎒' });
+    });
+    return () => unsub();
+  }, [tutorialStep, isTutorialCompleted, isTutorialHidden]);
+
+  // Step 4 -> Step 5: Open Adventurer Pouch
+  useEffect(() => {
+    if (tutorialStep !== 3 || isTutorialCompleted || isTutorialHidden) return;
+    if (isInventoryOpen) {
+      setTutorialStep(4);
+      try {
+        localStorage.setItem('wardenTutorialStep', '4');
+      } catch {
+        // ignore
+      }
+      toast('Pouch inspected! Check the World Atlas [M] or Minimap in the corner', { icon: '🗺️' });
+    }
+  }, [isInventoryOpen, tutorialStep, isTutorialCompleted, isTutorialHidden]);
+
+  // Step 5: Open World Atlas (Completes Tutorial)
+  useEffect(() => {
+    if (tutorialStep !== 4 || isTutorialCompleted || isTutorialHidden) return;
+    const unsub = gameEventBridge.on('WORLD_ATLAS_OPENED', () => {
+      setTutorialStep(5);
+      setIsTutorialCompleted(true);
+      try {
+        localStorage.setItem('wardenTutorialStep', '5');
+        localStorage.setItem('wardenTutorialCompleted', 'true');
+      } catch {
+        // ignore
+      }
+      toast.success('🏆 All 5 Tutorial Steps Completed! Claim your reward in the guide!', { icon: '✨' });
+    });
+    return () => unsub();
+  }, [tutorialStep, isTutorialCompleted, isTutorialHidden]);
 
   const handleReturnHome = () => {
     if (currentZone === 'homestead') {
@@ -570,65 +690,19 @@ export default function WorldPage() {
       </header>
 
       {/* =========================================================================
-          FIRST-TIME PLAYING MOVEMENT & CONTROLS TUTORIAL (SHOWN ONLY ON FIRST PLAY)
+          INTERACTIVE BEGINNER WARDEN AWAKENING TUTORIAL STEPPER
           ========================================================================= */}
-      {showMovementTutorial && (
-        <aside
-          className="rpg-panel-brown pointer-events-auto fixed bottom-3 left-4 z-30 flex flex-col gap-2 p-3 shadow-2xl backdrop-blur-md max-w-xl animate-fadeIn border-2 border-amber-600/80"
-          aria-label="First-time movement guide"
-        >
-          <div className="flex items-center justify-between border-b border-amber-900/50 pb-1.5 gap-4">
-            <div className="flex items-center gap-2">
-              <span className="text-base">🧭</span>
-              <span className="font-serif text-xs font-bold text-amber-100">
-                Movement &amp; Controls Guide
-              </span>
-            </div>
-            <button
-              type="button"
-              onClick={() => {
-                audioManager.play('tap');
-                dismissMovementTutorial();
-              }}
-              className="rpg-btn-beige text-[10px] py-0.5 px-2 font-bold font-serif"
-              title="Dismiss guide (shown once on first play)"
-            >
-              Got It! ✕
-            </button>
-          </div>
-
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5 text-[11px] font-mono text-amber-200">
-            <div className="rpg-slot-inset p-1.5 bg-black/60 flex flex-col">
-              <span className="text-yellow-400 font-bold font-mono">WASD / ZQSD / Click</span>
-              <span className="text-[10px] text-amber-100/80 font-serif">Walk &amp; Pathfind</span>
-            </div>
-            <div className="rpg-slot-inset p-1.5 bg-black/60 flex flex-col">
-              <span className="text-yellow-400 font-bold font-mono">Shift (Hold)</span>
-              <span className="text-[10px] text-amber-100/80 font-serif">Sprint fast</span>
-            </div>
-            <div className="rpg-slot-inset p-1.5 bg-black/60 flex flex-col">
-              <span className="text-yellow-400 font-bold font-mono">Space / Click</span>
-              <span className="text-[10px] text-amber-100/80 font-serif">Attack foes</span>
-            </div>
-            <div className="rpg-slot-inset p-1.5 bg-black/60 flex flex-col">
-              <span className="text-yellow-400 font-bold font-mono">[E] / Click Prompt</span>
-              <span className="text-[10px] text-amber-100/80 font-serif">Interact &amp; Gather</span>
-            </div>
-            <div className="rpg-slot-inset p-1.5 bg-black/60 flex flex-col">
-              <span className="text-yellow-400 font-bold font-mono">[1] Quick Heal</span>
-              <span className="text-[10px] text-amber-100/80 font-serif">Drink potion (+45 HP)</span>
-            </div>
-            <div className="rpg-slot-inset p-1.5 bg-black/60 flex flex-col">
-              <span className="text-yellow-400 font-bold font-mono">[M] Map · [I] Pouch</span>
-              <span className="text-[10px] text-amber-100/80 font-serif">Atlas &amp; Inventory</span>
-            </div>
-          </div>
-
-          <div className="flex items-center justify-between text-[9px] text-amber-300/70 pt-0.5">
-            <span>Shown only on your first play</span>
-            <span>Click [❓] anytime for full guide</span>
-          </div>
-        </aside>
+      {!isTutorialHidden && (
+        <BeginnerTutorialStepper
+          currentStep={tutorialStep}
+          isCompleted={isTutorialCompleted}
+          isCollapsed={isTutorialCollapsed}
+          onToggleCollapse={() => setIsTutorialCollapsed((prev) => !prev)}
+          onDismiss={dismissMovementTutorial}
+          onClaimReward={handleClaimTutorialReward}
+          onOpenPouch={() => setIsInventoryOpen(true)}
+          onOpenAtlas={() => gameEventBridge.emit('OPEN_IN_GAME_ATLAS')}
+        />
       )}
 
       {/* =========================================================================

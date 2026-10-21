@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import audioManager from '../../../core/audio/AudioManager';
+import gameEventBridge from '../../../core/phaser/gameEventBridge';
 
 const WORLD_REGIONS = [
   {
@@ -11,6 +12,16 @@ const WORLD_REGIONS = [
     icon: '🏡',
     color: '#4ade80',
     description: 'Personal estate, cottage, tilled farm plots, well, and storage chest.',
+  },
+  {
+    id: 'homestead_interior',
+    name: 'Cottage Home',
+    shortName: 'Cottage',
+    x: 68,
+    y: 58,
+    icon: '🛋️',
+    color: '#f59e0b',
+    description: 'Cozy manor interior with restorative bed, warm fireplace, and vault chest.',
   },
   {
     id: 'west_road',
@@ -69,6 +80,21 @@ export default function WorldMinimap({
   onReturnHome = () => {},
 }) {
   const [isExpanded, setIsExpanded] = useState(false);
+
+  // Broadcast atlas opened event when expanded
+  useEffect(() => {
+    if (isExpanded) {
+      gameEventBridge.emit('WORLD_ATLAS_OPENED');
+    }
+  }, [isExpanded]);
+
+  // Listen to external request to open atlas
+  useEffect(() => {
+    const unsub = gameEventBridge.on('OPEN_IN_GAME_ATLAS', () => {
+      setIsExpanded(true);
+    });
+    return () => unsub();
+  }, []);
 
   // Keyboard shortcut [M] toggles expanded realm atlas
   useEffect(() => {
