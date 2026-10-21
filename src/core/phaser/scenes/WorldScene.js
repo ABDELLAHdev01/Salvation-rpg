@@ -617,10 +617,10 @@ export default class WorldScene extends Phaser.Scene {
 
     this.physics.world.setBounds(0, 0, worldW, worldH);
 
-    // Ground Layer
+    // Ground Layer - Extended border buffer so terrain seamlessly covers large viewports
     const baseTile = this.currentZone === 'mine' ? 'tile_stone' : 'tile_grass';
-    for (let x = 0; x < mapWidth; x += 1) {
-      for (let y = 0; y < mapHeight; y += 1) {
+    for (let x = -15; x < mapWidth + 15; x += 1) {
+      for (let y = -15; y < mapHeight + 15; y += 1) {
         this.add.image(x * 32 + 16, y * 32 + 16, baseTile);
       }
     }
@@ -691,7 +691,22 @@ export default class WorldScene extends Phaser.Scene {
     this.cameras.main.setBounds(0, 0, worldW, worldH);
     this.cameras.main.centerOn(spawnX, spawnY);
     this.cameras.main.startFollow(this.player, true, 0.15, 0.15);
-    this.cameras.main.setZoom(1.5);
+    this.updateCameraZoom();
+    this.scale.off('resize', this.updateCameraZoom, this);
+    this.scale.on('resize', this.updateCameraZoom, this);
+  }
+
+  updateCameraZoom() {
+    if (!this.cameras || !this.cameras.main) return;
+    const viewW = this.cameras.main.width || this.scale.width;
+    const viewH = this.cameras.main.height || this.scale.height;
+    const worldW = 40 * 32;
+    const worldH = 30 * 32;
+    // Calculate minimum zoom required so the camera viewport never extends past the world boundaries
+    const minZoomW = viewW / worldW;
+    const minZoomH = viewH / worldH;
+    const targetZoom = Math.max(1.35, Math.max(minZoomW, minZoomH));
+    this.cameras.main.setZoom(targetZoom);
   }
 
   buildHomesteadProps() {

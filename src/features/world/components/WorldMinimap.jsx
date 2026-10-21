@@ -221,11 +221,11 @@ export default function WorldMinimap({
       </aside>
 
       {/* =====================================================================
-          2. EXPANDED WORLD ATLAS MODAL (Hotkey [M] or Click Minimap)
+          2. EXPANDED FULL-PAGE WORLD ATLAS MODAL (Hotkey [M] or Click Minimap)
           ===================================================================== */}
       {isExpanded && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 p-4 backdrop-blur-md animate-fadeIn select-none">
-          <div className="rpg-panel-brown relative flex flex-col h-[600px] w-full max-w-4xl p-6 shadow-2xl">
+        <div className="fixed inset-2 sm:inset-4 z-50 flex items-center justify-center select-none animate-fadeIn">
+          <div className="rpg-panel-brown relative flex flex-col w-full h-full p-4 sm:p-5 shadow-2xl">
             {/* Header */}
             <div className="flex items-center justify-between border-b border-amber-900/50 pb-4">
               <div className="flex items-center gap-3">

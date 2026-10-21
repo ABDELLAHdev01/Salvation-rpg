@@ -45,6 +45,10 @@ export default function WorldPage() {
     weather: 'clear',
   });
 
+  // Live player combat status
+  const [playerHp, setPlayerHp] = useState(100);
+  const [playerMaxHp, setPlayerMaxHp] = useState(100);
+
   // In-Game Modal Overlays
   const [isInventoryOpen, setIsInventoryOpen] = useState(false);
   const [isWardrobeOpen, setIsWardrobeOpen] = useState(false);
@@ -136,6 +140,14 @@ export default function WorldPage() {
       gameEventBridge.on(gameEvents.ENVIRONMENT_TICK, (env) => {
         setWorldClock(env);
       }),
+      gameEventBridge.on(gameEvents.COMBAT_PLAYER_DAMAGED, ({ hp, maxHp }) => {
+        if (hp !== undefined) setPlayerHp(hp);
+        if (maxHp !== undefined) setPlayerMaxHp(maxHp);
+      }),
+      gameEventBridge.on(gameEvents.COMBAT_PLAYER_HEAL, ({ hp, maxHp }) => {
+        if (hp !== undefined) setPlayerHp(hp);
+        if (maxHp !== undefined) setPlayerMaxHp(maxHp);
+      }),
     ];
 
     const handleFullscreenChange = () => {
@@ -173,6 +185,9 @@ export default function WorldPage() {
       } else if (e.key === 'f' || e.key === 'F') {
         setIsFishingOpen((prev) => !prev);
         audioManager.play('tap');
+      } else if (e.key === '1') {
+        audioManager.play('tap');
+        gameEventBridge.emit(gameEvents.USE_HEALING_POTION);
       } else if (e.key === 'h' || e.key === 'H') {
         if (currentZone === 'homestead') {
           toast('You are already at Sunforge Homestead!', { icon: '🏡' });
@@ -236,6 +251,12 @@ export default function WorldPage() {
   const toolMeta = EQUIPPED_TOOLS.find((t) => t.id === currentToolId) || { name: 'Iron Pickaxe', icon: '⛏️' };
   const equippedPetId = profile?.equippedPet || 'sheepdog';
   const equippedPetMeta = COMPANIONS.find((c) => c.id === equippedPetId) || COMPANIONS[0];
+  const potionCount = profile?.inventory?.['health-potion'] || 0;
+
+  const handleQuickHeal = () => {
+    audioManager.play('tap');
+    gameEventBridge.emit(gameEvents.USE_HEALING_POTION);
+  };
 
   return (
     <div className="fixed inset-0 w-screen h-screen overflow-hidden bg-black select-none z-0">
@@ -249,26 +270,103 @@ export default function WorldPage() {
       />
 
       {/* =========================================================================
-          TOP HUD OVERLAY
+          TOP HUD OVERLAY (3-COLUMN RESPONSIVE ARCHITECTURE)
           ========================================================================= */}
-      <header className="pointer-events-none fixed top-0 inset-x-0 z-20 flex items-start justify-between p-3 sm:p-4">
-        {/* Top Left: Region Title & Fast Travel Navigation */}
-        <div className="pointer-events-auto flex flex-col gap-2">
-          {/* Current Region Card */}
-          <div className="rpg-panel-brown flex items-center gap-2.5 px-3 py-1.5 backdrop-blur-md">
-            <span className="text-xl">{activeZoneMeta.icon}</span>
-            <div>
-              <span className="block text-[9px] font-bold uppercase tracking-wider text-amber-400/90 leading-none">
+      <header className="pointer-events-none fixed top-0 inset-x-0 z-20 flex items-start justify-between gap-2 p-2 sm:p-3">
+        {/* 1. Left: Hero Vitality Plate & Realm Region */}
+        <div className="pointer-events-auto flex flex-col gap-1.5 max-w-[340px]">
+          {/* Hero Banner Plate */}
+          <div className="rpg-panel-brown flex items-center gap-2.5 p-2 backdrop-blur-md shadow-xl">
+            {/* Class / Hero Emblem */}
+            <div
+              className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-amber-800/80 bg-stone-900/90 shadow-inner"
+              title={`Equipped Tool: ${toolMeta.name}`}
+            >
+              <img src={getItemIcon(currentToolId)} alt={toolMeta.name} className="h-6 w-6 object-contain pixelated" />
+              <span
+                className="absolute -bottom-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-amber-500 text-[9px] font-mono font-bold text-stone-950 border border-stone-900 shadow"
+                title={`Level ${playerLevel} (${playerXp} XP)`}
+              >
+                {playerLevel}
+              </span>
+            </div>
+
+            {/* Name, Gold, Health Bar */}
+            <div className="flex flex-col flex-1 min-w-0">
+              <div className="flex items-center justify-between text-xs leading-none mb-1">
+                <div className="flex items-center gap-1.5 truncate">
+                  <span className="font-serif font-bold text-amber-100 truncate text-[13px] drop-shadow">
+                    {character?.characterName || 'Valen'}
+                  </span>
+                  <span className="text-[10px] text-amber-300/70 font-mono hidden sm:inline">
+                    ({playerXp} XP)
+                  </span>
+                </div>
+                <div className="flex items-center gap-1 shrink-0 ml-1.5 font-mono text-[11px] font-bold text-yellow-300">
+                  <img src={getItemIcon('gold-coin')} alt="Gold" className="h-3.5 w-3.5 object-contain pixelated" />
+                  <span>{playerGold}g</span>
+                </div>
+              </div>
+
+              {/* Health Bar with Numeric overlay */}
+              <div className="flex items-center gap-1.5">
+                <div className="relative h-3.5 flex-1 overflow-hidden rounded bg-black/80 border border-amber-900/70 p-[1px]">
+                  <div
+                    className="h-full rounded-sm bg-gradient-to-r from-red-600 via-amber-500 to-emerald-500 transition-all duration-300 shadow-sm"
+                    style={{ width: `${Math.max(0, Math.min(100, Math.round((playerHp / (playerMaxHp || 1)) * 100)))}%` }}
+                  />
+                  <span className="absolute inset-0 flex items-center justify-center font-mono text-[9px] font-bold text-white drop-shadow-[0_1px_1px_rgba(0,0,0,0.9)]">
+                    {playerHp}/{playerMaxHp}
+                  </span>
+                </div>
+
+                {/* Quick Heal Potion Button */}
+                <button
+                  type="button"
+                  onClick={handleQuickHeal}
+                  className={`${
+                    potionCount > 0 ? 'rpg-btn-beige' : 'rpg-btn-brown opacity-50 cursor-not-allowed'
+                  } shrink-0 text-[10px] py-0.5 px-2 flex items-center gap-1 font-mono`}
+                  title={potionCount > 0 ? `Drink Healing Elixir (+45 HP) [1] (${potionCount} in pack)` : 'No healing potions in pack'}
+                >
+                  <span>🧪</span>
+                  <span>[1] {potionCount}</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Region Badge */}
+          <div className="rpg-panel-brown flex items-center gap-2 px-2.5 py-1 backdrop-blur-md self-start text-xs">
+            <span className="text-base">{activeZoneMeta.icon}</span>
+            <div className="leading-tight">
+              <span className="block text-[8px] font-bold uppercase tracking-wider text-amber-400/90">
                 {activeZoneMeta.kicker}
               </span>
-              <span className="font-serif text-xs font-bold text-amber-100 sm:text-sm leading-tight drop-shadow">
+              <span className="font-serif text-[11px] font-bold text-amber-100 drop-shadow">
                 {activeZoneMeta.label}
               </span>
             </div>
           </div>
+        </div>
 
-          {/* Fast-Travel Quick Bar */}
-          <div className="rpg-panel-brown hidden sm:flex items-center gap-1.5 p-1 backdrop-blur-md">
+        {/* 2. Center: Realm Clock, Weather & Fast-Travel Bar */}
+        <div className="pointer-events-auto hidden md:flex flex-col items-center gap-1.5">
+          {/* Day/Night & Weather Pill */}
+          <div className="rpg-panel-brown flex items-center gap-2 px-3 py-1 text-xs text-amber-200 backdrop-blur-md shadow-md">
+            <span className="text-sm">
+              {worldClock.timeOfDay === 'night' ? '🌙' : worldClock.timeOfDay === 'dusk' ? '🌅' : '☀️'}
+            </span>
+            <span className="font-mono text-xs font-bold text-amber-300">
+              {String(worldClock.hour).padStart(2, '0')}:{String(worldClock.minute).padStart(2, '0')}
+            </span>
+            <span className="text-[10px] text-amber-300/60 border-l border-amber-800/60 pl-2">
+              {worldClock.weather === 'rain' ? '🌧️ Rain' : worldClock.weather === 'thunderstorm' ? '⚡ Storm' : worldClock.weather === 'fog' ? '🌫️ Fog' : '☀️ Clear'}
+            </span>
+          </div>
+
+          {/* Fast-Travel Highway Ribbon */}
+          <div className="rpg-panel-brown flex items-center gap-1 p-1 backdrop-blur-md shadow-md">
             <span className="px-1.5 text-[9px] font-bold uppercase tracking-wider text-amber-400">
               Travel:
             </span>
@@ -279,195 +377,148 @@ export default function WorldPage() {
                   key={zone.id}
                   type="button"
                   onClick={() => handleSwitchZone(zone.id)}
-                  className={`${isActive ? 'rpg-btn-beige active' : 'rpg-btn-brown'} text-[11px] py-1 px-2.5`}
+                  className={`${isActive ? 'rpg-btn-beige active' : 'rpg-btn-brown'} text-[11px] py-0.5 px-2 flex items-center gap-1`}
                   title={`Fast-travel to ${zone.label}`}
                 >
                   <span>{zone.icon}</span>
-                  <span className="hidden md:inline">{zone.label}</span>
+                  <span className="hidden lg:inline">{zone.label}</span>
                 </button>
               );
             })}
           </div>
         </div>
 
-        {/* Top Right: Player Stats & In-Game Action Menus */}
-        <div className="pointer-events-auto flex flex-wrap items-center justify-end gap-1.5 sm:gap-2">
-          {/* Day/Night & Weather Clock */}
-          <div className="rpg-panel-brown hidden sm:flex items-center gap-1.5 px-3 py-1 text-xs text-amber-200">
-            <span className="text-sm">
-              {worldClock.timeOfDay === 'night' ? '🌙' : worldClock.timeOfDay === 'dusk' ? '🌅' : '☀️'}
-            </span>
-            <span className="font-mono text-xs font-bold text-amber-300">
-              {String(worldClock.hour).padStart(2, '0')}:{String(worldClock.minute).padStart(2, '0')}
-            </span>
-            <span className="text-[10px] text-amber-300/60 border-l border-amber-800/60 pl-1.5">
-              {worldClock.weather === 'rain' ? '🌧️ Rain' : worldClock.weather === 'thunderstorm' ? '⚡ Storm' : worldClock.weather === 'fog' ? '🌫️ Fog' : '☀️ Clear'}
-            </span>
+        {/* 3. Right: Single-Row Action Ribbon & Utilities */}
+        <div className="pointer-events-auto flex items-center gap-1 sm:gap-1.5">
+          {/* Action Modals Ribbon */}
+          <div className="rpg-panel-brown flex items-center gap-1 p-1 backdrop-blur-md shadow-xl">
+            <button
+              type="button"
+              onClick={() => {
+                audioManager.play('tap');
+                setIsInventoryOpen(true);
+              }}
+              className="rpg-btn-brown text-xs py-1 px-2"
+              title="Adventurer Pouch / Inventory [I]"
+            >
+              <span>🎒</span>
+              <span className="hidden xl:inline ml-1 font-serif">Pouch</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                audioManager.play('tap');
+                setIsGuildOpen(true);
+              }}
+              className="rpg-btn-brown text-xs py-1 px-2"
+              title="Adventurers' Guild Board & Renown [G]"
+            >
+              <span>⚔️</span>
+              <span className="hidden xl:inline ml-1 font-serif">Guild</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                audioManager.play('tap');
+                setIsForgeOpen(true);
+              }}
+              className="rpg-btn-brown text-xs py-1 px-2"
+              title="Artisan Forge & Smelter"
+            >
+              <span>⚒️</span>
+              <span className="hidden xl:inline ml-1 font-serif">Forge</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                audioManager.play('tap');
+                setIsBazaarOpen(true);
+              }}
+              className="rpg-btn-brown text-xs py-1 px-2"
+              title="Merchant Bazaar & Seed Shop"
+            >
+              <span>🪙</span>
+              <span className="hidden xl:inline ml-1 font-serif">Bazaar</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                audioManager.play('tap');
+                setIsFishingOpen(true);
+              }}
+              className="rpg-btn-brown text-xs py-1 px-2"
+              title="Angler Fishing [F]"
+            >
+              <span>🎣</span>
+              <span className="hidden xl:inline ml-1 font-serif">Fish</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                audioManager.play('tap');
+                setIsPetOpen(true);
+              }}
+              className="rpg-btn-brown text-xs py-1 px-2"
+              title={`Warden Companion Sanctuary (${equippedPetMeta.name}) [P]`}
+            >
+              <span>{equippedPetMeta.icon}</span>
+              <span className="hidden xl:inline ml-1 font-serif">Pet</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                audioManager.play('tap');
+                setIsWardrobeOpen(true);
+              }}
+              className="rpg-btn-brown text-xs py-1 px-2"
+              title="Warden's Wardrobe Customizer [C]"
+            >
+              <span>🪞</span>
+              <span className="hidden xl:inline ml-1 font-serif">Wardrobe</span>
+            </button>
           </div>
 
-          {/* Gold Counter */}
-          <div className="rpg-panel-brown flex items-center gap-1.5 px-3 py-1 text-xs">
-            <img src={getItemIcon('gold-coin')} alt="Gold" className="h-4 w-4 object-contain pixelated" />
-            <span className="font-mono text-xs font-bold text-yellow-300">
-              {playerGold}g
-            </span>
+          {/* Quick Utility Console */}
+          <div className="rpg-panel-brown flex items-center gap-1 p-1 backdrop-blur-md shadow-xl">
+            <button
+              type="button"
+              onClick={() => {
+                audioManager.play('tap');
+                setIsSaveOpen(true);
+              }}
+              className="rpg-btn-square-brown h-7 w-7 text-xs"
+              title="Save / Load Game"
+            >
+              <span>💾</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                audioManager.play('tap');
+                setIsHelpOpen(true);
+              }}
+              className="rpg-btn-square-brown h-7 w-7 text-xs"
+              title="Game Controls & Help [?]"
+            >
+              <span>❓</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={toggleFullscreen}
+              className="rpg-btn-square-brown h-7 w-7 text-xs"
+              title="Toggle Borderless Fullscreen Mode [F11]"
+            >
+              <span>{isFullscreen ? '↙️' : '⛶'}</span>
+            </button>
           </div>
-
-          {/* Level & XP */}
-          <div className="rpg-panel-brown hidden sm:flex items-center gap-1.5 px-3 py-1 text-xs">
-            <span className="text-sm">⭐</span>
-            <span className="font-mono text-xs font-bold text-amber-200">
-              Lvl {playerLevel} ({playerXp} XP)
-            </span>
-          </div>
-
-          {/* Equipped Weapon / Tool */}
-          <div
-            className="rpg-panel-brown hidden md:flex items-center gap-1.5 px-3 py-1 text-xs"
-            title={`Equipped Weapon/Tool: ${toolMeta.name}`}
-          >
-            <img src={getItemIcon(currentToolId)} alt={toolMeta.name} className="h-4 w-4 object-contain pixelated" />
-            <span className="font-serif text-xs font-bold text-amber-100">
-              {toolMeta.name}
-            </span>
-          </div>
-
-          {/* Return Home Fast Travel Button */}
-          <button
-            type="button"
-            onClick={handleReturnHome}
-            className={`rpg-btn-beige text-xs ${currentZone === 'homestead' ? 'opacity-60 cursor-default' : ''}`}
-            title="Return Home to Sunforge Homestead [H]"
-          >
-            <span>🏡</span>
-            <span className="hidden sm:inline">Home</span>
-          </button>
-
-          {/* Action Modals Buttons */}
-          <button
-            type="button"
-            onClick={() => {
-              audioManager.play('tap');
-              setIsGuildOpen(true);
-            }}
-            className="rpg-btn-brown text-xs"
-            title="Adventurers' Guild Board & Renown [G]"
-          >
-            <span>⚔️</span>
-            <span className="hidden sm:inline">Guild</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => {
-              audioManager.play('tap');
-              setIsInventoryOpen(true);
-            }}
-            className="rpg-btn-brown text-xs"
-            title="Open Adventurer Pouch [I]"
-          >
-            <span>🎒</span>
-            <span className="hidden sm:inline">Pouch</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => {
-              audioManager.play('tap');
-              setIsWardrobeOpen(true);
-            }}
-            className="rpg-btn-brown text-xs"
-            title="Warden's Wardrobe Customizer [C]"
-          >
-            <span>🎨</span>
-            <span className="hidden sm:inline">Wardrobe</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => {
-              audioManager.play('tap');
-              setIsPetOpen(true);
-            }}
-            className="rpg-btn-brown text-xs"
-            title="Warden Companion Sanctuary [P]"
-          >
-            <span>{equippedPetMeta.icon}</span>
-            <span className="hidden sm:inline">Pet</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => {
-              audioManager.play('tap');
-              setIsFishingOpen(true);
-            }}
-            className="rpg-btn-brown text-xs"
-            title="Angler Fishing [F]"
-          >
-            <span>🎣</span>
-            <span className="hidden sm:inline">Fish</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => {
-              audioManager.play('tap');
-              setIsForgeOpen(true);
-            }}
-            className="rpg-btn-brown text-xs"
-            title="Artisan Forge & Smelter"
-          >
-            <span>⚒️</span>
-            <span className="hidden md:inline">Forge</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => {
-              audioManager.play('tap');
-              setIsBazaarOpen(true);
-            }}
-            className="rpg-btn-brown text-xs"
-            title="Merchant Bazaar & Seed Shop"
-          >
-            <span>🏛️</span>
-            <span className="hidden md:inline">Bazaar</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => {
-              audioManager.play('tap');
-              setIsSaveOpen(true);
-            }}
-            className="rpg-btn-square-brown h-8 w-8 text-xs"
-            title="Save / Load Game"
-          >
-            <span>💾</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => {
-              audioManager.play('tap');
-              setIsHelpOpen(true);
-            }}
-            className="rpg-btn-square-brown h-8 w-8 text-xs"
-            title="Game Controls & Help [?]"
-          >
-            <span>❓</span>
-          </button>
-
-          {/* Fullscreen Toggle Button */}
-          <button
-            type="button"
-            onClick={toggleFullscreen}
-            className="rpg-btn-square-brown h-8 w-8 text-xs"
-            title="Toggle Borderless Fullscreen Mode [F11]"
-          >
-            <span>{isFullscreen ? '↙️' : '⛶'}</span>
-          </button>
         </div>
       </header>
 

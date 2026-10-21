@@ -416,52 +416,7 @@ export default function PhaserWorldCanvas({
         }}
       />
 
-      {/* Real-Time Player Health & Potion Ribbon */}
-      <div className="rpg-panel-brown absolute top-4 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2.5 px-3 py-1.5 backdrop-blur-md">
-        <span className="text-base drop-shadow">❤️</span>
-        <div className="flex flex-col">
-          <div className="flex items-center justify-between text-[10px] font-mono leading-none mb-1 text-amber-200">
-            <span className="font-bold text-red-400">HEALTH</span>
-            <span className="font-bold text-amber-100 ml-2">{playerHp}/{playerMaxHp}</span>
-          </div>
-          <div className="h-3 w-28 overflow-hidden rounded bg-black/80 sm:w-36 border border-amber-900/60 p-[1px]">
-            <div
-              className="h-full rounded-sm bg-gradient-to-r from-red-600 via-amber-500 to-emerald-500 transition-all duration-200 shadow-sm"
-              style={{ width: `${Math.max(0, Math.min(100, Math.round((playerHp / (playerMaxHp || 1)) * 100)))}%` }}
-            />
-          </div>
-        </div>
 
-        {(() => {
-          const potionCount = profile?.inventory?.['health-potion'] || 0;
-          return (
-            <button
-              type="button"
-              onClick={handleUsePotion}
-              className={`${
-                potionCount > 0 ? 'rpg-btn-beige' : 'rpg-btn-brown opacity-60 cursor-not-allowed'
-              } text-[11px] py-0.5 px-2 ml-1`}
-              title={potionCount > 0 ? `Drink Healing Elixir (+45 HP) [1] (${potionCount} in pack)` : 'No healing potions in pack'}
-            >
-              <span>🧪</span>
-              <span className="hidden sm:inline">[1] Heal ({potionCount})</span>
-            </button>
-          );
-        })()}
-
-        {/* Companion Morale Quick Pat */}
-        <button
-          type="button"
-          onClick={() => {
-            gameEventBridge.emit('PET_COMPANION');
-          }}
-          className="rpg-btn-brown text-[11px] py-0.5 px-2 ml-1"
-          title="Pat Companion (+Morale) / Sanctuary [P]"
-        >
-          <span>🐾</span>
-          <span className="hidden sm:inline">Pet</span>
-        </button>
-      </div>
 
       {/* Floating In-World Contextual Interaction Prompt */}
       {activePrompt && (
