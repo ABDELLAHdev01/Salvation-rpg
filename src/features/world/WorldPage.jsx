@@ -35,7 +35,14 @@ export default function WorldPage() {
   const navigate = useNavigate();
   const [character, setCharacter] = useState(null);
   const [profile, setProfile] = useState(null);
-  const [currentZone, setCurrentZone] = useState('homestead');
+  const [currentZone, setCurrentZone] = useState(() => {
+    try {
+      const isDone = localStorage.getItem('wardenTutorialCompleted') === 'true';
+      return isDone ? 'homestead' : 'tutorial_island';
+    } catch {
+      return 'homestead';
+    }
+  });
   const [isFullscreen, setIsFullscreen] = useState(false);
 
   // Live player tracking for permanent minimap
@@ -86,10 +93,16 @@ export default function WorldPage() {
     setIsTutorialHidden(true);
     try {
       localStorage.setItem('wardenTutorialHidden', 'true');
+      localStorage.setItem('wardenTutorialCompleted', 'true');
     } catch {
       // ignore
     }
-  }, []);
+    if (currentZone === 'tutorial_island') {
+      setCurrentZone('homestead');
+      gameEventBridge.emit(gameEvents.SWITCH_ZONE, { zone: 'homestead' });
+      toast.success('Tutorial skipped! Sailing across to Sunforge Homestead...', { icon: '⛵' });
+    }
+  }, [currentZone]);
 
   const resetMovementTutorial = useCallback(() => {
     setTutorialStep(0);
@@ -103,7 +116,9 @@ export default function WorldPage() {
     } catch {
       // ignore
     }
-    toast('Warden Journey Stepper restarted!', { icon: '📜' });
+    setCurrentZone('tutorial_island');
+    gameEventBridge.emit(gameEvents.SWITCH_ZONE, { zone: 'tutorial_island' });
+    toast('Warden Journey Stepper restarted at Isle of Beginnings!', { icon: '📜' });
   }, []);
 
   const handleClaimTutorialReward = useCallback(() => {
@@ -396,10 +411,52 @@ export default function WorldPage() {
       } catch {
         // ignore
       }
-      toast('First steps taken! Walk up to your Manor House front door [E]', { icon: '🏡' });
+      if (currentZone === 'tutorial_island') {
+        toast('First steps on the Isle! Walk over to the Castaway Supply Chest [E]', { icon: '📦' });
+      } else {
+        toast('First steps taken! Walk up to your Manor House front door [E]', { icon: '🏡' });
+      }
     });
     return () => unsub();
-  }, [tutorialStep, isTutorialCompleted, isTutorialHidden]);
+  }, [tutorialStep, isTutorialCompleted, isTutorialHidden, currentZone]);
+
+  // Island Tutorial Direct Step Advancements from WorldScene
+  useEffect(() => {
+    const unsubAdv = gameEventBridge.on('TUTORIAL_STEP_ADVANCE', ({ step }) => {
+      setTutorialStep(step);
+      try {
+        localStorage.setItem('wardenTutorialStep', String(step));
+      } catch {
+        // ignore
+      }
+      if (step === 2) {
+        toast('Gear salvaged! Walk north into the grove to forage Sunberries from the Fruit Tree [E]', { icon: '🍎' });
+      } else if (step === 3) {
+        toast('Sunberries harvested! Approach the training slime and attack with [Space] or Left Click', { icon: '⚔️' });
+      } else if (step === 4) {
+        toast('Trial of combat complete! Walk south to the pier and board the Sloop [E]', { icon: '⛵' });
+      }
+    });
+
+    const unsubLeave = gameEventBridge.on('TUTORIAL_COMPLETED_LEAVE_ISLAND', () => {
+      setIsTutorialCompleted(true);
+      setIsTutorialHidden(true);
+      try {
+        localStorage.setItem('wardenTutorialCompleted', 'true');
+        localStorage.setItem('wardenTutorialHidden', 'true');
+        localStorage.setItem('wardenTutorialStep', '5');
+      } catch {
+        // ignore
+      }
+      toast.success('🎉 Tutorial Voyage Completed! Arriving at Sunforge Homestead...', { icon: '🏆', duration: 5000 });
+      setCurrentZone('homestead');
+    });
+
+    return () => {
+      unsubAdv();
+      unsubLeave();
+    };
+  }, []);
 
   // Step 2 -> Step 3: Enter Homestead Cottage
   useEffect(() => {
@@ -497,7 +554,11 @@ export default function WorldPage() {
     }
   };
 
-  const activeZoneMeta = ZONES.find((z) => z.id === currentZone) || ZONES[0];
+  const activeZoneMeta = ZONES.find((z) => z.id === currentZone) || (
+    currentZone === 'tutorial_island'
+      ? { id: 'tutorial_island', label: 'Isle of Beginnings', icon: '🏝️', kicker: 'Tutorial Haven' }
+      : ZONES[0]
+  );
   const playerLevel = profile?.stats?.level ?? 1;
   const playerGold = profile?.stats?.gold ?? 0;
   const playerXp = profile?.stats?.xp ?? 0;
@@ -630,24 +691,38 @@ export default function WorldPage() {
 
           {/* Fast-Travel Highway Ribbon */}
           <div className="rpg-panel-brown flex items-center gap-1 p-1 backdrop-blur-md shadow-md">
-            <span className="px-1.5 text-[9px] font-bold uppercase tracking-wider text-amber-400">
-              Travel:
-            </span>
-            {ZONES.map((zone) => {
-              const isActive = currentZone === zone.id;
-              return (
-                <button
-                  key={zone.id}
-                  type="button"
-                  onClick={() => handleSwitchZone(zone.id)}
-                  className={`${isActive ? 'rpg-btn-beige active' : 'rpg-btn-brown'} text-[11px] py-0.5 px-2 flex items-center gap-1`}
-                  title={`Fast-travel to ${zone.label}`}
-                >
-                  <span>{zone.icon}</span>
-                  <span className="hidden lg:inline">{zone.label}</span>
-                </button>
-              );
-            })}
+            {currentZone === 'tutorial_island' ? (
+              <div className="flex items-center gap-2 px-2 py-0.5">
+                <span className="text-[11px] font-serif font-bold text-amber-200 flex items-center gap-1.5">
+                  <span>🏝️</span>
+                  <span>Isle of Beginnings · Tutorial Haven</span>
+                </span>
+                <span className="text-[10px] text-amber-400/80 italic hidden lg:inline">
+                  (Isolated Isle — Board the departure sloop to reach Homestead)
+                </span>
+              </div>
+            ) : (
+              <>
+                <span className="px-1.5 text-[9px] font-bold uppercase tracking-wider text-amber-400">
+                  Travel:
+                </span>
+                {ZONES.map((zone) => {
+                  const isActive = currentZone === zone.id;
+                  return (
+                    <button
+                      key={zone.id}
+                      type="button"
+                      onClick={() => handleSwitchZone(zone.id)}
+                      className={`${isActive ? 'rpg-btn-beige active' : 'rpg-btn-brown'} text-[11px] py-0.5 px-2 flex items-center gap-1`}
+                      title={`Fast-travel to ${zone.label}`}
+                    >
+                      <span>{zone.icon}</span>
+                      <span className="hidden lg:inline">{zone.label}</span>
+                    </button>
+                  );
+                })}
+              </>
+            )}
           </div>
         </div>
 
@@ -790,6 +865,7 @@ export default function WorldPage() {
           ========================================================================= */}
       {!isTutorialHidden && (
         <BeginnerTutorialStepper
+          currentZone={currentZone}
           currentStep={tutorialStep}
           isCompleted={isTutorialCompleted}
           isCollapsed={isTutorialCollapsed}

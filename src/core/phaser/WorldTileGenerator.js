@@ -11,12 +11,23 @@ export function registerWorldTextures(scene) {
 
   const TILE_SIZE = 32;
 
-  // 0. Transparent Invisible Collision Texture
+  // 0. Transparent Invisible Collision Texture & Soft Particle Dot Texture
   const colCanvas = document.createElement('canvas');
   colCanvas.width = 4;
   colCanvas.height = 4;
   if (!scene.textures.exists('col_invisible')) {
     scene.textures.addCanvas('col_invisible', colCanvas);
+  }
+  const dotCanvas = document.createElement('canvas');
+  dotCanvas.width = 4;
+  dotCanvas.height = 4;
+  const dotCtx = dotCanvas.getContext('2d');
+  dotCtx.fillStyle = '#ffffff';
+  dotCtx.beginPath();
+  dotCtx.arc(2, 2, 1.8, 0, Math.PI * 2);
+  dotCtx.fill();
+  if (!scene.textures.exists('fx_particle_dot')) {
+    scene.textures.addCanvas('fx_particle_dot', dotCanvas);
   }
 
   const createTileCanvas = (width, height, drawFn) => {

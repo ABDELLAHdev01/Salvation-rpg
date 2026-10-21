@@ -1,7 +1,60 @@
 import React from 'react';
 import audioManager from '../../../core/audio/AudioManager';
 
-const TUTORIAL_STEPS = [
+const TUTORIAL_STEPS_ISLAND = [
+  {
+    step: 1,
+    id: 'movement',
+    title: 'Stranded on the Isle',
+    badge: 'Movement',
+    icon: '🏝️',
+    instruction: 'Awaken on the sunny shore. Move across the beach using [W, A, S, D], Arrow keys, or click directly on the sand.',
+    tip: 'Hold [Shift] to sprint. Point-and-click movement automatically navigates along the beach.',
+    keyHint: 'WASD / Click',
+  },
+  {
+    step: 2,
+    id: 'chest',
+    title: 'Salvage Castaway Gear',
+    badge: 'Equipment',
+    icon: '📦',
+    instruction: 'Walk to the Castaway Supply Chest on the beach and press [E] to claim your starter dagger & potions.',
+    tip: 'Hotbar slot [1] immediately sips a potion (+45 HP) when in danger.',
+    keyHint: '[E] Supply Chest',
+  },
+  {
+    step: 3,
+    id: 'forage',
+    title: 'Island Foraging',
+    badge: 'Sustenance',
+    icon: '🍎',
+    instruction: 'Head north into the grove and press [E] by the Fruit Tree to forage sweet Sunberries.',
+    tip: 'Sunberries provide natural energy and can be cooked into delicious meals.',
+    keyHint: '[E] Fruit Tree',
+  },
+  {
+    step: 4,
+    id: 'combat',
+    title: 'Trial of Combat',
+    badge: 'Combat',
+    icon: '⚔️',
+    instruction: 'Approach the training beach slime and press [Space] or Left Click to test your strike.',
+    tip: 'Time your swings to knock enemies back and avoid taking counter damage.',
+    keyHint: '[Space] Attack',
+  },
+  {
+    step: 5,
+    id: 'departure',
+    title: 'Set Sail for Sunforge',
+    badge: 'Voyage',
+    icon: '⛵',
+    instruction: 'Walk south to the wooden pier and board the Sloop [E] to sail to your Sunforge Homestead estate!',
+    tip: 'Once you set sail, your journey begins on the mainland. There is no road back to this tutorial isle!',
+    keyHint: '[E] Board Sloop',
+  },
+];
+
+const TUTORIAL_STEPS_MAINLAND = [
   {
     step: 1,
     id: 'movement',
@@ -55,6 +108,7 @@ const TUTORIAL_STEPS = [
 ];
 
 export default function BeginnerTutorialStepper({
+  currentZone = 'tutorial_island',
   currentStep = 0,
   isCompleted = false,
   isCollapsed = false,
@@ -64,7 +118,8 @@ export default function BeginnerTutorialStepper({
   onOpenPouch = () => {},
   onOpenAtlas = () => {},
 }) {
-  const activeStep = TUTORIAL_STEPS[Math.min(currentStep, TUTORIAL_STEPS.length - 1)];
+  const steps = currentZone === 'tutorial_island' ? TUTORIAL_STEPS_ISLAND : TUTORIAL_STEPS_MAINLAND;
+  const activeStep = steps[Math.min(currentStep, steps.length - 1)];
 
   // Collapsed Floating Badge View
   if (isCollapsed) {
@@ -99,27 +154,27 @@ export default function BeginnerTutorialStepper({
         <div className="flex items-center gap-2">
           <span className="text-lg">📜</span>
           <div>
-            <h3 className="font-serif text-xs sm:text-sm font-bold text-amber-100 flex items-center gap-1.5">
+            <h2 className="text-xs font-serif font-bold tracking-wide uppercase text-amber-200 flex items-center gap-1.5">
               <span>Warden&apos;s Awakening</span>
-              <span className="text-[10px] font-mono px-1.5 py-0.2 bg-amber-950/80 text-amber-400 rounded border border-amber-800/80">
-                {isCompleted ? 'Finished ✓' : `Step ${currentStep + 1} of 5`}
+              <span className="text-[10px] bg-amber-950/80 text-amber-300 px-1.5 py-0.2 rounded border border-amber-700/60">
+                Step {Math.min(currentStep + 1, 5)} of 5
               </span>
-            </h3>
-            <p className="text-[10px] text-amber-300/70 font-serif">
-              Beginner Realm Orientation &amp; Essentials
+            </h2>
+            <p className="text-[10px] text-amber-400/80">
+              {currentZone === 'tutorial_island' ? 'Isle of Beginnings Orientation' : 'Beginner Realm Orientation & Essentials'}
             </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-1">
           <button
             type="button"
             onClick={() => {
               audioManager.play('tap');
               onToggleCollapse();
             }}
-            className="rpg-btn-square-brown h-6 w-6 text-[10px] flex items-center justify-center"
-            title="Minimize tutorial guide"
+            className="rpg-btn-square-brown h-6 w-6 text-[10px]"
+            title="Minimize Tutorial Guide"
           >
             <span>▾</span>
           </button>
@@ -129,135 +184,138 @@ export default function BeginnerTutorialStepper({
               audioManager.play('tap');
               onDismiss();
             }}
-            className="rpg-btn-beige text-[10px] py-0.5 px-2 font-serif font-bold"
-            title="Skip or dismiss tutorial guide"
+            className="rpg-btn-beige h-6 px-1.5 text-[10px] font-bold"
+            title="Skip Tutorial & Sail to Homestead"
           >
             Skip ✕
           </button>
         </div>
       </div>
 
-      {/* 2. Visual Stepper Breadcrumbs Bar */}
-      <div className="flex items-center justify-between px-1 py-1">
-        {TUTORIAL_STEPS.map((s, idx) => {
-          const isDone = idx < currentStep || isCompleted;
-          const isCurrent = idx === currentStep && !isCompleted;
+      {/* 2. Visual Stepper Progress Ribbon */}
+      <div className="flex items-center justify-between px-1 py-1 bg-amber-950/40 rounded border border-amber-900/40">
+        {steps.map((st, index) => {
+          const isDone = isCompleted || index < currentStep;
+          const isCurrent = !isCompleted && index === currentStep;
+
           return (
-            <React.Fragment key={s.id}>
+            <div key={st.id} className="flex items-center flex-1 last:flex-none">
               <div className="flex flex-col items-center gap-0.5">
                 <div
-                  className={`flex h-6 w-6 sm:h-7 sm:w-7 items-center justify-center rounded-full text-xs font-bold transition-all shadow-md ${
+                  className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold font-serif transition-transform ${
                     isDone
-                      ? 'bg-emerald-700 border-2 border-emerald-400 text-emerald-100'
+                      ? 'bg-emerald-600 text-white shadow-md shadow-emerald-950'
                       : isCurrent
-                      ? 'bg-amber-600 border-2 border-yellow-300 text-yellow-100 ring-2 ring-amber-400/50 scale-105'
-                      : 'bg-stone-800/90 border border-stone-600/60 text-stone-400'
+                      ? 'bg-amber-500 text-stone-900 ring-2 ring-amber-300 ring-offset-1 ring-offset-stone-900 scale-110'
+                      : 'bg-stone-800 text-stone-400 border border-stone-700'
                   }`}
-                  title={`${s.step}. ${s.title}`}
+                  title={`${st.badge}: ${st.title}`}
                 >
-                  {isDone ? '✓' : s.step}
+                  {isDone ? '✓' : st.step}
                 </div>
                 <span
-                  className={`text-[9px] font-serif hidden sm:inline ${
-                    isCurrent ? 'text-amber-200 font-bold' : isDone ? 'text-emerald-300' : 'text-stone-500'
+                  className={`text-[8px] font-sans tracking-tight text-center ${
+                    isCurrent
+                      ? 'text-amber-300 font-bold'
+                      : isDone
+                      ? 'text-emerald-400'
+                      : 'text-stone-500'
                   }`}
                 >
-                  {s.badge}
+                  {st.badge}
                 </span>
               </div>
-              {idx < TUTORIAL_STEPS.length - 1 && (
+              {index < steps.length - 1 && (
                 <div
-                  className={`flex-1 h-0.5 mx-1 transition-colors ${
-                    idx < currentStep || isCompleted ? 'bg-emerald-500/80' : 'bg-stone-700/60'
+                  className={`h-0.5 flex-1 mx-1 rounded ${
+                    isDone ? 'bg-emerald-500' : 'bg-stone-700/60'
                   }`}
                 />
               )}
-            </React.Fragment>
+            </div>
           );
         })}
       </div>
 
-      {/* 3. Active Step Card Content */}
-      {!isCompleted ? (
-        <div className="rpg-slot-inset p-2.5 bg-black/60 flex flex-col gap-1.5 rounded">
+      {/* 3. Active Step Details Card */}
+      {!isCompleted && activeStep && (
+        <div className="flex flex-col gap-2 p-2 bg-stone-900/60 rounded border border-amber-900/50">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-1.5">
               <span className="text-base">{activeStep.icon}</span>
-              <span className="font-serif font-bold text-xs text-amber-200">
+              <h3 className="text-xs font-serif font-bold text-amber-100">
                 {activeStep.title}
-              </span>
+              </h3>
             </div>
-            <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-amber-900/40 border border-amber-700/60 text-amber-300 font-bold">
+            <span className="text-[10px] font-mono bg-amber-900/50 text-amber-300 px-1.5 py-0.5 rounded border border-amber-700/50">
               {activeStep.keyHint}
             </span>
           </div>
 
-          <p className="text-[11px] text-amber-100 leading-relaxed font-serif">
+          <p className="text-[11px] text-stone-200 leading-snug">
             {activeStep.instruction}
           </p>
 
-          <div className="flex items-start gap-1.5 text-[10px] text-amber-300/80 bg-amber-950/40 p-1.5 rounded border border-amber-800/40">
+          <div className="text-[10px] bg-amber-950/60 text-amber-300/90 p-1.5 rounded border border-amber-800/40 flex items-start gap-1">
             <span className="text-amber-400">💡</span>
             <span>{activeStep.tip}</span>
           </div>
 
-          {/* Quick Helper Interactive Shortcuts */}
-          <div className="flex items-center justify-end gap-2 pt-1">
-            {currentStep === 3 && (
-              <button
-                type="button"
-                onClick={() => {
-                  audioManager.play('tap');
-                  onOpenPouch();
-                }}
-                className="rpg-btn-beige text-[11px] py-1 px-3 font-serif"
-              >
-                🎒 Open Pouch [I] ➔
-              </button>
-            )}
-            {currentStep === 4 && (
-              <button
-                type="button"
-                onClick={() => {
-                  audioManager.play('tap');
-                  onOpenAtlas();
-                }}
-                className="rpg-btn-beige text-[11px] py-1 px-3 font-serif"
-              >
-                🗺️ Open World Atlas [M] ➔
-              </button>
-            )}
-          </div>
-        </div>
-      ) : (
-        /* 4. Completion State */
-        <div className="rpg-slot-inset p-3 bg-black/70 flex flex-col items-center text-center gap-2 rounded border border-emerald-500/50">
-          <span className="text-2xl animate-bounce">🏆</span>
-          <div>
-            <h4 className="font-serif text-sm font-bold text-emerald-300">
-              Awakening Journey Completed!
-            </h4>
-            <p className="text-[11px] text-amber-200/90 font-serif max-w-sm mt-0.5">
-              You have mastered basic movement, cottage sanctuary, health restoration, and world exploration.
-            </p>
-          </div>
+          {/* Interactive shortcuts */}
+          {activeStep.id === 'pouch' && (
+            <button
+              type="button"
+              onClick={() => {
+                audioManager.play('tap');
+                onOpenPouch();
+              }}
+              className="rpg-btn-beige text-[11px] py-1 px-2 font-bold flex items-center justify-center gap-1 shadow-md"
+            >
+              <span>🎒</span>
+              <span>Open Adventurer Pouch Now [I]</span>
+            </button>
+          )}
 
+          {activeStep.id === 'atlas' && (
+            <button
+              type="button"
+              onClick={() => {
+                audioManager.play('tap');
+                onOpenAtlas();
+              }}
+              className="rpg-btn-beige text-[11px] py-1 px-2 font-bold flex items-center justify-center gap-1 shadow-md"
+            >
+              <span>🗺️</span>
+              <span>Open Full World Atlas [M]</span>
+            </button>
+          )}
+        </div>
+      )}
+
+      {/* 4. Tutorial Completed Card */}
+      {isCompleted && (
+        <div className="flex flex-col gap-2 p-2.5 bg-emerald-950/50 rounded border border-emerald-700/70 text-center animate-fadeIn">
+          <div className="text-2xl">🎉</div>
+          <h3 className="text-xs font-serif font-bold text-emerald-200">
+            Awakening Journey Completed!
+          </h3>
+          <p className="text-[10px] text-emerald-300/90">
+            You have mastered the realm essentials. You are ready to explore the Sunforge lands!
+          </p>
           <button
             type="button"
-            onClick={() => {
-              audioManager.play('levelup');
-              onClaimReward();
-            }}
-            className="rpg-btn-beige text-xs py-1.5 px-4 font-serif font-bold text-amber-950 shadow-xl hover:scale-105 transition-transform"
+            onClick={onClaimReward}
+            className="rpg-btn-beige text-xs py-1.5 px-3 font-bold flex items-center justify-center gap-1 shadow-lg border-emerald-500 hover:brightness-110"
           >
-            Claim Warden Reward (+50 Gold &amp; +50 XP) ✨
+            <span>🏆</span>
+            <span>Claim +50 Gold & +50 XP Reward!</span>
           </button>
         </div>
       )}
 
-      {/* 5. Subtitle & Hint */}
-      <div className="flex items-center justify-between text-[9px] text-amber-400/60 pt-0.5">
-        <span>Press [?] anytime in the top-right console for controls</span>
+      {/* 5. Footer Quick Reminder */}
+      <div className="flex items-center justify-between text-[9px] text-amber-400/60 pt-1 border-t border-amber-900/40">
+        <span>Press [?] anytime in top-right for controls</span>
         <span>Progress saves automatically</span>
       </div>
     </aside>

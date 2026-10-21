@@ -73,6 +73,7 @@ export default class WorldScene extends Phaser.Scene {
   init(data) {
     this.controlsLocked = false;
     this.isAttacking = false;
+    this.isTransitioning = false;
     this.moveTarget = null;
     this.activePrompt = null;
 
@@ -152,11 +153,18 @@ export default class WorldScene extends Phaser.Scene {
       this.load.image('tile_cottage_floor', '/assets/tilesets/tile_cottage_floor.png');
       this.load.image('tile_cottage_wall', '/assets/tilesets/tile_cottage_wall.png');
       this.load.image('prop_cottage_bed', '/assets/tilesets/prop_cottage_bed.png');
+      this.load.image('prop_cottage_single_bed', '/assets/tilesets/prop_cottage_single_bed.png');
       this.load.image('prop_cottage_fireplace', '/assets/tilesets/prop_cottage_fireplace.png');
       this.load.image('prop_cottage_table', '/assets/tilesets/prop_cottage_table.png');
       this.load.image('prop_cottage_bookshelf', '/assets/tilesets/prop_cottage_bookshelf.png');
+      this.load.image('prop_cottage_double_bookshelf', '/assets/tilesets/prop_cottage_double_bookshelf.png');
       this.load.image('prop_cottage_rug', '/assets/tilesets/prop_cottage_rug.png');
+      this.load.image('prop_cottage_red_rug', '/assets/tilesets/prop_cottage_red_rug.png');
       this.load.image('prop_cottage_cabinet', '/assets/tilesets/prop_cottage_cabinet.png');
+      this.load.image('prop_cottage_alchemy', '/assets/tilesets/prop_cottage_alchemy.png');
+      this.load.image('prop_cottage_nightstand', '/assets/tilesets/prop_cottage_nightstand.png');
+      this.load.image('prop_cottage_plant', '/assets/tilesets/prop_cottage_plant.png');
+      this.load.image('prop_cottage_doorway', '/assets/tilesets/prop_cottage_doorway.png');
       this.load.image('prop_manor_house', '/assets/tilesets/prop_manor_house.png');
 
       // Deepforge Caverns & Dungeon
@@ -170,9 +178,26 @@ export default class WorldScene extends Phaser.Scene {
       this.load.image('prop_tree_oak', '/assets/tilesets/prop_tree_oak.png');
       this.load.image('prop_tree_pine', '/assets/tilesets/prop_tree_pine.png');
       this.load.image('prop_tree_apple', '/assets/tilesets/prop_tree_apple.png');
+      this.load.image('prop_tree_stump', '/assets/tilesets/prop_tree_stump.png');
+      this.load.image('prop_tree_log', '/assets/tilesets/prop_tree_log.png');
+      this.load.image('prop_granite_boulder', '/assets/tilesets/prop_granite_boulder.png');
       this.load.image('tile_cobblestone', '/assets/tilesets/tile_cobblestone.png');
 
-      // Blacksmith Forge Workshop & City NPCs
+      // Nature & Environmental Props
+      this.load.image('prop_natural_pond', '/assets/tilesets/prop_natural_pond.png');
+      this.load.image('prop_wood_dock', '/assets/tilesets/prop_wood_dock.png');
+      this.load.image('prop_wild_mushrooms', '/assets/tilesets/prop_wild_mushrooms.png');
+      this.load.image('prop_wildflowers', '/assets/tilesets/prop_wildflowers.png');
+      this.load.image('prop_magic_stones1', '/assets/tilesets/prop_magic_stones1.png');
+      this.load.image('prop_magic_stones2', '/assets/tilesets/prop_magic_stones2.png');
+      this.load.image('prop_magic_stones3', '/assets/tilesets/prop_magic_stones3.png');
+      this.load.image('prop_chest_gold', '/assets/tilesets/prop_chest_gold.png');
+      this.load.image('prop_chest_iron', '/assets/tilesets/prop_chest_iron.png');
+
+      // Village Houses & Artisan Workshops
+      this.load.image('prop_village_house1', '/assets/tilesets/prop_village_house1.png');
+      this.load.image('prop_village_house2', '/assets/tilesets/prop_village_house2.png');
+      this.load.image('prop_village_house3', '/assets/tilesets/prop_village_house3.png');
       this.load.image('prop_artisan_forge', '/assets/tilesets/prop_artisan_forge.png');
       this.load.image('npc_blacksmith', '/assets/tilesets/npc_blacksmith.png');
       this.load.image('npc_merchant', '/assets/tilesets/npc_merchant.png');
@@ -184,6 +209,38 @@ export default class WorldScene extends Phaser.Scene {
       this.load.spritesheet('fox_walk', '/assets/enemies/fox_walk.png', { frameWidth: 32, frameHeight: 32 });
       this.load.spritesheet('sheep_walk', '/assets/props/farm_animals/sheep_walk.png', { frameWidth: 32, frameHeight: 32 });
       this.load.spritesheet('rooster_walk', '/assets/props/farm_animals/rooster_walk.png', { frameWidth: 32, frameHeight: 32 });
+
+      // Tutorial Island & CraftPix Trees from craftpix-net-385863-free-top-down-trees-pixel-art.zip
+      this.load.image('tutorial_island_map', '/assets/island/island_Tiled_map.png');
+      this.load.image('tree_palm_1', '/assets/trees/Palm_tree1_1.png');
+      this.load.image('tree_palm_2', '/assets/trees/Palm_tree2_1.png');
+      this.load.image('tree_fruit_1', '/assets/trees/Fruit_tree1.png');
+      this.load.image('tree_fruit_2', '/assets/trees/Fruit_tree2.png');
+      this.load.image('tree_flower_1', '/assets/trees/Flower_tree1.png');
+      this.load.image('tree_moss_1', '/assets/trees/Moss_tree1.png');
+      this.load.image('tree_autumn_1', '/assets/trees/Autumn_tree1.png');
+      this.load.image('tree_oak_1', '/assets/trees/Tree1.png');
+      this.load.image('tree_oak_2', '/assets/trees/Tree2.png');
+      this.load.image('prop_sailboat', '/assets/tilesets/prop_sailboat.png');
+      this.load.image('prop_road_cobble_h', '/assets/tilesets/prop_road_cobble_h.png');
+      this.load.image('prop_road_cobble_v', '/assets/tilesets/prop_road_cobble_v.png');
+      this.load.image('prop_scarecrow', '/assets/tilesets/prop_scarecrow.png');
+      this.load.image('prop_water_well', '/assets/tilesets/prop_water_well.png');
+      this.load.image('prop_red_mushroom', '/assets/tilesets/prop_red_mushroom.png');
+      this.load.image('prop_crates', '/assets/tilesets/prop_crates.png');
+      this.load.image('prop_stump', '/assets/tilesets/prop_stump.png');
+      this.load.image('prop_rock_moss1', '/assets/tilesets/prop_rock_moss1.png');
+      this.load.image('prop_rock_moss2', '/assets/tilesets/prop_rock_moss2.png');
+      this.load.image('prop_grass_tuft', '/assets/tilesets/prop_grass_tuft.png');
+      this.load.image('prop_grass_bush', '/assets/tilesets/prop_grass_bush.png');
+      this.load.image('prop_flower_pink', '/assets/tilesets/prop_flower_pink.png');
+      this.load.image('prop_flower_yellow', '/assets/tilesets/prop_flower_yellow.png');
+      this.load.image('prop_flower_orange', '/assets/tilesets/prop_flower_orange.png');
+      this.load.image('npc_elder', '/assets/tilesets/npc_elder.png');
+      this.load.image('prop_campfire', '/assets/tilesets/prop_campfire.png');
+      this.load.image('tile_cottage_wall_top', '/assets/tilesets/tile_cottage_wall_top.png');
+      this.load.image('tile_cottage_window', '/assets/tilesets/tile_cottage_window.png');
+      this.load.image('prop_cottage_weapon_rack', '/assets/tilesets/prop_cottage_weapon_rack.png');
     } catch {
       // Safe fallback
     }
@@ -193,6 +250,7 @@ export default class WorldScene extends Phaser.Scene {
     // 0. Ensure Camera FX is clean and set mood lighting
     this.cameras.main.resetFX();
     const bgColors = {
+      tutorial_island: '#227093',
       homestead: '#1c2e14',
       homestead_interior: '#120a05',
       west_road: '#1a2712',
@@ -363,8 +421,9 @@ export default class WorldScene extends Phaser.Scene {
       this.lightingAddGraphics.setBlendMode(Phaser.BlendModes.ADD);
 
       // 2. Zone atmospheric motes
+      const particleTex = this.textures.exists('fx_particle_dot') ? 'fx_particle_dot' : 'col_invisible';
       if (this.currentZone === 'homestead') {
-        const emitter = this.add.particles(640, 480, 'col_invisible', {
+        const emitter = this.add.particles(640, 480, particleTex, {
           emitZone: { source: new Phaser.Geom.Rectangle(0, 0, 1280, 960), type: 'random' },
           speedX: { min: -15, max: -5 },
           speedY: { min: -10, max: 10 },
@@ -376,7 +435,7 @@ export default class WorldScene extends Phaser.Scene {
         });
         emitter.setDepth(25);
       } else if (this.currentZone === 'west_road') {
-        const emitter = this.add.particles(640, 480, 'col_invisible', {
+        const emitter = this.add.particles(640, 480, particleTex, {
           emitZone: { source: new Phaser.Geom.Rectangle(0, 0, 1280, 960), type: 'random' },
           speedX: { min: -15, max: -5 },
           speedY: { min: -8, max: 8 },
@@ -388,7 +447,7 @@ export default class WorldScene extends Phaser.Scene {
         });
         emitter.setDepth(25);
       } else if (this.currentZone === 'forest') {
-        const emitter = this.add.particles(640, 480, 'col_invisible', {
+        const emitter = this.add.particles(640, 480, particleTex, {
           emitZone: { source: new Phaser.Geom.Rectangle(0, 0, 1280, 960), type: 'random' },
           speedX: { min: -10, max: 10 },
           speedY: { min: -20, max: -5 },
@@ -400,7 +459,7 @@ export default class WorldScene extends Phaser.Scene {
         });
         emitter.setDepth(25);
       } else if (this.currentZone === 'mine') {
-        const emitter = this.add.particles(640, 480, 'col_invisible', {
+        const emitter = this.add.particles(640, 480, particleTex, {
           emitZone: { source: new Phaser.Geom.Rectangle(0, 0, 1280, 960), type: 'random' },
           speedX: { min: -5, max: 5 },
           speedY: { min: 5, max: 15 },
@@ -412,7 +471,7 @@ export default class WorldScene extends Phaser.Scene {
         });
         emitter.setDepth(25);
       } else if (this.currentZone === 'village') {
-        const emitter = this.add.particles(640, 480, 'col_invisible', {
+        const emitter = this.add.particles(640, 480, particleTex, {
           emitZone: { source: new Phaser.Geom.Rectangle(0, 0, 1280, 960), type: 'random' },
           speedX: { min: -8, max: 8 },
           speedY: { min: -15, max: -5 },
@@ -444,7 +503,8 @@ export default class WorldScene extends Phaser.Scene {
 
     if (this.weatherState === 'rain' || this.weatherState === 'thunderstorm') {
       audioManager.startRainAmbience();
-      this.rainEmitter = this.add.particles(640, 0, 'col_invisible', {
+      const pTex = this.textures.exists('fx_particle_dot') ? 'fx_particle_dot' : 'col_invisible';
+      this.rainEmitter = this.add.particles(640, 0, pTex, {
         emitZone: { source: new Phaser.Geom.Rectangle(-200, 0, 1680, 20), type: 'random' },
         speedY: { min: 300, max: 460 },
         speedX: { min: -60, max: -30 },
@@ -678,57 +738,60 @@ export default class WorldScene extends Phaser.Scene {
   buildCurrentZone() {
     this.interactiveObjects = [];
 
-    const mapWidth = 40;  // 40 tiles * 32px = 1280px
-    const mapHeight = 30; // 30 tiles * 32px = 960px
+    let mapWidth = 40;  // 40 tiles * 32px = 1280px
+    let mapHeight = 30; // 30 tiles * 32px = 960px
+    if (this.currentZone === 'tutorial_island') {
+      mapWidth = 25;   // 25 tiles * 32px = 800px
+      mapHeight = 20;  // 20 tiles * 32px = 640px
+    }
     const worldW = mapWidth * 32;
     const worldH = mapHeight * 32;
 
     this.physics.world.setBounds(0, 0, worldW, worldH);
 
     // Ground Layer - Extended border buffer with organic meadow stippling and zone-specific ground
-    for (let x = -15; x < mapWidth + 15; x += 1) {
-      for (let y = -15; y < mapHeight + 15; y += 1) {
-        let tileKey;
-        if (this.currentZone === 'homestead_interior') {
-          // Inside cottage room only (x=11..29, y=8..22)
-          if (x >= 11 && x <= 29 && y >= 8 && y <= 22) {
-            const floorTex = this.textures.exists('tile_cottage_floor') ? 'tile_cottage_floor' : 'tile_wood_floor';
-            this.add.image(x * 32 + 16, y * 32 + 16, floorTex);
-          }
-          continue;
-        } else if (this.currentZone === 'mine') {
-          tileKey = this.textures.exists('tile_dungeon_floor') ? 'tile_dungeon_floor' : 'tile_stone';
-        } else if (this.currentZone === 'village') {
-          tileKey = 'tile_city_stone';
-        } else {
-          // Organic meadow variation across terrain
-          const hash = Math.abs(x * 31 + y * 47) % 100;
-          if (hash < 12) {
-            tileKey = 'tile_grass_flowers';
-          } else if (hash < 22) {
-            tileKey = 'tile_grass_clovers';
-          } else if (hash < 30) {
-            tileKey = 'tile_grass_pebbles';
+    if (this.currentZone !== 'tutorial_island') {
+      for (let x = -15; x < mapWidth + 15; x += 1) {
+        for (let y = -15; y < mapHeight + 15; y += 1) {
+          let tileKey;
+          if (this.currentZone === 'homestead_interior') {
+            // Inside cottage manor hall (warm 23x13 room from x=9..31, y=9..21)
+            if (x >= 9 && x <= 31 && y >= 9 && y <= 21) {
+              const floorTex = this.textures.exists('tile_cottage_floor') ? 'tile_cottage_floor' : 'tile_wood_floor';
+              this.add.image(x * 32 + 16, y * 32 + 16, floorTex);
+            }
+            continue;
+          } else if (this.currentZone === 'mine') {
+            tileKey = this.textures.exists('tile_dungeon_floor') ? 'tile_dungeon_floor' : 'tile_stone';
+          } else if (this.currentZone === 'village') {
+            tileKey = 'tile_city_stone';
           } else {
-            tileKey = 'tile_grass';
+            // Organic meadow variation across terrain (Seamless CraftPix green)
+            const hash = Math.abs(x * 31 + y * 47) % 100;
+            if (hash < 12) {
+              tileKey = 'tile_grass_flowers';
+            } else if (hash < 22) {
+              tileKey = 'tile_grass_clovers';
+            } else if (hash < 30) {
+              tileKey = 'tile_grass_pebbles';
+            } else {
+              tileKey = 'tile_grass';
+            }
           }
+          this.add.image(x * 32 + 16, y * 32 + 16, tileKey);
         }
-        this.add.image(x * 32 + 16, y * 32 + 16, tileKey);
       }
     }
 
-    // Cobblestone Pathways in Homestead
+    // Cobblestone Pathways in Homestead with feathered grass fringe
     if (this.currentZone === 'homestead') {
-      for (let y = 6; y < 24; y += 1) {
-        this.add.image(14 * 32 + 16, y * 32 + 16, 'tile_path');
-        this.add.image(15 * 32 + 16, y * 32 + 16, 'tile_path');
+      for (let y = 8; y < 24; y += 2) {
+        const pv = this.add.image(14 * 32 + 16, y * 32 + 32, 'prop_road_cobble_v');
+        pv.setDepth(2);
       }
-      for (let x = 15; x < 38; x += 1) {
-        this.add.image(x * 32 + 16, 12 * 32 + 16, 'tile_path');
-      }
-      // Paved road leaving left boundary to West Road
-      for (let x = 0; x < 15; x += 1) {
-        this.add.image(x * 32 + 16, 14 * 32 + 16, 'tile_path');
+      for (let x = 0; x < 38; x += 2) {
+        const ph = this.add.image(x * 32 + 32, 14 * 32 + 16, 'prop_road_cobble_h');
+        ph.setDepth(2);
       }
     }
 
@@ -736,7 +799,9 @@ export default class WorldScene extends Phaser.Scene {
     this.obstacles = this.physics.add.staticGroup();
     this.enemies = this.physics.add.group();
 
-    if (this.currentZone === 'homestead') {
+    if (this.currentZone === 'tutorial_island') {
+      this.buildTutorialIslandProps();
+    } else if (this.currentZone === 'homestead') {
       this.buildHomesteadProps();
     } else if (this.currentZone === 'homestead_interior') {
       this.buildHomesteadInteriorProps();
@@ -756,12 +821,15 @@ export default class WorldScene extends Phaser.Scene {
     if (this.customSpawn) {
       spawnX = this.customSpawn.x;
       spawnY = this.customSpawn.y;
+    } else if (this.currentZone === 'tutorial_island') {
+      spawnX = 390;
+      spawnY = 520;
     } else if (this.currentZone === 'homestead_interior') {
       spawnX = 20 * 32;
       spawnY = 20 * 32;
     } else if (this.currentZone === 'homestead') {
-      spawnX = 15 * 32;
-      spawnY = 14 * 32;
+      spawnX = 14 * 32 + 16;
+      spawnY = 8 * 32 + 12;
     } else if (this.currentZone === 'west_road') {
       spawnX = 36 * 32;
       spawnY = 14 * 32;
@@ -786,15 +854,19 @@ export default class WorldScene extends Phaser.Scene {
 
     // Camera follow - immediately center to avoid initial 0,0 black offset
     if (this.currentZone === 'homestead_interior') {
-      const roomX = 11 * 32;
-      const roomY = 8 * 32;
-      const roomW = (29 - 11 + 1) * 32;
-      const roomH = (22 - 8 + 1) * 32;
-      this.cameras.main.setBounds(roomX - 64, roomY - 64, roomW + 128, roomH + 128);
+      const roomX = 9 * 32;
+      const roomY = 9 * 32;
+      const roomW = (31 - 9 + 1) * 32;
+      const roomH = (21 - 9 + 1) * 32;
+      this.cameras.main.setBounds(roomX, roomY, roomW, roomH);
+      this.cameras.main.centerOn(20 * 32, 15 * 32);
+    } else if (this.currentZone === 'tutorial_island') {
+      this.cameras.main.setBounds(0, 0, 800, 640);
+      this.cameras.main.centerOn(spawnX, spawnY);
     } else {
       this.cameras.main.setBounds(0, 0, worldW, worldH);
+      this.cameras.main.centerOn(spawnX, spawnY);
     }
-    this.cameras.main.centerOn(spawnX, spawnY);
     this.cameras.main.startFollow(this.player, true, 0.15, 0.15);
     this.updateCameraZoom();
     this.scale.off('resize', this.updateCameraZoom, this);
@@ -807,8 +879,14 @@ export default class WorldScene extends Phaser.Scene {
     const viewH = this.cameras.main.height || this.scale.height;
 
     if (this.currentZone === 'homestead_interior') {
-      const interiorZoom = Math.max(1.8, Math.min(2.4, viewW / (20 * 32)));
-      this.cameras.main.setZoom(interiorZoom);
+      const interiorZoom = Math.min(viewW / (23 * 32), viewH / (13 * 32));
+      this.cameras.main.setZoom(Math.max(1.4, Math.min(1.85, interiorZoom)));
+      return;
+    }
+
+    if (this.currentZone === 'tutorial_island') {
+      const islandZoom = Math.max(1.4, Math.min(1.85, viewW / (25 * 32)));
+      this.cameras.main.setZoom(islandZoom);
       return;
     }
 
@@ -820,48 +898,218 @@ export default class WorldScene extends Phaser.Scene {
     this.cameras.main.setZoom(targetZoom);
   }
 
-  buildHomesteadProps() {
-    // 0. Stone Terrace & Courtyard in front of Manor House
-    for (let cx = 10; cx <= 18; cx += 1) {
-      for (let cy = 4; cy <= 6; cy += 1) {
-        this.add.image(cx * 32 + 16, cy * 32 + 16, 'tile_stone');
+  buildTutorialIslandProps() {
+    // 1. Island Master Backdrop (800x640 CraftPix Island Art)
+    const islandBg = this.add.image(400, 320, 'tutorial_island_map');
+    islandBg.setDepth(1);
+
+    // 2. Coastal Ocean Water Ripples
+    const ripples = [
+      { x: 140, y: 550 },
+      { x: 670, y: 510 },
+      { x: 400, y: 615 },
+      { x: 280, y: 590 },
+      { x: 520, y: 590 },
+      { x: 740, y: 350 },
+      { x: 60, y: 350 },
+    ];
+    ripples.forEach((r, idx) => {
+      const rip = this.add.image(r.x, r.y, 'fx_ripple');
+      rip.setDepth(2);
+      rip.setAlpha(0.5);
+      this.tweens.add({
+        targets: rip,
+        scaleX: 1.3,
+        scaleY: 1.3,
+        alpha: 0.2,
+        duration: 1500 + idx * 200,
+        yoyo: true,
+        repeat: -1,
+      });
+    });
+
+    // 3. Perimeter Deep Sea Blockers
+    for (let y = 0; y < 640; y += 32) {
+      const colW = this.obstacles.create(20, y + 16, 'col_invisible');
+      colW.setSize(40, 32);
+      colW.setVisible(false);
+      const colE = this.obstacles.create(780, y + 16, 'col_invisible');
+      colE.setSize(40, 32);
+      colE.setVisible(false);
+    }
+    for (let x = 0; x < 800; x += 32) {
+      const colN = this.obstacles.create(x + 16, 20, 'col_invisible');
+      colN.setSize(32, 40);
+      colN.setVisible(false);
+      if (x < 360 || x > 440) {
+        const colS = this.obstacles.create(x + 16, 620, 'col_invisible');
+        colS.setSize(32, 40);
+        colS.setVisible(false);
       }
     }
+    // Northwest Rock Cliff Obstacles
+    const cliffNW = this.obstacles.create(110, 160, 'col_invisible');
+    cliffNW.setSize(160, 200);
+    cliffNW.setVisible(false);
+    // Northeast Rock Plateau Obstacles
+    const cliffNE = this.obstacles.create(680, 150, 'col_invisible');
+    cliffNE.setSize(180, 170);
+    cliffNE.setVisible(false);
 
-    // 1. Manor House (Authentic CraftPix Character Home)
+    // 4. CraftPix Top-Down Trees from craftpix-net-385863-free-top-down-trees-pixel-art.zip
+    const islandTrees = [
+      { x: 250, y: 480, key: 'tree_palm_1', trunkW: 16, trunkH: 14 },
+      { x: 310, y: 530, key: 'tree_palm_2', trunkW: 16, trunkH: 14 },
+      { x: 570, y: 470, key: 'tree_palm_1', trunkW: 16, trunkH: 14 },
+      { x: 650, y: 420, key: 'tree_palm_2', trunkW: 16, trunkH: 14 },
+      { x: 190, y: 510, key: 'tree_palm_1', trunkW: 16, trunkH: 14 },
+      { x: 440, y: 330, key: 'tree_fruit_1', trunkW: 18, trunkH: 14 },
+      { x: 350, y: 310, key: 'tree_fruit_2', trunkW: 18, trunkH: 14 },
+      { x: 510, y: 260, key: 'tree_flower_1', trunkW: 18, trunkH: 14 },
+      { x: 230, y: 270, key: 'tree_moss_1', trunkW: 18, trunkH: 14 },
+      { x: 370, y: 190, key: 'tree_autumn_1', trunkW: 18, trunkH: 14 },
+      { x: 480, y: 190, key: 'tree_oak_1', trunkW: 18, trunkH: 14 },
+    ];
+    islandTrees.forEach((t) => {
+      const tex = this.textures.exists(t.key) ? t.key : 'prop_tree';
+      const treeSpr = this.add.image(t.x, t.y, tex);
+      treeSpr.setScale(0.55);
+      treeSpr.setDepth(14);
+      const trunk = this.obstacles.create(t.x, t.y + 22, 'col_invisible');
+      trunk.setSize(t.trunkW, t.trunkH);
+      trunk.setVisible(false);
+    });
+
+    // 5. Awakening Stranded Campfire & Guide NPC
+    const campfire = this.add.image(380, 510, 'prop_campfire');
+    campfire.setDepth(10);
+    this.lightSources.push({
+      x: 380,
+      y: 510,
+      radius: 95,
+      color: 0xf97316,
+      intensity: 0.6,
+      flicker: true,
+    });
+
+    // Guide NPC: Warden Eldon
+    const elder = this.obstacles.create(355, 510, 'npc_elder');
+    elder.setDepth(12);
+    elder.setSize(22, 28);
+    this.registerInteractive(355, 510, 50, '[E] Speak with Castaway Elder Eldon 💬', () => {
+      audioManager.play('tap');
+      this.showFloatingText(355, 480, 'Elder Eldon: Open the chest, pick berries, and board the sloop!', '#fde047');
+      gameEventBridge.emit('TUTORIAL_GUIDE_TALKED');
+    });
+
+    // 6. Interactive Objective 1: Castaway Supply Chest
+    const chestTex = this.textures.exists('prop_chest_iron') ? 'prop_chest_iron' : 'prop_chest';
+    const chest = this.obstacles.create(310, 475, chestTex);
+    chest.setDepth(11);
+    chest.setSize(26, 22);
+    this.registerInteractive(310, 475, 50, '[E] Salvage Castaway Chest 📦', () => {
+      if (this.tutorialChestOpened) {
+        this.showFloatingText(310, 455, 'Chest is empty!', '#9ca3af');
+        return;
+      }
+      this.tutorialChestOpened = true;
+      audioManager.play('coin');
+      this.showFloatingText(310, 455, '+1 Apprentice Blade & 3x Potions! ⚔️', '#34d399');
+      gameEventBridge.emit('LOOT_ACQUIRED', { itemId: 'apprentice-sword', amount: 1 });
+      gameEventBridge.emit('LOOT_ACQUIRED', { itemId: 'health-potion', amount: 3 });
+      gameEventBridge.emit('TUTORIAL_STEP_ADVANCE', { step: 2 });
+    });
+
+    // 7. Interactive Objective 2: Forage Sunberries from Fruit Tree
+    this.registerInteractive(440, 330, 55, '[E] Forage Sunberries from Fruit Tree 🍎', () => {
+      if (this.tutorialForageDone) {
+        this.showFloatingText(440, 305, 'Branches are picked clean!', '#9ca3af');
+        return;
+      }
+      this.tutorialForageDone = true;
+      audioManager.play('levelup');
+      this.showFloatingText(440, 305, '+5 Sweet Sunberries Harvested! 🍎', '#fde047');
+      gameEventBridge.emit('LOOT_ACQUIRED', { itemId: 'sunberry', amount: 5 });
+      gameEventBridge.emit('TUTORIAL_STEP_ADVANCE', { step: 3 });
+    });
+
+    // 8. Interactive Objective 3: Gentle Island Training Slime
+    this.spawnEnemy('slime_forest', 520, 370);
+
+    // 9. Interactive Objective 4 & Finale: Departure Pier & Sloop to Mainland
+    const dock = this.add.image(400, 580, 'prop_wood_dock');
+    dock.setDepth(6);
+
+    const sailboat = this.add.image(400, 608, 'prop_sailboat');
+    sailboat.setDepth(7);
+    this.tweens.add({
+      targets: sailboat,
+      y: 612,
+      angle: 2,
+      duration: 1800,
+      yoyo: true,
+      repeat: -1,
+      ease: 'Sine.easeInOut',
+    });
+
+    this.registerInteractive(400, 580, 55, '[E] Board Sloop to Sunforge Mainland ⛵', () => {
+      audioManager.play('levelup');
+      this.showFloatingText(400, 550, 'Setting sail for Sunforge Estate! ⛵', '#38bdf8');
+      gameEventBridge.emit('TUTORIAL_COMPLETED_LEAVE_ISLAND');
+      try {
+        localStorage.setItem('wardenTutorialCompleted', 'true');
+        localStorage.setItem('wardenTutorialHidden', 'true');
+      } catch {
+        // ignore
+      }
+      this.cameras.main.fadeOut(800, 0, 0, 0);
+      this.time.delayedCall(850, () => {
+        this.switchZone('homestead', { spawnX: 14 * 32 + 16, spawnY: 8 * 32 + 12 });
+      });
+    });
+  }
+
+  buildHomesteadProps() {
+    // 0. Courtyard & Terrace in front of Manor House with rounded cobblestone paving
+    for (let cx = 11; cx <= 17; cx += 2) {
+      const p = this.add.image(cx * 32 + 16, 7 * 32 + 16, 'prop_road_cobble_h');
+      p.setDepth(3);
+    }
+
+    // 1. Manor House (Authentic CraftPix Character Home - perfectly centered below HUD)
     const houseTex = this.textures.exists('prop_manor_house') ? 'prop_manor_house' : 'prop_house';
-    const house = this.add.image(14 * 32 + 16, 4 * 32, houseTex);
+    const house = this.add.image(14 * 32 + 16, 6 * 32, houseTex);
     house.setDepth(15);
-    const houseCollider = this.obstacles.create(14 * 32 + 16, 4 * 32 + 10, 'col_invisible');
+    const houseCollider = this.obstacles.create(14 * 32 + 16, 6 * 32 + 8, 'col_invisible');
     houseCollider.setSize(88, 44);
     houseCollider.setVisible(false);
 
     // Flowerbed Planters flanking Manor Porch
-    const fbL = this.add.image(11 * 32, 6 * 32 + 16, 'prop_flowerbed');
+    const fbL = this.add.image(11 * 32, 8 * 32 + 16, 'prop_flowerbed');
     fbL.setDepth(14);
-    const fbR = this.add.image(17 * 32 + 16, 6 * 32 + 16, 'prop_flowerbed');
+    const fbR = this.add.image(17 * 32 + 16, 8 * 32 + 16, 'prop_flowerbed');
     fbR.setDepth(14);
 
     // Front Door Entrance to Cottage Interior
-    this.registerInteractive(14 * 32 + 16, 5 * 32 + 10, 50, '[E] Enter Cottage Home 🏡', () => {
+    this.registerInteractive(14 * 32 + 16, 7 * 32 + 20, 50, '[E] Enter Cottage Home 🏡', () => {
       audioManager.play('tap');
-      this.switchZone('homestead_interior', { spawnX: 20 * 32, spawnY: 20 * 32 });
+      this.switchZone('homestead_interior', { spawnX: 20 * 32, spawnY: 19 * 32 });
     });
 
     // 2. Storage Vault Chest (Solid obstacle with collision)
-    const chest = this.obstacles.create(18 * 32, 5 * 32 + 16, 'prop_chest');
+    const chest = this.obstacles.create(18 * 32, 7 * 32 + 16, 'prop_chest');
     chest.setDepth(16);
     chest.setSize(24, 20);
-    this.registerInteractive(18 * 32, 5 * 32 + 16, 50, '[E] Open Vault Pouch', () => {
+    this.registerInteractive(18 * 32, 7 * 32 + 16, 50, '[E] Open Vault Pouch', () => {
       audioManager.play('tap');
       gameEventBridge.emit(gameEvents.CHEST_OPEN);
     });
 
     // 3. Crafting Anvil & Workbench (Solid obstacle with collision)
-    const bench = this.obstacles.create(10 * 32, 5 * 32 + 16, 'prop_workbench');
+    const bench = this.obstacles.create(10 * 32, 7 * 32 + 16, 'prop_workbench');
     bench.setDepth(16);
     bench.setSize(26, 20);
-    this.registerInteractive(10 * 32, 5 * 32 + 16, 50, '[E] Open Workshop Forge', () => {
+    this.registerInteractive(10 * 32, 7 * 32 + 16, 50, '[E] Open Workshop Forge', () => {
       audioManager.play('anvil');
       gameEventBridge.emit(gameEvents.WORKBENCH_OPEN);
     });
@@ -911,13 +1159,24 @@ export default class WorldScene extends Phaser.Scene {
       fenceV.setSize(16, 32);
     }
 
-    // Dirt access trail connecting Manor Road to Farm Plots
-    for (let dx = 6; dx <= 14; dx += 1) {
-      this.add.image(dx * 32 + 16, 17 * 32 + 16, 'tile_dirt');
+    // Cobblestone access trail connecting Manor Road to Farm Plots with feathered grass fringe
+    for (let dx = 6; dx <= 14; dx += 2) {
+      const trail = this.add.image(dx * 32 + 16, 17 * 32 + 16, 'prop_road_cobble_h');
+      trail.setDepth(2);
     }
 
+    // Authentic CraftPix Pumpkin Scarecrow guarding the farm plots
+    const scarecrow = this.obstacles.create(5 * 32, 19 * 32, 'prop_scarecrow');
+    scarecrow.setDepth(14);
+    scarecrow.setSize(24, 30);
+    this.registerInteractive(5 * 32, 19 * 32, 45, '[E] Greet Jack the Scarecrow 🎃', () => {
+      audioManager.play('tap');
+      this.showFloatingText(5 * 32, 19 * 32 - 18, 'Jack: Crops are safe from mountain crows!', '#fde047');
+    });
+
     // Stone Water Well beside Farm Plots
-    const well = this.obstacles.create(12 * 32, 19 * 32 + 16, 'prop_well');
+    const wellTex = this.textures.exists('prop_water_well') ? 'prop_water_well' : 'prop_well';
+    const well = this.obstacles.create(12 * 32, 19 * 32 + 16, wellTex);
     well.setDepth(15);
     well.setSize(28, 22);
     this.registerInteractive(12 * 32, 19 * 32 + 16, 48, '[E] Draw Fresh Well Water 🪣', () => {
@@ -1014,42 +1273,70 @@ export default class WorldScene extends Phaser.Scene {
     const reeds2 = this.add.image(32 * 32 + 12, 23 * 32, 'prop_reeds');
     reeds2.setDepth(8);
 
+    // Wooden Pier / Fishing Dock extending into Pond
+    if (this.textures.exists('prop_wood_dock')) {
+      const dock = this.add.image(28 * 32, 21 * 32, 'prop_wood_dock');
+      dock.setDepth(7);
+    }
+
     // Blooming lotus water lilypad
     const lily = this.add.image(31 * 32, 21 * 32, 'prop_lilypad');
     lily.setDepth(7);
 
-    const fishSpot = this.add.image(30 * 32, 22 * 32, 'prop_fishing_spot');
-    fishSpot.setDepth(7);
-    this.registerInteractive(30 * 32, 22 * 32, 55, '[E] Cast Fishing Line into Pond 🎣', () => {
+    const fishSpot = this.add.image(28 * 32 + 16, 21 * 32 + 16, 'prop_fishing_spot');
+    fishSpot.setDepth(8);
+    this.registerInteractive(28 * 32 + 16, 21 * 32 + 16, 55, '[E] Cast Fishing Line into Pond 🎣', () => {
       audioManager.synthSplash();
       gameEventBridge.emit('OPEN_IN_GAME_FISHING');
     });
 
-    // 7. Organic Foliage, Sweetberry Shrubs & Granite Rocks
+    // 7. Organic Foliage, Sweetberry Shrubs, Wildflowers & Granite Rocks
     const homesteadDecor = [
-      { x: 8, y: 7, tex: 'prop_bush' },
-      { x: 21, y: 6, tex: 'prop_berry_bush' },
-      { x: 25, y: 10, tex: 'prop_rock' },
+      { x: 8, y: 9, tex: 'prop_bush' },
+      { x: 21, y: 8, tex: 'prop_berry_bush' },
+      { x: 25, y: 10, tex: 'prop_granite_boulder' },
       { x: 7, y: 13, tex: 'prop_berry_bush' },
       { x: 22, y: 15, tex: 'prop_bush' },
-      { x: 5, y: 24, tex: 'prop_rock' },
+      { x: 5, y: 24, tex: 'prop_granite_boulder' },
       { x: 26, y: 24, tex: 'prop_berry_bush' },
+      { x: 13, y: 17, tex: 'prop_wildflowers' },
+      { x: 26, y: 18, tex: 'prop_wild_mushrooms' },
+      { x: 16, y: 23, tex: 'prop_wildflowers' },
     ];
     homesteadDecor.forEach((d) => {
-      const sp = this.obstacles.create(d.x * 32 + 16, d.y * 32 + 16, d.tex);
+      const tex = this.textures.exists(d.tex) ? d.tex : 'prop_bush';
+      const sp = this.obstacles.create(d.x * 32 + 16, d.y * 32 + 16, tex);
       sp.setDepth(11);
       sp.setSize(24, 18);
     });
 
-    // 7. Wall Torches on Manor House
-    const torchL = this.add.image(12 * 32, 4 * 32, 'prop_torch');
+    // 7. Wall Torches on Manor House (positioned beside front door)
+    const torchL = this.add.image(12 * 32, 6 * 32, 'prop_torch');
     torchL.setDepth(16);
-    const torchR = this.add.image(16 * 32, 4 * 32, 'prop_torch');
+    const torchR = this.add.image(16 * 32 + 32, 6 * 32, 'prop_torch');
     torchR.setDepth(16);
     this.lightSources.push(
-      { x: 12 * 32, y: 4 * 32, radius: 75, color: 0xf97316, intensity: 0.45, flicker: true },
-      { x: 16 * 32, y: 4 * 32, radius: 75, color: 0xf97316, intensity: 0.45, flicker: true }
+      { x: 12 * 32, y: 6 * 32, radius: 85, color: 0xf97316, intensity: 0.5, flicker: true },
+      { x: 16 * 32 + 32, y: 6 * 32, radius: 85, color: 0xf97316, intensity: 0.5, flicker: true }
     );
+
+    // 8. Homestead Orchard & Perimeter Oaks (CraftPix authentic trees)
+    const orchardTrees = [
+      { x: 7 * 32, y: 5 * 32, key: 'tree_fruit_1' },
+      { x: 9 * 32, y: 4 * 32, key: 'tree_fruit_2' },
+      { x: 23 * 32, y: 5 * 32, key: 'tree_oak_1' },
+      { x: 26 * 32, y: 6 * 32, key: 'tree_oak_2' },
+      { x: 34 * 32, y: 16 * 32, key: 'tree_oak_1' },
+    ];
+    orchardTrees.forEach((t) => {
+      const tex = this.textures.exists(t.key) ? t.key : 'prop_tree';
+      const tree = this.add.image(t.x, t.y, tex);
+      tree.setScale(0.52);
+      tree.setDepth(13);
+      const col = this.obstacles.create(t.x, t.y + 24, 'col_invisible');
+      col.setSize(22, 16);
+      col.setVisible(false);
+    });
 
     // Exits
     // Physical West Gate connecting to West Road
@@ -1068,97 +1355,167 @@ export default class WorldScene extends Phaser.Scene {
   }
 
   buildHomesteadInteriorProps() {
-    // 1. Interior Room Walls (Cozy 18x14 room from x=11 to 29, y=8 to 22)
-    const wallTex = this.textures.exists('tile_cottage_wall') ? 'tile_cottage_wall' : 'tile_indoor_wall';
-    for (let x = 11; x <= 29; x += 1) {
-      const topWall = this.obstacles.create(x * 32 + 16, 8 * 32 + 16, wallTex);
+    // 1. Manor Cottage Perimeter & Walls (Cozy 23x13 Hall from x=9 to 31, y=9 to 21)
+    const wallTopTex = this.textures.exists('tile_cottage_wall_top') ? 'tile_cottage_wall_top' : 'tile_cottage_wall';
+    const wallMidTex = this.textures.exists('tile_cottage_wall') ? 'tile_cottage_wall' : 'tile_indoor_wall';
+    const windowTex = this.textures.exists('tile_cottage_window') ? 'tile_cottage_window' : wallMidTex;
+
+    // North Wall: Row 9 (ceiling timber molding) + Row 10 (slate stone wall with windows)
+    for (let x = 9; x <= 31; x += 1) {
+      const topWall = this.obstacles.create(x * 32 + 16, 9 * 32 + 16, wallTopTex);
       topWall.setDepth(15);
-      if (x !== 20) {
-        const btmWall = this.obstacles.create(x * 32 + 16, 22 * 32 + 16, wallTex);
+      topWall.setSize(32, 32);
+
+      // Windows at x=13 and x=27 for natural daylight
+      if (x === 13 || x === 27) {
+        const win = this.add.image(x * 32 + 16, 10 * 32 + 16, windowTex);
+        win.setDepth(14);
+      } else if (x < 19 || x > 21) {
+        const midWall = this.obstacles.create(x * 32 + 16, 10 * 32 + 16, wallMidTex);
+        midWall.setDepth(14);
+        midWall.setSize(32, 32);
+      }
+
+      // South Wall with center arched doorway at x=20
+      if (x === 20) {
+        const doorway = this.add.image(x * 32 + 16, 21 * 32 + 16, 'prop_cottage_doorway');
+        doorway.setDepth(15);
+      } else {
+        const btmWall = this.obstacles.create(x * 32 + 16, 21 * 32 + 16, wallMidTex);
         btmWall.setDepth(15);
+        btmWall.setSize(32, 32);
       }
     }
-    for (let y = 8; y <= 22; y += 1) {
-      const leftWall = this.obstacles.create(11 * 32 + 16, y * 32 + 16, wallTex);
+
+    // West and East Stone Wall Columns
+    for (let y = 9; y <= 21; y += 1) {
+      const leftWall = this.obstacles.create(9 * 32 + 16, y * 32 + 16, wallMidTex);
       leftWall.setDepth(15);
-      const rightWall = this.obstacles.create(29 * 32 + 16, y * 32 + 16, wallTex);
+      leftWall.setSize(32, 32);
+      const rightWall = this.obstacles.create(31 * 32 + 16, y * 32 + 16, wallMidTex);
       rightWall.setDepth(15);
+      rightWall.setSize(32, 32);
     }
 
-    // 2. Cozy Bed (Restores Full Health - Authentic CraftPix Bed)
-    const bedTex = this.textures.exists('prop_cottage_bed') ? 'prop_cottage_bed' : 'prop_inn_bed';
-    const bed = this.obstacles.create(14 * 32, 11 * 32, bedTex);
-    bed.setDepth(16);
-    bed.setSize(32, 32);
-    this.registerInteractive(14 * 32, 11 * 32, 50, '[E] Sleep in Bed (+Restore Full Health) 🛏️', () => {
-      this.restAtInn();
-      gameEventBridge.emit('RESTED_IN_BED');
-    });
-
-    // 3. Fireplace Hearth
+    // 2. CENTER LIVING HALL: Stone Fireplace Hearth & Chimney (x=20, y=9..11)
     const fpTex = this.textures.exists('prop_cottage_fireplace') ? 'prop_cottage_fireplace' : 'prop_fireplace';
-    const fireplace = this.obstacles.create(20 * 32, 9 * 32, fpTex);
+    const fireplace = this.obstacles.create(20 * 32 + 16, 10 * 32 + 8, fpTex);
     fireplace.setDepth(16);
-    fireplace.setSize(44, 30);
+    fireplace.setSize(56, 40);
     this.lightSources.push({
-      x: 20 * 32,
-      y: 9 * 32,
-      radius: 200,
+      x: 20 * 32 + 16,
+      y: 10 * 32 + 24,
+      radius: 220,
       color: 0xf59e0b,
       intensity: 1.25,
       flickerSpeed: 0.12,
       flickerAmount: 20,
     });
 
-    // 4. Velvet Rug
-    const rugTex = this.textures.exists('prop_cottage_rug') ? 'prop_cottage_rug' : 'prop_indoor_rug';
-    const rug = this.add.image(20 * 32, 15 * 32, rugTex);
-    rug.setDepth(5);
+    // Fringed Crimson Velvet Rug in front of Fireplace
+    const redRugTex = this.textures.exists('prop_cottage_red_rug') ? 'prop_cottage_red_rug' : 'prop_indoor_rug';
+    const hearthRug = this.add.image(20 * 32 + 16, 12 * 32 + 20, redRugTex);
+    hearthRug.setDepth(5);
 
-    // 5. Dining Table & Stool
-    const tblTex = this.textures.exists('prop_cottage_table') ? 'prop_cottage_table' : 'prop_table_chair';
-    const diningTable = this.obstacles.create(25 * 32, 15 * 32, tblTex);
-    diningTable.setDepth(16);
-    diningTable.setSize(42, 24);
-
-    // 6. Arcane Bookshelf
-    const shelfTex = this.textures.exists('prop_cottage_bookshelf') ? 'prop_cottage_bookshelf' : 'prop_bookshelf';
-    const bookshelf = this.obstacles.create(26 * 32, 10 * 32, shelfTex);
-    bookshelf.setDepth(16);
-    bookshelf.setSize(28, 38);
-    this.registerInteractive(26 * 32, 10 * 32, 45, '[E] Read Sunforge Chronicles', () => {
-      audioManager.play('tap');
-      this.showFloatingText(26 * 32, 10 * 32 - 20, '📜 Ancient Warden Lore recorded!', '#fde047');
-      gameEventBridge.emit('PROP_INTERACT', { propId: 'chronicle_lore' });
-    });
-
-    // 6b. Storage Cabinet / Wardrobe
-    if (this.textures.exists('prop_cottage_cabinet')) {
-      const cabinet = this.obstacles.create(17 * 32, 9 * 32 + 6, 'prop_cottage_cabinet');
-      cabinet.setDepth(16);
-      cabinet.setSize(28, 32);
-      this.registerInteractive(17 * 32, 9 * 32 + 6, 45, '[E] Search Wooden Wardrobe 🧥', () => {
-        audioManager.play('tap');
-        this.showFloatingText(17 * 32, 9 * 32 - 15, 'Found Warm Adventurer Garments!', '#fde047');
-      });
+    // Weapon Rack with Gleaming Steel Blades
+    if (this.textures.exists('prop_cottage_weapon_rack')) {
+      const wRack = this.obstacles.create(17 * 32 + 16, 10 * 32 + 20, 'prop_cottage_weapon_rack');
+      wRack.setDepth(16);
+      wRack.setSize(44, 38);
     }
 
-    // 7. Storage Vault Chest
-    const chest = this.obstacles.create(14 * 32, 16 * 32, 'prop_chest');
+    // Center Storage Vault Chest
+    const chest = this.obstacles.create(18 * 32, 19 * 32 + 8, 'prop_chest');
     chest.setDepth(16);
     chest.setSize(24, 20);
-    this.registerInteractive(14 * 32, 16 * 32, 45, '[E] Open Storage Vault [I]', () => {
+    this.registerInteractive(18 * 32, 19 * 32 + 8, 45, '[E] Open Storage Vault [I] 📦', () => {
       audioManager.play('tap');
       gameEventBridge.emit(gameEvents.CHEST_OPEN);
     });
 
-    // 8. Welcome Doormat & Exit to Yard
-    const doormat = this.add.image(20 * 32, 22 * 32, 'prop_doormat');
+    // Welcome Straw Doormat & South Exit to Homestead Yard
+    const doormat = this.add.image(20 * 32 + 16, 20 * 32 + 20, 'prop_doormat');
     doormat.setDepth(6);
-    this.registerInteractive(20 * 32, 22 * 32, 45, '[E] Exit to Homestead Yard 🚪', () => {
+    this.registerInteractive(20 * 32 + 16, 21 * 32, 45, '[E] Exit to Homestead Yard 🚪', () => {
       audioManager.play('tap');
-      this.switchZone('homestead', { spawnX: 14 * 32 + 16, spawnY: 5 * 32 + 24 });
+      this.switchZone('homestead', { spawnX: 14 * 32 + 16, spawnY: 8 * 32 + 12 });
     });
+
+    // 3. WEST WING: Master Bedroom Suite (x=10..15)
+    // Cozy Single Bed (Restores 100% Health)
+    const bedTex = this.textures.exists('prop_cottage_bed') ? 'prop_cottage_bed' : 'prop_inn_bed';
+    const bed = this.obstacles.create(13 * 32 + 16, 11 * 32 + 16, bedTex);
+    bed.setDepth(16);
+    bed.setSize(30, 44);
+    this.registerInteractive(13 * 32 + 16, 11 * 32 + 16, 50, '[E] Sleep in Bed (+Restore Full Health) 🛏️', () => {
+      this.restAtInn();
+      gameEventBridge.emit('RESTED_IN_BED');
+    });
+
+    // Nightstand beside Bed with Warm Candle Light
+    if (this.textures.exists('prop_cottage_nightstand')) {
+      const stand = this.obstacles.create(12 * 32 + 8, 11 * 32 + 16, 'prop_cottage_nightstand');
+      stand.setDepth(16);
+      stand.setSize(20, 26);
+      this.lightSources.push({
+        x: 12 * 32 + 8,
+        y: 11 * 32 + 8,
+        radius: 70,
+        color: 0xfde047,
+        intensity: 0.45,
+        flicker: true,
+      });
+    }
+
+    // Wardrobe Harvest Cabinet
+    if (this.textures.exists('prop_cottage_cabinet')) {
+      const cabinet = this.obstacles.create(11 * 32 + 16, 15 * 32 + 16, 'prop_cottage_cabinet');
+      cabinet.setDepth(16);
+      cabinet.setSize(52, 54);
+      this.registerInteractive(11 * 32 + 16, 15 * 32 + 16, 45, '[E] Search Wooden Wardrobe 🧥', () => {
+        audioManager.play('tap');
+        this.showFloatingText(11 * 32 + 16, 15 * 32 - 15, 'Found Warm Adventurer Garments!', '#fde047');
+      });
+    }
+
+    // Houseplant in Bedroom
+    if (this.textures.exists('prop_cottage_plant')) {
+      this.add.image(11 * 32 + 16, 19 * 32, 'prop_cottage_plant').setDepth(16);
+    }
+
+    // 4. EAST WING: Dining & Alchemy Studio (x=25..30)
+    // Complete Dining Table with Chairs
+    const tblTex = this.textures.exists('prop_cottage_table') ? 'prop_cottage_table' : 'prop_table_chair';
+    const diningTable = this.obstacles.create(26 * 32 + 16, 15 * 32 + 16, tblTex);
+    diningTable.setDepth(16);
+    diningTable.setSize(64, 64);
+
+    // Arcane Bookshelf (Sunforge Chronicles)
+    const shelfTex = this.textures.exists('prop_cottage_bookshelf') ? 'prop_cottage_bookshelf' : 'prop_bookshelf';
+    const bookshelf = this.obstacles.create(29 * 32 + 16, 11 * 32, shelfTex);
+    bookshelf.setDepth(16);
+    bookshelf.setSize(30, 56);
+    this.registerInteractive(29 * 32 + 16, 11 * 32, 48, '[E] Read Sunforge Chronicles 📜', () => {
+      audioManager.play('tap');
+      this.showFloatingText(29 * 32 + 16, 11 * 32 - 25, '📜 Ancient Warden Lore recorded!', '#fde047');
+      gameEventBridge.emit('PROP_INTERACT', { propId: 'chronicle_lore' });
+    });
+
+    // Alchemy Workbench
+    if (this.textures.exists('prop_cottage_alchemy')) {
+      const alchemy = this.obstacles.create(24 * 32, 19 * 32, 'prop_cottage_alchemy');
+      alchemy.setDepth(16);
+      alchemy.setSize(40, 38);
+      this.registerInteractive(24 * 32, 19 * 32, 45, '[E] Brew Herbal Salve 🧪', () => {
+        audioManager.play('coin');
+        this.showFloatingText(24 * 32, 19 * 32 - 15, '🧪 Brewing Crafting Alchemy unlocked!', '#a7f3d0');
+      });
+    }
+
+    // Houseplant in Dining Studio
+    if (this.textures.exists('prop_cottage_plant')) {
+      this.add.image(30 * 32, 19 * 32, 'prop_cottage_plant').setDepth(16);
+    }
   }
 
   buildMineProps() {
@@ -1231,8 +1588,22 @@ export default class WorldScene extends Phaser.Scene {
       });
     });
 
-    // Ancient Cavern Relic Chest (Interactive CraftPix Dungeon Chest)
-    const chestTex = this.textures.exists('prop_dungeon_chest') ? 'prop_dungeon_chest' : 'prop_chest';
+    // Cavern Rock Formations / Boulder Pillars creating natural mining tunnels
+    const caveBoulders = [
+      { x: 12, y: 6 }, { x: 22, y: 8 }, { x: 16, y: 14 },
+      { x: 27, y: 15 }, { x: 8, y: 20 }, { x: 30, y: 20 }
+    ];
+    caveBoulders.forEach((b) => {
+      const tex = this.textures.exists('prop_granite_boulder') ? 'prop_granite_boulder' : 'prop_rock';
+      const cb = this.obstacles.create(b.x * 32, b.y * 32, tex);
+      cb.setDepth(12);
+      cb.setSize(28, 24);
+    });
+
+    // Ancient Cavern Relic Chest (Interactive CraftPix Dungeon Golden Chest)
+    const chestTex = this.textures.exists('prop_chest_gold')
+      ? 'prop_chest_gold'
+      : (this.textures.exists('prop_dungeon_chest') ? 'prop_dungeon_chest' : 'prop_chest');
     const dChest = this.obstacles.create(34 * 32, 26 * 32, chestTex);
     dChest.setDepth(16);
     dChest.setSize(28, 24);
@@ -1243,6 +1614,26 @@ export default class WorldScene extends Phaser.Scene {
       gameEventBridge.emit(gameEvents.PROP_INTERACT, { propId: 'prop_dungeon_chest' });
       gameEventBridge.emit('prop:interacted', { propId: 'prop_dungeon_chest' });
     });
+
+    // Secondary Miner's Iron Supply Chest
+    if (this.textures.exists('prop_chest_iron')) {
+      const ironChest = this.obstacles.create(10 * 32, 22 * 32, 'prop_chest_iron');
+      ironChest.setDepth(16);
+      ironChest.setSize(24, 20);
+      this.registerInteractive(10 * 32, 22 * 32, 45, '[E] Pry Open Miner Supply Chest ⛏️', () => {
+        audioManager.play('coin');
+        this.showFloatingText(10 * 32, 22 * 32 - 18, '+50 Gold & Iron Ingots!', '#fde047');
+        gameEventBridge.emit('LOOT_ACQUIRED', { itemId: 'iron', amount: 3 });
+        ironChest.destroy();
+      });
+    }
+
+    // Ancient Cavern Granite Boulder
+    if (this.textures.exists('prop_granite_boulder')) {
+      const cavernBoulder = this.obstacles.create(24 * 32, 20 * 32 - 16, 'prop_granite_boulder');
+      cavernBoulder.setDepth(13);
+      cavernBoulder.setSize(28, 24);
+    }
 
     // Ancient Cavern Urns
     if (this.textures.exists('prop_dungeon_urn')) {
@@ -1302,22 +1693,97 @@ export default class WorldScene extends Phaser.Scene {
       gameEventBridge.emit(gameEvents.PROP_INTERACT, { propId: 'prop_shrine' });
     });
 
-    // Trees (Rich mixture of CraftPix top-down Oak & Pine trees)
-    for (let i = 0; i < 22; i += 1) {
-      const tx = ((i * 7) % 36 + 2) * 32;
-      const ty = (((i * 11) % 24) + 3) * 32;
-      if (Math.abs(tx - 20 * 32) > 64 || Math.abs(ty - 14 * 32) > 64) {
-        const tTex = i % 2 === 0 && this.textures.exists('prop_tree_pine')
-          ? 'prop_tree_pine'
-          : (this.textures.exists('prop_tree_oak') ? 'prop_tree_oak' : 'prop_tree');
-        const tree = this.add.image(tx, ty, tTex);
-        if (tTex.startsWith('prop_tree_')) tree.setScale(0.5);
-        tree.setDepth(10);
-        const col = this.obstacles.create(tx, ty + 14, 'col_invisible');
-        col.setSize(20, 16);
+    // Ancient Moss-Covered Standing Boulders flanking Shrine
+    if (this.textures.exists('prop_rock_moss1')) {
+      const rockW = this.obstacles.create(18 * 32, 14 * 32, 'prop_rock_moss1');
+      rockW.setDepth(11);
+      rockW.setSize(22, 18);
+    }
+    if (this.textures.exists('prop_rock_moss2')) {
+      const rockE = this.obstacles.create(22 * 32, 14 * 32, 'prop_rock_moss2');
+      rockE.setDepth(11);
+      rockE.setSize(22, 18);
+    }
+    if (this.textures.exists('prop_granite_boulder')) {
+      const boulderN = this.obstacles.create(20 * 32, 12 * 32 + 16, 'prop_granite_boulder');
+      boulderN.setDepth(9);
+      boulderN.setSize(24, 20);
+    }
+
+    // Fairy Ring of Wild Mushrooms & Wildflowers around Shrine Clearing
+    const fairyRing = [
+      { x: 19, y: 13, tex: 'prop_wild_mushrooms' },
+      { x: 21, y: 13, tex: 'prop_wildflowers' },
+      { x: 18, y: 15, tex: 'prop_wildflowers' },
+      { x: 22, y: 15, tex: 'prop_wild_mushrooms' },
+      { x: 20, y: 16, tex: 'prop_wildflowers' },
+    ];
+    fairyRing.forEach((f) => {
+      if (this.textures.exists(f.tex)) {
+        const item = this.add.image(f.x * 32 + 16, f.y * 32 + 16, f.tex);
+        item.setDepth(8);
+      }
+    });
+
+    // Dense Ancient Trees from CraftPix top-down trees pack
+    const forestTreeKeys = ['tree_oak_1', 'tree_oak_2', 'tree_moss_1', 'tree_autumn_1', 'tree_flower_1'];
+    for (let i = 0; i < 38; i += 1) {
+      const tx = ((i * 7 + 3) % 36 + 2) * 32;
+      const ty = (((i * 11 + 5) % 24) + 3) * 32;
+      // Keep clearing around Sylvan Shrine (x=17..23, y=11..17) and west entrance (x=1..4, y=11..15)
+      const nearShrine = Math.abs(tx - 20 * 32) < 110 && Math.abs(ty - 14 * 32) < 110;
+      const nearWestGate = tx < 5 * 32 && ty > 9 * 32 && ty < 16 * 32;
+      if (!nearShrine && !nearWestGate) {
+        const tKey = forestTreeKeys[i % forestTreeKeys.length];
+        const treeTex = this.textures.exists(tKey) ? tKey : 'prop_tree';
+        const tree = this.add.image(tx, ty, treeTex);
+        tree.setScale(0.52);
+        tree.setDepth(12);
+        const col = this.obstacles.create(tx, ty + 24, 'col_invisible');
+        col.setSize(24, 18);
         col.setVisible(false);
       }
     }
+
+    // Lush Ancient Forest Groves surrounding clearing paths
+    const groveTrees = [
+      { x: 7 * 32, y: 7 * 32, key: 'tree_moss_1' },
+      { x: 10 * 32, y: 5 * 32, key: 'tree_oak_1' },
+      { x: 14 * 32, y: 8 * 32, key: 'tree_autumn_1' },
+      { x: 8 * 32, y: 16 * 32, key: 'tree_oak_2' },
+      { x: 11 * 32, y: 19 * 32, key: 'tree_flower_1' },
+      { x: 14 * 32, y: 22 * 32, key: 'tree_moss_1' },
+      { x: 26 * 32, y: 6 * 32, key: 'tree_oak_1' },
+      { x: 29 * 32, y: 9 * 32, key: 'tree_autumn_1' },
+      { x: 27 * 32, y: 18 * 32, key: 'tree_flower_1' },
+      { x: 31 * 32, y: 21 * 32, key: 'tree_oak_2' },
+    ];
+    groveTrees.forEach((gt) => {
+      const tex = this.textures.exists(gt.key) ? gt.key : 'prop_tree';
+      const tree = this.add.image(gt.x, gt.y, tex);
+      tree.setScale(0.55);
+      tree.setDepth(12);
+      const col = this.obstacles.create(gt.x, gt.y + 24, 'col_invisible');
+      col.setSize(24, 18);
+      col.setVisible(false);
+    });
+
+    // Forest Floor Details (Fallen logs, mossy stumps, boulders)
+    const forestDetails = [
+      { x: 10, y: 12, tex: 'prop_tree_stump' },
+      { x: 14, y: 20, tex: 'prop_tree_log' },
+      { x: 28, y: 12, tex: 'prop_tree_log' },
+      { x: 30, y: 22, tex: 'prop_tree_stump' },
+      { x: 16, y: 6, tex: 'prop_granite_boulder' },
+      { x: 25, y: 24, tex: 'prop_granite_boulder' },
+    ];
+    forestDetails.forEach((fd) => {
+      if (this.textures.exists(fd.tex)) {
+        const dObj = this.obstacles.create(fd.x * 32 + 16, fd.y * 32 + 16, fd.tex);
+        dObj.setDepth(9);
+        dObj.setSize(24, 18);
+      }
+    });
 
     // Hostile Forest Monsters & Hunt Wildlife (Emerald Slimes, Shadow Wolves, Bristleback Boars, Amber Foxes)
     this.spawnEnemy('slime_forest', 12 * 32, 8 * 32);
@@ -1345,22 +1811,81 @@ export default class WorldScene extends Phaser.Scene {
 
   buildWestRoadProps() {
     const mapWidth = 40;
-    // Central cobblestone highway spanning full width with earthen road shoulders (CraftPix Cobblestone)
+    // Central cobblestone highway spanning full width with feathered grass fringe
     const roadTex = this.textures.exists('tile_cobblestone') ? 'tile_cobblestone' : 'tile_path';
     for (let x = 0; x < mapWidth; x += 1) {
-      this.add.image(x * 32 + 16, 12 * 32 + 16, 'tile_dirt');
-      for (let y = 13; y <= 15; y += 1) {
-        this.add.image(x * 32 + 16, y * 32 + 16, roadTex);
-      }
-      this.add.image(x * 32 + 16, 16 * 32 + 16, 'tile_dirt');
+      this.add.image(x * 32 + 16, 13 * 32 + 16, roadTex).setDepth(2);
+      this.add.image(x * 32 + 16, 14 * 32 + 16, roadTex).setDepth(2);
+      this.add.image(x * 32 + 16, 15 * 32 + 16, roadTex).setDepth(2);
+    }
+    for (let x = 0; x < mapWidth; x += 2) {
+      const rTop = this.add.image(x * 32 + 32, 13 * 32 + 8, 'prop_road_cobble_h');
+      rTop.setDepth(3);
+      const rBtm = this.add.image(x * 32 + 32, 15 * 32 + 24, 'prop_road_cobble_h');
+      rBtm.setDepth(3);
     }
 
-    // Wooden Guard Rails along stream crossing
-    for (let fx = 21; fx <= 27; fx += 1) {
-      const gRail = this.obstacles.create(fx * 32 + 16, 11 * 32 + 16, 'prop_fence_h');
-      gRail.setDepth(11);
-      gRail.setSize(32, 16);
+    // Natural Country Stream & Sturdy Wooden Highway Bridge
+    for (let sy = 2; sy < 28; sy += 1) {
+      if (sy < 13 || sy > 15) {
+        this.add.image(24 * 32 + 16, sy * 32 + 16, 'tile_water');
+        this.add.image(25 * 32 + 16, sy * 32 + 16, 'tile_water');
+      }
     }
+
+    // Wooden Bridge Decking Crossing Highway
+    for (let by = 13; by <= 15; by += 1) {
+      this.add.image(24 * 32 + 16, by * 32 + 16, 'tile_path');
+      this.add.image(25 * 32 + 16, by * 32 + 16, 'tile_path');
+    }
+
+    // Bridge Guard Rails flanking North and South of the Road
+    for (let bx = 23; bx <= 26; bx += 1) {
+      const gRailN = this.obstacles.create(bx * 32 + 16, 12 * 32 + 16, 'prop_fence_h');
+      gRailN.setDepth(11);
+      gRailN.setSize(32, 16);
+      const gRailS = this.obstacles.create(bx * 32 + 16, 16 * 32 + 16, 'prop_fence_h');
+      gRailS.setDepth(11);
+      gRailS.setSize(32, 16);
+    }
+
+    // Water Ripple FX North & South of Bridge
+    const streamRippleN = this.add.image(24 * 32 + 16, 10 * 32 + 16, 'fx_ripple');
+    streamRippleN.setDepth(6);
+    streamRippleN.setAlpha(0.65);
+    this.tweens.add({
+      targets: streamRippleN,
+      scaleX: 1.25,
+      scaleY: 1.25,
+      alpha: 0.3,
+      duration: 1400,
+      yoyo: true,
+      repeat: -1,
+    });
+
+    const streamFish = this.add.image(24 * 32 + 16, 11 * 32 + 16, 'prop_fishing_spot');
+    streamFish.setDepth(7);
+    this.registerInteractive(24 * 32 + 16, 11 * 32 + 16, 52, '[E] Cast Fishing Line into Stream 🎣', () => {
+      audioManager.synthSplash();
+      gameEventBridge.emit('OPEN_IN_GAME_FISHING');
+    });
+
+    // Countryside Foliage, Wildflowers & Granite Boulders
+    const roadDetails = [
+      { x: 10, y: 11, tex: 'prop_wildflowers' },
+      { x: 14, y: 17, tex: 'prop_wild_mushrooms' },
+      { x: 28, y: 11, tex: 'prop_granite_boulder' },
+      { x: 32, y: 17, tex: 'prop_tree_log' },
+      { x: 18, y: 18, tex: 'prop_wildflowers' },
+      { x: 7, y: 17, tex: 'prop_tree_stump' },
+    ];
+    roadDetails.forEach((rd) => {
+      if (this.textures.exists(rd.tex)) {
+        const item = this.obstacles.create(rd.x * 32 + 16, rd.y * 32 + 16, rd.tex);
+        item.setDepth(9);
+        item.setSize(22, 18);
+      }
+    });
 
     // Northern tree barrier with natural depth (CraftPix Oak & Pine Trees)
     for (let x = 1; x < 39; x += 3) {
@@ -1421,32 +1946,6 @@ export default class WorldScene extends Phaser.Scene {
       flicker: false,
     });
 
-    // Roadside Stream & Fishing Spot
-    for (let sx = 23; sx <= 26; sx += 1) {
-      for (let sy = 7; sy <= 9; sy += 1) {
-        this.add.image(sx * 32 + 16, sy * 32 + 16, 'tile_water');
-      }
-    }
-    const streamRipple = this.add.image(24 * 32 + 16, 8 * 32 + 16, 'fx_ripple');
-    streamRipple.setDepth(6);
-    streamRipple.setAlpha(0.65);
-    this.tweens.add({
-      targets: streamRipple,
-      scaleX: 1.25,
-      scaleY: 1.25,
-      alpha: 0.3,
-      duration: 1400,
-      yoyo: true,
-      repeat: -1,
-    });
-
-    const streamFish = this.add.image(24 * 32 + 16, 8 * 32 + 16, 'prop_fishing_spot');
-    streamFish.setDepth(7);
-    this.registerInteractive(24 * 32 + 16, 8 * 32 + 16, 52, '[E] Cast Fishing Line into Stream 🎣', () => {
-      audioManager.synthSplash();
-      gameEventBridge.emit('OPEN_IN_GAME_FISHING');
-    });
-
     // West Road Sign (near City Gates)
     const westSign = this.add.image(5 * 32, 11 * 32, 'prop_road_sign');
     westSign.setDepth(11);
@@ -1490,6 +1989,13 @@ export default class WorldScene extends Phaser.Scene {
     }
 
     // 1. CENTER PLAZA: Town Fountain & Notice Board
+    // Decorative Flagstone Plaza surrounding fountain
+    for (let px = 17; px <= 23; px += 1) {
+      for (let py = 12; py <= 17; py += 1) {
+        this.add.image(px * 32 + 16, py * 32 + 16, 'tile_cobblestone').setDepth(3);
+      }
+    }
+
     const fountain = this.obstacles.create(20 * 32, 14 * 32 + 16, 'prop_town_fountain');
     fountain.setDepth(14);
     fountain.setSize(44, 40);
@@ -1544,18 +2050,18 @@ export default class WorldScene extends Phaser.Scene {
     });
 
     // 2. ADVENTURERS' GUILD (North-West Quarter)
-    const guildhall = this.add.image(11 * 32, 5 * 32, 'prop_house');
+    const ghTex = this.textures.exists('prop_village_house2') ? 'prop_village_house2' : 'prop_house';
+    const guildhall = this.add.image(10 * 32, 5 * 32, ghTex);
     guildhall.setDepth(10);
-    guildhall.setScale(0.9);
-    const guildCol = this.obstacles.create(11 * 32, 5 * 32 + 10, 'col_invisible');
+    const guildCol = this.obstacles.create(10 * 32, 5 * 32 + 10, 'col_invisible');
     guildCol.setSize(75, 36);
     guildCol.setVisible(false);
 
     // Wall Torch on Guildhall Entrance
-    const guildTorch = this.add.image(11 * 32, 7 * 32, 'prop_torch');
+    const guildTorch = this.add.image(10 * 32, 7 * 32, 'prop_torch');
     guildTorch.setDepth(13);
     this.lightSources.push({
-      x: 11 * 32,
+      x: 10 * 32,
       y: 7 * 32,
       radius: 75,
       color: 0xf97316,
@@ -1584,12 +2090,12 @@ export default class WorldScene extends Phaser.Scene {
 
     // 3. IRON ANVIL BLACKSMITH (North-East Quarter - CraftPix Artisan Workshop)
     const forgeTex = this.textures.exists('prop_artisan_forge') ? 'prop_artisan_forge' : 'prop_forge_furnace';
-    const forgeKiln = this.obstacles.create(29 * 32, 7 * 32, forgeTex);
+    const forgeKiln = this.obstacles.create(29 * 32, 6 * 32, forgeTex);
     forgeKiln.setDepth(12);
     forgeKiln.setSize(44, 38);
     this.lightSources.push({
       x: 29 * 32,
-      y: 7 * 32,
+      y: 6 * 32,
       radius: 95,
       color: 0xf97316,
       intensity: 0.5,
@@ -1613,33 +2119,43 @@ export default class WorldScene extends Phaser.Scene {
     });
 
     // 4. THE HEARTH & PINT INN (South-West Quarter)
-    const innBuilding = this.add.image(10 * 32, 19 * 32, 'prop_house');
+    const innTex = this.textures.exists('prop_village_house3') ? 'prop_village_house3' : 'prop_house';
+    const innBuilding = this.add.image(10 * 32, 20 * 32, innTex);
     innBuilding.setDepth(10);
-    innBuilding.setScale(0.85);
-    const innCol = this.obstacles.create(10 * 32, 19 * 32 + 10, 'col_invisible');
+    const innCol = this.obstacles.create(10 * 32, 20 * 32 + 10, 'col_invisible');
     innCol.setSize(70, 34);
     innCol.setVisible(false);
 
-    const innBed = this.obstacles.create(10 * 32, 22 * 32, 'prop_inn_bed');
+    const innBed = this.obstacles.create(10 * 32, 23 * 32, 'prop_inn_bed');
     innBed.setDepth(12);
     innBed.setSize(28, 26);
-    this.registerInteractive(10 * 32, 22 * 32, 52, '[E] Rest in Cozy Bed (Restore Full Health) 🛏️', () => {
+    this.registerInteractive(10 * 32, 23 * 32, 52, '[E] Rest in Cozy Bed (Restore Full Health) 🛏️', () => {
       this.restAtInn();
     });
 
     // 5. SUNFORGE MARKET BAZAAR (South-East Quarter)
-    const marketStand = this.obstacles.create(28 * 32, 22 * 32, 'prop_market_stand');
+    const storeTex = this.textures.exists('prop_village_house1') ? 'prop_village_house1' : 'prop_house';
+    const generalStore = this.add.image(28 * 32, 20 * 32, storeTex);
+    generalStore.setDepth(10);
+
+    const marketStand = this.obstacles.create(26 * 32, 22 * 32, 'prop_market_stand');
     marketStand.setDepth(12);
     marketStand.setSize(44, 26);
 
+    // Silas's Merchant Coin Vault Chest
+    if (this.textures.exists('prop_chest_gold')) {
+      const mChest = this.add.image(28 * 32, 22 * 32, 'prop_chest_gold');
+      mChest.setDepth(12);
+    }
+
     // Merchant Silas NPC
     if (this.textures.exists('npc_merchant')) {
-      const merchant = this.obstacles.create(26 * 32, 22 * 32, 'npc_merchant');
+      const merchant = this.obstacles.create(24 * 32, 22 * 32, 'npc_merchant');
       merchant.setDepth(13);
       merchant.setSize(24, 28);
     }
 
-    this.registerInteractive(28 * 32, 22 * 32, 54, '[E] Trade with Merchant Silas (Bazaar & Seeds) 🪙', () => {
+    this.registerInteractive(26 * 32, 22 * 32, 54, '[E] Trade with Merchant Silas (Bazaar & Seeds) 🪙', () => {
       audioManager.play('coin');
       gameEventBridge.emit('OPEN_IN_GAME_BAZAAR');
     });
@@ -1914,6 +2430,10 @@ export default class WorldScene extends Phaser.Scene {
     this.showFloatingText(enemy.x, enemy.y - 15, `Defeated ${enemy.monsterDef.name}!`, '#86efac');
     this.showFloatingText(enemy.x, enemy.y - 30, `+${loot.gold} Gold · +${loot.xp} XP`, '#fde047');
 
+    if (this.currentZone === 'tutorial_island') {
+      gameEventBridge.emit('TUTORIAL_STEP_ADVANCE', { step: 4 });
+    }
+
     this.tweens.add({
       targets: enemy,
       alpha: 0,
@@ -2104,9 +2624,13 @@ export default class WorldScene extends Phaser.Scene {
   }
 
   switchZone(newZone, spawnPos = null) {
+    if (this.isTransitioning) return;
+    this.isTransitioning = true;
     audioManager.play('tap');
+    gameEventBridge.emit(gameEvents.ZONE_CHANGED, { zone: newZone });
     this.cameras.main.fade(200, 0, 0, 0, false, (camera, progress) => {
       if (progress === 1) {
+        this.destroy();
         this.scene.restart({
           customization: this.customization,
           profile: this.profile,
@@ -2194,6 +2718,10 @@ export default class WorldScene extends Phaser.Scene {
   }
 
   setupBridge() {
+    if (this.cleanupBridge) {
+      this.cleanupBridge.forEach((cleanup) => cleanup());
+      this.cleanupBridge = [];
+    }
     this.cleanupBridge = [
       gameEventBridge.on(gameEvents.LOCK_CONTROLS, () => {
         this.controlsLocked = true;
@@ -2476,6 +3004,7 @@ export default class WorldScene extends Phaser.Scene {
     audioManager.stopRainAmbience();
     if (this.cleanupBridge) {
       this.cleanupBridge.forEach((cleanup) => cleanup());
+      this.cleanupBridge = [];
     }
     if (this.enemies) {
       this.enemies.getChildren().forEach((enemy) => {
