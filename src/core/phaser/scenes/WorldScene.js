@@ -155,14 +155,14 @@ export default class WorldScene extends Phaser.Scene {
     // 0. Ensure Camera FX is clean and set mood lighting
     this.cameras.main.resetFX();
     const bgColors = {
-      homestead: '#243818',
-      homestead_interior: '#2a170b',
-      west_road: '#233418',
-      forest: '#142510',
-      mine: '#181a20',
-      village: '#25211d',
+      homestead: '#1c2e14',
+      homestead_interior: '#120a05',
+      west_road: '#1a2712',
+      forest: '#0f1c0d',
+      mine: '#12141a',
+      village: '#1c1815',
     };
-    this.cameras.main.setBackgroundColor(bgColors[this.currentZone] || '#243818');
+    this.cameras.main.setBackgroundColor(bgColors[this.currentZone] || '#1c2e14');
     this.cameras.main.fadeIn(250, 0, 0, 0);
 
     // 0b. Regional BGM & Ambience
@@ -645,10 +645,14 @@ export default class WorldScene extends Phaser.Scene {
     for (let x = -15; x < mapWidth + 15; x += 1) {
       for (let y = -15; y < mapHeight + 15; y += 1) {
         let tileKey;
-        if (this.currentZone === 'mine') {
+        if (this.currentZone === 'homestead_interior') {
+          // Inside cottage room only (x=11..29, y=8..22)
+          if (x >= 11 && x <= 29 && y >= 8 && y <= 22) {
+            this.add.image(x * 32 + 16, y * 32 + 16, 'tile_wood_floor');
+          }
+          continue;
+        } else if (this.currentZone === 'mine') {
           tileKey = 'tile_stone';
-        } else if (this.currentZone === 'homestead_interior') {
-          tileKey = 'tile_wood_floor';
         } else if (this.currentZone === 'village') {
           tileKey = 'tile_city_stone';
         } else {
@@ -736,7 +740,15 @@ export default class WorldScene extends Phaser.Scene {
     this.physics.add.collider(this.player, this.enemies);
 
     // Camera follow - immediately center to avoid initial 0,0 black offset
-    this.cameras.main.setBounds(0, 0, worldW, worldH);
+    if (this.currentZone === 'homestead_interior') {
+      const roomX = 11 * 32;
+      const roomY = 8 * 32;
+      const roomW = (29 - 11 + 1) * 32;
+      const roomH = (22 - 8 + 1) * 32;
+      this.cameras.main.setBounds(roomX - 64, roomY - 64, roomW + 128, roomH + 128);
+    } else {
+      this.cameras.main.setBounds(0, 0, worldW, worldH);
+    }
     this.cameras.main.centerOn(spawnX, spawnY);
     this.cameras.main.startFollow(this.player, true, 0.15, 0.15);
     this.updateCameraZoom();
@@ -748,12 +760,18 @@ export default class WorldScene extends Phaser.Scene {
     if (!this.cameras || !this.cameras.main) return;
     const viewW = this.cameras.main.width || this.scale.width;
     const viewH = this.cameras.main.height || this.scale.height;
+
+    if (this.currentZone === 'homestead_interior') {
+      const interiorZoom = Math.max(1.8, Math.min(2.4, viewW / (20 * 32)));
+      this.cameras.main.setZoom(interiorZoom);
+      return;
+    }
+
     const worldW = 40 * 32;
     const worldH = 30 * 32;
-    // Calculate minimum zoom required so the camera viewport never extends past the world boundaries
     const minZoomW = viewW / worldW;
     const minZoomH = viewH / worldH;
-    const targetZoom = Math.max(1.35, Math.max(minZoomW, minZoomH));
+    const targetZoom = Math.max(1.4, Math.max(minZoomW, minZoomH));
     this.cameras.main.setZoom(targetZoom);
   }
 

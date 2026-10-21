@@ -441,7 +441,7 @@ export default function WorldPage() {
           ========================================================================= */}
       <header className="pointer-events-none fixed top-0 inset-x-0 z-20 flex items-start justify-between gap-2 p-2 sm:p-3">
         {/* 1. Left: Hero Vitality Plate & Realm Region */}
-        <div className="pointer-events-auto flex flex-col gap-1.5 max-w-[340px]">
+        <div className="pointer-events-auto flex flex-col gap-1.5 w-72 sm:w-80">
           {/* Hero Banner Plate */}
           <div className="rpg-panel-brown flex items-center gap-2.5 p-2 backdrop-blur-md shadow-xl">
             {/* Class / Hero Emblem */}
@@ -477,12 +477,12 @@ export default function WorldPage() {
 
               {/* Health Bar with Numeric overlay */}
               <div className="flex items-center gap-1.5">
-                <div className="relative h-3.5 flex-1 overflow-hidden rounded bg-black/80 border border-amber-900/70 p-[1px]">
+                <div className="relative h-4 flex-1 min-w-[100px] overflow-hidden rounded bg-black/80 border border-amber-900/70 p-[1px]">
                   <div
                     className="h-full rounded-sm bg-gradient-to-r from-red-600 via-amber-500 to-emerald-500 transition-all duration-300 shadow-sm"
                     style={{ width: `${Math.max(0, Math.min(100, Math.round((playerHp / (playerMaxHp || 1)) * 100)))}%` }}
                   />
-                  <span className="absolute inset-0 flex items-center justify-center font-mono text-[9px] font-bold text-white drop-shadow-[0_1px_1px_rgba(0,0,0,0.9)]">
+                  <span className="absolute inset-0 flex items-center justify-center font-mono text-[10px] font-bold text-white drop-shadow-[0_1px_1px_rgba(0,0,0,0.9)]">
                     {playerHp}/{playerMaxHp}
                   </span>
                 </div>

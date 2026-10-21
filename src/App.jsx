@@ -13,7 +13,10 @@ function App() {
   return (
     <>
       <Toaster
-        position="top-center"
+        position="bottom-center"
+        containerStyle={{
+          bottom: 24,
+        }}
         toastOptions={{
           style: {
             background: '#090a0f',

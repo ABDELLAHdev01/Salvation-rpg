@@ -1,2 +1,9 @@
 @import "tailwindcss";
-/* Consolidated global styles have been moved to App.css */
+
+html, body, #root {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}

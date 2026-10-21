@@ -15,7 +15,9 @@ export function registerWorldTextures(scene) {
   const colCanvas = document.createElement('canvas');
   colCanvas.width = 4;
   colCanvas.height = 4;
-  scene.textures.addCanvas('col_invisible', colCanvas);
+  if (!scene.textures.exists('col_invisible')) {
+    scene.textures.addCanvas('col_invisible', colCanvas);
+  }
 
   const createTileCanvas = (width, height, drawFn) => {
     const c = document.createElement('canvas');
@@ -31,9 +33,9 @@ export function registerWorldTextures(scene) {
   // 1. TERRAIN TILES (32x32)
   // =========================================================================
 
-  // Tile: Rich Textured Fantasy Meadow Grass
+  // Tile: Rich Textured Classic RPG Earth Meadow Grass
   const grassCanvas = createTileCanvas(TILE_SIZE, TILE_SIZE, (ctx) => {
-    ctx.fillStyle = '#76b434'; // Vibrant warm meadow green base
+    ctx.fillStyle = '#3a6c36'; // Soothing earthy natural meadow base
     ctx.fillRect(0, 0, TILE_SIZE, TILE_SIZE);
 
     // Organic stippled blade texture across tile
@@ -41,10 +43,10 @@ export function registerWorldTextures(scene) {
       for (let x = 0; x < TILE_SIZE; x += 1) {
         const n = (x * 17 + y * 23) % 7;
         if (n === 0) {
-          ctx.fillStyle = '#68a42c';
+          ctx.fillStyle = '#305c2c';
           ctx.fillRect(x, y, 1, 1);
         } else if (n === 1) {
-          ctx.fillStyle = '#82be3a';
+          ctx.fillStyle = '#447a3e';
           ctx.fillRect(x, y, 1, 1);
         }
       }
@@ -56,13 +58,13 @@ export function registerWorldTextures(scene) {
       { x: 6, y: 24 }, { x: 22, y: 26 },
     ];
     blades.forEach((b) => {
-      ctx.fillStyle = '#558e20'; // Root shadow
+      ctx.fillStyle = '#244420'; // Root shadow
       ctx.fillRect(b.x, b.y + 2, 3, 1);
-      ctx.fillStyle = '#8ec942'; // Left blade
+      ctx.fillStyle = '#4e8a46'; // Left blade
       ctx.fillRect(b.x, b.y, 1, 2);
-      ctx.fillStyle = '#9fe04e'; // Tall center highlight blade
+      ctx.fillStyle = '#5c9e52'; // Tall center highlight blade
       ctx.fillRect(b.x + 1, b.y - 1, 1, 3);
-      ctx.fillStyle = '#84c238'; // Right blade
+      ctx.fillStyle = '#488240'; // Right blade
       ctx.fillRect(b.x + 2, b.y, 1, 2);
     });
   });
@@ -336,7 +338,9 @@ export function registerWorldTextures(scene) {
   tCtx.drawImage(stoneCanvas, TILE_SIZE * 2, 0);
   tCtx.drawImage(soilCanvas, TILE_SIZE * 3, 0);
   tCtx.drawImage(waterCanvas, TILE_SIZE * 4, 0);
-  scene.textures.addCanvas('world_tiles', terrainCanvas);
+  if (!scene.textures.exists('world_tiles')) {
+    scene.textures.addCanvas('world_tiles', terrainCanvas);
+  }
 
   // =========================================================================
   // 2. DETAILED ENVIRONMENTAL PROPS
@@ -404,7 +408,9 @@ export function registerWorldTextures(scene) {
     drawWin(18, 44);
     drawWin(64, 44);
   });
-  scene.textures.addCanvas('prop_house', houseCanvas);
+  if (!scene.textures.exists('prop_house')) {
+    scene.textures.addCanvas('prop_house', houseCanvas);
+  }
 
   // Layered Pine Tree (48x64)
   const treeCanvas = createTileCanvas(48, 64, (ctx) => {
@@ -442,7 +448,9 @@ export function registerWorldTextures(scene) {
     ctx.ellipse(24, 13, 9, 6, 0, 0, Math.PI * 2);
     ctx.fill();
   });
-  scene.textures.addCanvas('prop_tree', treeCanvas);
+  if (!scene.textures.exists('prop_tree')) {
+    scene.textures.addCanvas('prop_tree', treeCanvas);
+  }
 
   // Storage Vault Chest (32x32)
   const chestCanvas = createTileCanvas(32, 32, (ctx) => {
@@ -469,7 +477,9 @@ export function registerWorldTextures(scene) {
     ctx.fillStyle = '#18181b';
     ctx.fillRect(15, 18, 2, 2);
   });
-  scene.textures.addCanvas('prop_chest', chestCanvas);
+  if (!scene.textures.exists('prop_chest')) {
+    scene.textures.addCanvas('prop_chest', chestCanvas);
+  }
 
   // Blacksmith Forge Anvil & Workbench (32x32)
   const benchCanvas = createTileCanvas(32, 32, (ctx) => {
@@ -498,7 +508,9 @@ export function registerWorldTextures(scene) {
     ctx.fillStyle = '#71717a';
     ctx.fillRect(21, 7, 4, 2);
   });
-  scene.textures.addCanvas('prop_workbench', benchCanvas);
+  if (!scene.textures.exists('prop_workbench')) {
+    scene.textures.addCanvas('prop_workbench', benchCanvas);
+  }
 
   // Sylvan Carved Monolith Shrine (32x32)
   const shrineCanvas = createTileCanvas(32, 32, (ctx) => {
@@ -526,7 +538,9 @@ export function registerWorldTextures(scene) {
     ctx.fillStyle = '#a7f3d0';
     ctx.fillRect(15, 14, 2, 2); // Center gleam
   });
-  scene.textures.addCanvas('prop_shrine', shrineCanvas);
+  if (!scene.textures.exists('prop_shrine')) {
+    scene.textures.addCanvas('prop_shrine', shrineCanvas);
+  }
 
   // =========================================================================
   // 2b. CITY & ADVENTURERS' GUILD MASTER PROPS (Canvas Fallbacks)
@@ -537,7 +551,7 @@ export function registerWorldTextures(scene) {
     const guildBoardCanvas = createTileCanvas(32, 32, (ctx) => {
       ctx.fillStyle = 'rgba(0,0,0,0.35)';
       ctx.beginPath();
-      ctx.ellipse(16, 29, 12, 3, 0, Math.PI * 2);
+      ctx.ellipse(16, 29, 12, 3, 0, 0, Math.PI * 2);
       ctx.fill();
       // Wooden board frame
       ctx.fillStyle = '#451a03';
@@ -567,7 +581,7 @@ export function registerWorldTextures(scene) {
     const guildDeskCanvas = createTileCanvas(48, 32, (ctx) => {
       ctx.fillStyle = 'rgba(0,0,0,0.35)';
       ctx.beginPath();
-      ctx.ellipse(24, 28, 20, 4, 0, Math.PI * 2);
+      ctx.ellipse(24, 28, 20, 4, 0, 0, Math.PI * 2);
       ctx.fill();
       // Desk counter
       ctx.fillStyle = '#451a03';
@@ -593,7 +607,7 @@ export function registerWorldTextures(scene) {
     const furnaceCanvas = createTileCanvas(32, 32, (ctx) => {
       ctx.fillStyle = 'rgba(0,0,0,0.4)';
       ctx.beginPath();
-      ctx.ellipse(16, 29, 14, 3, 0, Math.PI * 2);
+      ctx.ellipse(16, 29, 14, 3, 0, 0, Math.PI * 2);
       ctx.fill();
       // Stone chimney & kiln
       ctx.fillStyle = '#374151';
@@ -618,7 +632,7 @@ export function registerWorldTextures(scene) {
     const anvilCanvas = createTileCanvas(32, 32, (ctx) => {
       ctx.fillStyle = 'rgba(0,0,0,0.35)';
       ctx.beginPath();
-      ctx.ellipse(16, 28, 11, 3, 0, Math.PI * 2);
+      ctx.ellipse(16, 28, 11, 3, 0, 0, Math.PI * 2);
       ctx.fill();
       // Oak stump base
       ctx.fillStyle = '#451a03';
@@ -640,7 +654,7 @@ export function registerWorldTextures(scene) {
     const marketCanvas = createTileCanvas(48, 32, (ctx) => {
       ctx.fillStyle = 'rgba(0,0,0,0.35)';
       ctx.beginPath();
-      ctx.ellipse(24, 28, 20, 4, 0, Math.PI * 2);
+      ctx.ellipse(24, 28, 20, 4, 0, 0, Math.PI * 2);
       ctx.fill();
       // Counter
       ctx.fillStyle = '#78350f';
@@ -670,7 +684,7 @@ export function registerWorldTextures(scene) {
     const innBedCanvas = createTileCanvas(32, 32, (ctx) => {
       ctx.fillStyle = 'rgba(0,0,0,0.3)';
       ctx.beginPath();
-      ctx.ellipse(16, 28, 12, 3, 0, Math.PI * 2);
+      ctx.ellipse(16, 28, 12, 3, 0, 0, Math.PI * 2);
       ctx.fill();
       // Bed frame
       ctx.fillStyle = '#5c2b05';
@@ -692,21 +706,21 @@ export function registerWorldTextures(scene) {
     const fountainCanvas = createTileCanvas(48, 48, (ctx) => {
       ctx.fillStyle = 'rgba(0,0,0,0.35)';
       ctx.beginPath();
-      ctx.ellipse(24, 42, 20, 5, 0, Math.PI * 2);
+      ctx.ellipse(24, 42, 20, 5, 0, 0, Math.PI * 2);
       ctx.fill();
       // Stone basin
       ctx.fillStyle = '#4b5563';
       ctx.beginPath();
-      ctx.ellipse(24, 28, 20, 14, 0, Math.PI * 2);
+      ctx.ellipse(24, 28, 20, 14, 0, 0, Math.PI * 2);
       ctx.fill();
       // Clear pool water
       ctx.fillStyle = '#0284c7';
       ctx.beginPath();
-      ctx.ellipse(24, 28, 16, 10, 0, Math.PI * 2);
+      ctx.ellipse(24, 28, 16, 10, 0, 0, Math.PI * 2);
       ctx.fill();
       ctx.fillStyle = '#38bdf8';
       ctx.beginPath();
-      ctx.ellipse(24, 27, 12, 6, 0, Math.PI * 2);
+      ctx.ellipse(24, 27, 12, 6, 0, 0, Math.PI * 2);
       ctx.fill();
       // Center pedestal & water jet
       ctx.fillStyle = '#6b7280';
@@ -723,7 +737,7 @@ export function registerWorldTextures(scene) {
     const noticeBoardCanvas = createTileCanvas(32, 32, (ctx) => {
       ctx.fillStyle = 'rgba(0,0,0,0.3)';
       ctx.beginPath();
-      ctx.ellipse(16, 28, 9, 3, 0, Math.PI * 2);
+      ctx.ellipse(16, 28, 9, 3, 0, 0, Math.PI * 2);
       ctx.fill();
       // Post
       ctx.fillStyle = '#451a03';
@@ -746,7 +760,7 @@ export function registerWorldTextures(scene) {
     const roadSignCanvas = createTileCanvas(32, 32, (ctx) => {
       ctx.fillStyle = 'rgba(0,0,0,0.3)';
       ctx.beginPath();
-      ctx.ellipse(16, 29, 8, 3, 0, Math.PI * 2);
+      ctx.ellipse(16, 29, 8, 3, 0, 0, Math.PI * 2);
       ctx.fill();
       // Post
       ctx.fillStyle = '#451a03';
@@ -824,7 +838,7 @@ export function registerWorldTextures(scene) {
       // Shadow
       ctx.fillStyle = 'rgba(0,0,0,0.3)';
       ctx.beginPath();
-      ctx.ellipse(24, 26, 20, 5, 0, Math.PI * 2);
+      ctx.ellipse(24, 26, 20, 5, 0, 0, Math.PI * 2);
       ctx.fill();
       // Table top
       ctx.fillStyle = '#5c2b05';
@@ -1181,10 +1195,10 @@ export function registerWorldTextures(scene) {
     ctx.fillRect(11, 19, 2, 2);
   });
 
-  scene.textures.addCanvas('ore_iron', makeOreSprite('#a1a1aa', '#f4f4f5'));
-  scene.textures.addCanvas('ore_copper', makeOreSprite('#d97706', '#fbbf24'));
-  scene.textures.addCanvas('ore_gold', makeOreSprite('#eab308', '#fef08a'));
-  scene.textures.addCanvas('ore_crystal', makeOreSprite('#a855f7', '#f5d0fe'));
+  if (!scene.textures.exists('ore_iron')) scene.textures.addCanvas('ore_iron', makeOreSprite('#a1a1aa', '#f4f4f5'));
+  if (!scene.textures.exists('ore_copper')) scene.textures.addCanvas('ore_copper', makeOreSprite('#d97706', '#fbbf24'));
+  if (!scene.textures.exists('ore_gold')) scene.textures.addCanvas('ore_gold', makeOreSprite('#eab308', '#fef08a'));
+  if (!scene.textures.exists('ore_crystal')) scene.textures.addCanvas('ore_crystal', makeOreSprite('#a855f7', '#f5d0fe'));
 
   // =========================================================================
   // 4. 4-STAGE FARMING CROPS

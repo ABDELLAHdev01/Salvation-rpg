@@ -91,7 +91,7 @@ export default function BeginnerTutorialStepper({
 
   return (
     <aside
-      className="rpg-panel-brown pointer-events-auto fixed bottom-3 left-4 z-30 flex flex-col gap-2 p-3.5 shadow-2xl backdrop-blur-md w-[92vw] max-w-lg animate-fadeIn border-2 border-amber-600/90"
+      className="rpg-panel-brown pointer-events-auto fixed bottom-3 left-3 z-30 flex flex-col gap-1.5 p-2.5 sm:p-3 shadow-2xl backdrop-blur-md w-[92vw] max-w-sm max-h-[85vh] overflow-y-auto animate-fadeIn border border-amber-600/80"
       aria-label="Warden Awakening Tutorial Stepper"
     >
       {/* 1. Header Bar: Title, Step Count & Minimize/Dismiss Controls */}

@@ -50,15 +50,15 @@ function createPixelBuffer(width, height) {
 async function generateAll() {
   if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
 
-  // 1. Lush Seamless Meadow Grass (32x32)
+  // 1. Lush Seamless Meadow Grass (32x32) - Soothing classic RPG earth-green palette
   const grass = createPixelBuffer(32, 32);
-  grass.rect(0, 0, 32, 32, 118, 180, 52); // Base vibrant meadow green
+  grass.rect(0, 0, 32, 32, 58, 108, 54); // Soothing classic RPG meadow green
   // Subtle organic color modulation
   for (let y = 0; y < 32; y++) {
     for (let x = 0; x < 32; x++) {
       const n = (x * 17 + y * 23) % 7;
-      if (n === 0) grass.set(x, y, 106, 166, 44);
-      else if (n === 1) grass.set(x, y, 126, 190, 58);
+      if (n === 0) grass.set(x, y, 48, 92, 44);
+      else if (n === 1) grass.set(x, y, 68, 122, 62);
     }
   }
   // Pixel grass blade clusters (tiled organically)
@@ -68,11 +68,11 @@ async function generateAll() {
   ];
   for (const b of blades) {
     // shadow base
-    grass.rect(b.x, b.y + 2, 3, 1, 88, 142, 32);
+    grass.rect(b.x, b.y + 2, 3, 1, 36, 68, 32);
     // blade stems
-    grass.rect(b.x, b.y, 1, 2, 140, 205, 66);
-    grass.rect(b.x + 1, b.y - 1, 1, 3, 155, 222, 78);
-    grass.rect(b.x + 2, b.y, 1, 2, 134, 198, 60);
+    grass.rect(b.x, b.y, 1, 2, 78, 138, 70);
+    grass.rect(b.x + 1, b.y - 1, 1, 3, 92, 158, 82);
+    grass.rect(b.x + 2, b.y, 1, 2, 72, 130, 66);
   }
   await grass.save('tile_grass.png');
 

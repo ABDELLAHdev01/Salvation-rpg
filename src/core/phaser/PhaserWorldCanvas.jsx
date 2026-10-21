@@ -139,7 +139,7 @@ export default function PhaserWorldCanvas({
       parent: containerRef.current,
       width: w,
       height: h,
-      backgroundColor: '#265c2b',
+      backgroundColor: '#0c0d12',
       pixelArt: true,
       input: {
         keyboard: true,
@@ -159,6 +159,7 @@ export default function PhaserWorldCanvas({
 
     const game = new Phaser.Game(config);
     gameRef.current = game;
+    window.__PHASER_GAME__ = game;
 
     // Cleanly add and start WorldScene with initial payload
     game.scene.add('WorldScene', WorldScene, true, {
