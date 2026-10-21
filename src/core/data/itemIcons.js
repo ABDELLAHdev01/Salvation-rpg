@@ -4,10 +4,16 @@
  */
 
 export const ITEM_ICON_MAP = {
-  // Potions & Elixirs
-  'health-potion': '/assets/items/item_health_potion.png',
-  'mana-potion': '/assets/items/item_mana_potion.png',
-  'stamina-tonic': '/assets/items/item_mana_potion.png',
+  // Potions & Elixirs (CraftPix authentic 32x32 pixel art)
+  'health-potion': '/assets/items/potion_health.png',
+  'potion-health': '/assets/items/potion_health.png',
+  'mana-potion': '/assets/items/potion_mana.png',
+  'potion-mana': '/assets/items/potion_mana.png',
+  'stamina-tonic': '/assets/items/potion_stamina.png',
+  'potion-greater': '/assets/items/potion_health_greater.png',
+  'potion-rejuvenation': '/assets/items/potion_rejuvenation.png',
+  'potion-stamina': '/assets/items/potion_stamina.png',
+  'potion-strength': '/assets/items/potion_strength.png',
 
   // Raw Ores & Minerals
   iron: '/assets/items/item_iron_ore.png',
@@ -33,12 +39,14 @@ export const ITEM_ICON_MAP = {
   oak_staff: '/assets/items/item_wand.png',
   wand: '/assets/items/item_wand.png',
 
-  // Harvested Farm Crops
+  // Harvested Farm Crops & Goods
   turnip: '/assets/items/item_turnip.png',
   wheat: '/assets/items/item_wheat.png',
   herb: '/assets/items/item_herb.png',
   moonberry: '/assets/items/item_moonberry.png',
   sunroot: '/assets/items/item_sunroot.png',
+  egg: '/assets/items/item_egg.png',
+  wool: '/assets/items/item_wool.png',
 
   // Seed Varieties
   'seed-turnip': '/assets/items/item_seed_pouch.png',
@@ -47,9 +55,13 @@ export const ITEM_ICON_MAP = {
   'seed-moonberry': '/assets/items/item_seed_pouch.png',
   'seed-sunroot': '/assets/items/item_seed_pouch.png',
 
-  // Monster Drops & Quests
+  // Monster Drops, Hunt Loot & Quests
   'slime-gel': '/assets/items/item_slime_gel.png',
   'wolf-pelt': '/assets/items/item_wolf_pelt.png',
+  'boar-meat': '/assets/items/item_meat.png',
+  'beast-hide': '/assets/items/item_hide.png',
+  'fox-pelt': '/assets/items/item_fox_pelt.png',
+  'dungeon-relic': '/assets/items/item_relic.png',
   'bone-shard': '/assets/items/item_bone_shard.png',
   'contract-sigil': '/assets/items/item_contract_sigil.png',
   'gold-coin': '/assets/items/item_gold_coin.png',
@@ -64,7 +76,7 @@ export function getItemIcon(itemId) {
 
   const lower = String(itemId).toLowerCase();
   if (lower.startsWith('seed')) return '/assets/items/item_seed_pouch.png';
-  if (lower.includes('potion') || lower.includes('elixir')) return '/assets/items/item_health_potion.png';
+  if (lower.includes('potion') || lower.includes('elixir')) return '/assets/items/potion_health.png';
   if (lower.includes('ore') || lower.includes('stone') || lower.includes('rock')) return '/assets/items/item_iron_ore.png';
   if (lower.includes('bar') || lower.includes('ingot')) return '/assets/items/item_iron_bar.png';
   if (lower.includes('sword') || lower.includes('blade')) return '/assets/items/item_sword.png';

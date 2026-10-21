@@ -13,6 +13,7 @@ export const GUILD_RANKS = [
     minRenown: 0,
     perk: 'Allowed entry to Adventurers\' Guild notice boards and basic hunting bounties.',
     badgeColor: '#a3a3a3',
+    crest: '/assets/ui/guild/crest_copper.png',
   },
   {
     id: 'bronze',
@@ -20,6 +21,7 @@ export const GUILD_RANKS = [
     minRenown: 50,
     perk: '+5% combat knockback force and unlocked Cavern Seam exploration bounties.',
     badgeColor: '#cd7f32',
+    crest: '/assets/ui/guild/crest_iron.png',
   },
   {
     id: 'silver',
@@ -27,6 +29,7 @@ export const GUILD_RANKS = [
     minRenown: 150,
     perk: '+10% merchant valuation on gathered materials and unlocked Tempered Broadsword recipes.',
     badgeColor: '#c0c0c0',
+    crest: '/assets/ui/guild/crest_silver.png',
   },
   {
     id: 'gold',
@@ -34,6 +37,7 @@ export const GUILD_RANKS = [
     minRenown: 300,
     perk: 'Access to Shadowfang Stalker alpha bounties and +15 Max Health bonus.',
     badgeColor: '#ffd700',
+    crest: '/assets/ui/guild/crest_gold.png',
   },
   {
     id: 'platinum',
@@ -41,6 +45,7 @@ export const GUILD_RANKS = [
     minRenown: 500,
     perk: 'Access to Deepforge Vault expeditions and 15% discount on all seeds at the Bazaar.',
     badgeColor: '#e5e4e2',
+    crest: '/assets/ui/guild/crest_gold.png',
   },
   {
     id: 'mythic',
@@ -48,6 +53,7 @@ export const GUILD_RANKS = [
     minRenown: 800,
     perk: 'Honorary Vanguard of Salvation with full realm renown and master artisan blue-ribbon status.',
     badgeColor: '#a855f7',
+    crest: '/assets/ui/guild/crest_mithril.png',
   },
 ];
 
@@ -221,6 +227,25 @@ export const CONTRACT_REGISTRY = [
       items: { 'health-potion': 2, 'seed-moonberry': 3 },
     },
   },
+  {
+    id: 'guild_06_boar_cull',
+    category: CONTRACT_CATEGORIES.GUILD,
+    title: 'Cull the Bristleback Boars',
+    kicker: 'Guild Bounty · West Road & Frontier',
+    summary: 'Wild Bristleback Boars have migrated along the King\'s Highway, harassing travelers and raiding crops. Subdue the beasts and harvest their tough hides.',
+    minRank: 'recruit',
+    requiresTurnIn: true,
+    turnInNpc: 'Guild Warden Michelle',
+    objectives: [
+      { id: 'kill_boars', label: 'Hunt Bristleback Boars', type: 'defeat_enemy', enemyType: 'boar_bristleback', target: 2, current: 0 },
+    ],
+    rewards: {
+      gold: 240,
+      xp: 190,
+      renown: 35,
+      items: { 'boar-meat': 2, 'beast-hide': 2 },
+    },
+  },
 
   // =========================================================================
   // 3. EXPLORATION DISCOVERIES (Hidden Shrines, Vistas, Landmarks)
@@ -277,6 +302,24 @@ export const CONTRACT_REGISTRY = [
       xp: 220,
       renown: 35,
       items: { 'gold-ore': 2 },
+    },
+  },
+  {
+    id: 'disc_05_cavern_chest',
+    category: CONTRACT_CATEGORIES.DISCOVERY,
+    title: 'Secrets of the Deepforge Chest',
+    kicker: 'Discovery · Cavern Depths',
+    summary: 'Ancient miners locked their precious finds in ironbound chests within Deepforge Caverns. Delve into the lower sanctum and unlock the forgotten relic vault.',
+    minRank: 'bronze',
+    requiresTurnIn: false,
+    objectives: [
+      { id: 'open_cavern_chest', label: 'Unlock Ancient Cavern Relic Chest', type: 'interact_prop', propId: 'prop_dungeon_chest', target: 1, current: 0 },
+    ],
+    rewards: {
+      gold: 260,
+      xp: 240,
+      renown: 45,
+      items: { 'dungeon-relic': 1, 'gold-bar': 2 },
     },
   },
 
@@ -521,11 +564,24 @@ export function recordContractProgress(eventType, payload, activeContracts = [])
 
       let increment = 0;
       switch (objDef.type) {
-        case 'defeat_enemy':
-          if (eventType === 'combat:enemy_defeated' && payload?.enemyType === objDef.enemyType) {
+        case 'defeat_enemy': {
+          const eId = String(payload?.enemyType || '').toLowerCase();
+          const targetId = String(objDef.enemyType || '').toLowerCase();
+          if (
+            eId === targetId ||
+            (targetId.includes('slime') && eId.includes('slime')) ||
+            (targetId.includes('wolf') && eId.includes('wolf')) ||
+            (targetId.includes('skeleton') && eId.includes('skeleton')) ||
+            (targetId.includes('goblin') && eId.includes('goblin')) ||
+            (targetId.includes('boar') && eId.includes('boar')) ||
+            (targetId.includes('fox') && eId.includes('fox')) ||
+            (targetId.includes('slime_king') && eId.includes('slime_king')) ||
+            (targetId.includes('drakmor') && eId.includes('drakmor'))
+          ) {
             increment = 1;
           }
           break;
+        }
         case 'harvest_crop':
           if (eventType === 'farm:harvest' && (!objDef.cropId || payload?.cropId === objDef.cropId)) {
             increment = 1;

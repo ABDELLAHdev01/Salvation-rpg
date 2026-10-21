@@ -99,6 +99,11 @@ export default defineConfig({
   },
 
   // Optimize dependencies pre-bundling
+  server: {
+    watch: {
+      ignored: ['**/assets_source/**', '**/scripts/**']
+    }
+  },
   optimizeDeps: {
     include: [
       'react',

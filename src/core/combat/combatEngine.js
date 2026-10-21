@@ -218,6 +218,41 @@ export const MONSTER_TYPES = {
       { itemId: 'steel_broadsword', chance: 0.5, amount: 1 },
     ],
   },
+  boar_bristleback: {
+    id: 'boar_bristleback',
+    name: 'Bristleback Boar',
+    texture: 'boar_walk',
+    maxHp: 70,
+    speed: 70,
+    damage: 14,
+    defense: 4,
+    aggroRange: 160,
+    attackRange: 34,
+    attackCooldownMs: 1000,
+    xpReward: 32,
+    goldReward: { min: 8, max: 16 },
+    lootTable: [
+      { itemId: 'boar-meat', chance: 0.85, amount: 2 },
+      { itemId: 'beast-hide', chance: 0.60, amount: 1 },
+    ],
+  },
+  fox_amber: {
+    id: 'fox_amber',
+    name: 'Amber Fox',
+    texture: 'fox_walk',
+    maxHp: 35,
+    speed: 90,
+    damage: 6,
+    defense: 2,
+    aggroRange: 120,
+    attackRange: 30,
+    attackCooldownMs: 800,
+    xpReward: 16,
+    goldReward: { min: 4, max: 8 },
+    lootTable: [
+      { itemId: 'fox-pelt', chance: 0.75, amount: 1 },
+    ],
+  },
 };
 
 export const ENEMY_STATES = {

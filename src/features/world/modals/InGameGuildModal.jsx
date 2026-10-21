@@ -94,8 +94,17 @@ export default function InGameGuildModal({
         {/* Header: Guild Crest & NPC Greeting */}
         <div className="flex items-center justify-between border-b border-amber-900/50 pb-4">
           <div className="flex items-center gap-3">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-yellow-500/50 bg-yellow-500/10 text-2xl shadow-inner">
-              ⚔️
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-yellow-500/50 bg-yellow-500/10 p-1 shadow-inner">
+              <img
+                src={currentRank.crest || '/assets/ui/guild/crest_gold.png'}
+                alt="Guild Crest"
+                className="h-10 w-10 object-contain drop-shadow"
+                style={{ imageRendering: 'pixelated' }}
+                onError={(e) => {
+                  e.target.style.display = 'none';
+                  e.target.parentNode.textContent = '⚔️';
+                }}
+              />
             </div>
             <div>
               <div className="flex items-center gap-2">
@@ -126,12 +135,21 @@ export default function InGameGuildModal({
         {/* Guild Rank & Renown Progress Banner */}
         <div className="rpg-slot-inset my-3 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-3.5 bg-stone-950/70">
           <div className="flex items-center gap-3">
-            <div
-              className="flex h-10 w-10 items-center justify-center rounded-xl font-bold font-mono text-sm border shadow"
-              style={{ backgroundColor: `${currentRank.badgeColor}22`, borderColor: currentRank.badgeColor, color: currentRank.badgeColor }}
-            >
-              ★
-            </div>
+            {currentRank.crest ? (
+              <img
+                src={currentRank.crest}
+                alt={currentRank.name}
+                className="h-10 w-10 object-contain drop-shadow"
+                style={{ imageRendering: 'pixelated' }}
+              />
+            ) : (
+              <div
+                className="flex h-10 w-10 items-center justify-center rounded-xl font-bold font-mono text-sm border shadow"
+                style={{ backgroundColor: `${currentRank.badgeColor}22`, borderColor: currentRank.badgeColor, color: currentRank.badgeColor }}
+              >
+                ★
+              </div>
+            )}
             <div>
               <div className="flex items-center gap-2">
                 <span className="font-serif text-sm font-bold text-white">

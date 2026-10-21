@@ -18,6 +18,7 @@ import InGameHelpModal from './modals/InGameHelpModal';
 import InGameFishingModal from './modals/InGameFishingModal';
 import InGamePetModal from './modals/InGamePetModal';
 import { COMPANIONS } from '../../core/data/companionData';
+import { recordContractProgress, claimContractReward } from '../../core/quests/guildContracts';
 import WorldMinimap from './components/WorldMinimap';
 import BeginnerTutorialStepper from './components/BeginnerTutorialStepper';
 
@@ -185,11 +186,40 @@ export default function WorldPage() {
     loadActiveHero();
   }, [loadActiveHero]);
 
+  // Unified Guild Contract & In-Game Progression Tracker
+  const dispatchContractEvent = useCallback((eventType, payload) => {
+    setProfile((prev) => {
+      if (!prev) return prev;
+      const { updated, activeContracts, autoCompleted } = recordContractProgress(
+        eventType,
+        payload,
+        prev.activeContracts || []
+      );
+      if (!updated) return prev;
+
+      const nextProfile = { ...prev, activeContracts };
+
+      if (autoCompleted && autoCompleted.length > 0) {
+        autoCompleted.forEach((cid) => {
+          const claimRes = claimContractReward(cid, nextProfile);
+          if (claimRes.success) {
+            toast.success(`Completed: ${claimRes.contract.title}! +${claimRes.rewardsGranted.renown} Renown`, { icon: '⭐' });
+            Object.assign(nextProfile, claimRes.updatedProfile);
+          }
+        });
+      }
+
+      characterService.saveMockProfile(prev.username || 'offline-hero', nextProfile);
+      return nextProfile;
+    });
+  }, []);
+
   // Listen to zone changes and in-game modal triggers from Phaser
   useEffect(() => {
     const cleanups = [
       gameEventBridge.on(gameEvents.ZONE_CHANGED, ({ zone }) => {
         setCurrentZone(zone);
+        dispatchContractEvent('zone:changed', { zone });
       }),
       gameEventBridge.on(gameEvents.PLAYER_MOVED, ({ x, y, facing }) => {
         setPlayerPosition({ x, y });
@@ -206,6 +236,7 @@ export default function WorldPage() {
       }),
       gameEventBridge.on('OPEN_IN_GAME_GUILD', () => {
         setIsGuildOpen(true);
+        dispatchContractEvent('guild:visited', {});
       }),
       gameEventBridge.on(gameEvents.OPEN_FISHING, () => {
         setIsFishingOpen(true);
@@ -229,6 +260,71 @@ export default function WorldPage() {
       gameEventBridge.on(gameEvents.COMBAT_PLAYER_HEAL, ({ hp, maxHp }) => {
         if (hp !== undefined) setPlayerHp(hp);
         if (maxHp !== undefined) setPlayerMaxHp(maxHp);
+      }),
+      gameEventBridge.on(gameEvents.COMBAT_ENEMY_DEFEATED, (payload) => {
+        dispatchContractEvent('combat:enemy_defeated', {
+          enemyType: payload?.enemyType || payload?.monster?.id,
+          enemyTexture: payload?.monster?.texture,
+        });
+        if (payload?.loot) {
+          setProfile((prev) => {
+            if (!prev) return prev;
+            const nextProfile = {
+              ...prev,
+              gold: (prev.gold || 0) + (payload.loot.gold || 0),
+              inventory: { ...(prev.inventory || {}) },
+            };
+            if (Array.isArray(payload.loot.items)) {
+              payload.loot.items.forEach((item) => {
+                const count = nextProfile.inventory[item.itemId] || 0;
+                nextProfile.inventory[item.itemId] = count + item.amount;
+              });
+            }
+            characterService.saveMockProfile(prev.username || 'offline-hero', nextProfile);
+            return nextProfile;
+          });
+        }
+      }),
+      gameEventBridge.on(gameEvents.CHEST_OPEN, () => {
+        setIsInventoryOpen(true);
+        dispatchContractEvent('chest:open', {});
+      }),
+      gameEventBridge.on(gameEvents.GUILD_VISITED, () => {
+        dispatchContractEvent('guild:visited', {});
+      }),
+      gameEventBridge.on(gameEvents.PROP_INTERACT, (payload) => {
+        dispatchContractEvent('prop:interacted', payload);
+      }),
+      gameEventBridge.on('farm:harvest', (payload) => {
+        dispatchContractEvent('farm:harvest', payload);
+      }),
+      gameEventBridge.on('mine:shatter', (payload) => {
+        dispatchContractEvent('mine:shatter', payload);
+      }),
+      gameEventBridge.on('forge:crafted', (payload) => {
+        dispatchContractEvent('forge:crafted', payload);
+      }),
+      gameEventBridge.on('fish:caught', (payload) => {
+        dispatchContractEvent('fish:caught', payload);
+      }),
+      gameEventBridge.on('LOOT_ACQUIRED', ({ itemId, amount = 1 }) => {
+        if (!itemId) return;
+        setProfile((prev) => {
+          if (!prev) return prev;
+          const currentCount = prev.inventory?.[itemId] || 0;
+          const nextProfile = {
+            ...prev,
+            inventory: {
+              ...(prev.inventory || {}),
+              [itemId]: currentCount + amount,
+            },
+          };
+          characterService.saveMockProfile(prev.username || 'offline-hero', nextProfile);
+          return nextProfile;
+        });
+      }),
+      gameEventBridge.on('RESTED_IN_BED', () => {
+        toast.success('Rested comfortably in bed! Health fully restored.', { icon: '🛏️' });
       }),
     ];
 

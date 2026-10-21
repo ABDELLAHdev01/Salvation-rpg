@@ -146,6 +146,44 @@ export default class WorldScene extends Phaser.Scene {
       this.load.image('prop_town_fountain', '/assets/tilesets/prop_town_fountain.png');
       this.load.image('prop_notice_board', '/assets/tilesets/prop_notice_board.png');
       this.load.image('prop_road_sign', '/assets/tilesets/prop_road_sign.png');
+
+      // 5. Preload Authenticated CraftPix Purchased RPG Assets
+      // Cottage Exterior & Interior
+      this.load.image('tile_cottage_floor', '/assets/tilesets/tile_cottage_floor.png');
+      this.load.image('tile_cottage_wall', '/assets/tilesets/tile_cottage_wall.png');
+      this.load.image('prop_cottage_bed', '/assets/tilesets/prop_cottage_bed.png');
+      this.load.image('prop_cottage_fireplace', '/assets/tilesets/prop_cottage_fireplace.png');
+      this.load.image('prop_cottage_table', '/assets/tilesets/prop_cottage_table.png');
+      this.load.image('prop_cottage_bookshelf', '/assets/tilesets/prop_cottage_bookshelf.png');
+      this.load.image('prop_cottage_rug', '/assets/tilesets/prop_cottage_rug.png');
+      this.load.image('prop_cottage_cabinet', '/assets/tilesets/prop_cottage_cabinet.png');
+      this.load.image('prop_manor_house', '/assets/tilesets/prop_manor_house.png');
+
+      // Deepforge Caverns & Dungeon
+      this.load.image('tile_dungeon_floor', '/assets/tilesets/tile_dungeon_floor.png');
+      this.load.image('tile_dungeon_wall', '/assets/tilesets/tile_dungeon_wall.png');
+      this.load.image('prop_dungeon_chest', '/assets/tilesets/prop_dungeon_chest.png');
+      this.load.image('prop_dungeon_urn', '/assets/tilesets/prop_dungeon_urn.png');
+      this.load.image('prop_dungeon_torch', '/assets/tilesets/prop_dungeon_torch.png');
+
+      // Top-Down Natural Trees & Roads
+      this.load.image('prop_tree_oak', '/assets/tilesets/prop_tree_oak.png');
+      this.load.image('prop_tree_pine', '/assets/tilesets/prop_tree_pine.png');
+      this.load.image('prop_tree_apple', '/assets/tilesets/prop_tree_apple.png');
+      this.load.image('tile_cobblestone', '/assets/tilesets/tile_cobblestone.png');
+
+      // Blacksmith Forge Workshop & City NPCs
+      this.load.image('prop_artisan_forge', '/assets/tilesets/prop_artisan_forge.png');
+      this.load.image('npc_blacksmith', '/assets/tilesets/npc_blacksmith.png');
+      this.load.image('npc_merchant', '/assets/tilesets/npc_merchant.png');
+
+      // Animated Mobs & Animals (CraftPix 32x32 spritesheets)
+      this.load.spritesheet('boar_walk', '/assets/enemies/boar_walk.png', { frameWidth: 32, frameHeight: 32 });
+      this.load.spritesheet('boar_attack', '/assets/enemies/boar_attack.png', { frameWidth: 32, frameHeight: 32 });
+      this.load.spritesheet('boar_death', '/assets/enemies/boar_death.png', { frameWidth: 32, frameHeight: 32 });
+      this.load.spritesheet('fox_walk', '/assets/enemies/fox_walk.png', { frameWidth: 32, frameHeight: 32 });
+      this.load.spritesheet('sheep_walk', '/assets/props/farm_animals/sheep_walk.png', { frameWidth: 32, frameHeight: 32 });
+      this.load.spritesheet('rooster_walk', '/assets/props/farm_animals/rooster_walk.png', { frameWidth: 32, frameHeight: 32 });
     } catch {
       // Safe fallback
     }
@@ -286,6 +324,12 @@ export default class WorldScene extends Phaser.Scene {
       { key: 'anim_pet_sheepdog', sheet: 'pet_sheepdog', rate: 6 },
       { key: 'anim_pet_wisp', sheet: 'pet_wisp', rate: 5 },
       { key: 'anim_pet_falcon', sheet: 'pet_falcon', rate: 7 },
+      // CraftPix Authenticated Animations
+      { key: 'anim_boar_walk', sheet: 'boar_walk', rate: 8, end: 5 },
+      { key: 'anim_boar_attack', sheet: 'boar_attack', rate: 8, end: 4, repeat: 0 },
+      { key: 'anim_fox_walk', sheet: 'fox_walk', rate: 7, end: 5 },
+      { key: 'anim_sheep_walk', sheet: 'sheep_walk', rate: 4, end: 3 },
+      { key: 'anim_rooster_walk', sheet: 'rooster_walk', rate: 6, end: 3 },
     ];
     enemyAnims.forEach((ea) => {
       if (this.textures.exists(ea.sheet)) {
@@ -293,9 +337,9 @@ export default class WorldScene extends Phaser.Scene {
         try {
           this.anims.create({
             key: ea.key,
-            frames: this.anims.generateFrameNumbers(ea.sheet, { start: 0, end: 3 }),
+            frames: this.anims.generateFrameNumbers(ea.sheet, { start: 0, end: ea.end ?? 3 }),
             frameRate: ea.rate,
-            repeat: -1,
+            repeat: ea.repeat !== undefined ? ea.repeat : -1,
           });
         } catch {
           // Safe fallback for single-frame textures
@@ -648,11 +692,12 @@ export default class WorldScene extends Phaser.Scene {
         if (this.currentZone === 'homestead_interior') {
           // Inside cottage room only (x=11..29, y=8..22)
           if (x >= 11 && x <= 29 && y >= 8 && y <= 22) {
-            this.add.image(x * 32 + 16, y * 32 + 16, 'tile_wood_floor');
+            const floorTex = this.textures.exists('tile_cottage_floor') ? 'tile_cottage_floor' : 'tile_wood_floor';
+            this.add.image(x * 32 + 16, y * 32 + 16, floorTex);
           }
           continue;
         } else if (this.currentZone === 'mine') {
-          tileKey = 'tile_stone';
+          tileKey = this.textures.exists('tile_dungeon_floor') ? 'tile_dungeon_floor' : 'tile_stone';
         } else if (this.currentZone === 'village') {
           tileKey = 'tile_city_stone';
         } else {
@@ -783,11 +828,12 @@ export default class WorldScene extends Phaser.Scene {
       }
     }
 
-    // 1. Manor House
-    const house = this.add.image(14 * 32 + 16, 4 * 32, 'prop_house');
+    // 1. Manor House (Authentic CraftPix Character Home)
+    const houseTex = this.textures.exists('prop_manor_house') ? 'prop_manor_house' : 'prop_house';
+    const house = this.add.image(14 * 32 + 16, 4 * 32, houseTex);
     house.setDepth(15);
     const houseCollider = this.obstacles.create(14 * 32 + 16, 4 * 32 + 10, 'col_invisible');
-    houseCollider.setSize(80, 40);
+    houseCollider.setSize(88, 44);
     houseCollider.setVisible(false);
 
     // Flowerbed Planters flanking Manor Porch
@@ -823,13 +869,33 @@ export default class WorldScene extends Phaser.Scene {
     // 4. Perimeter Trees & Rustic Timber Fences
     for (let x = 2; x < 38; x += 3) {
       if (x < 12 || x > 18) {
-        const t = this.add.image(x * 32, 2 * 32, 'prop_tree');
+        const tTex = this.textures.exists('prop_tree_oak') ? 'prop_tree_oak' : 'prop_tree';
+        const t = this.add.image(x * 32, 2 * 32, tTex);
+        if (tTex === 'prop_tree_oak') t.setScale(0.5);
         t.setDepth(10);
         const col = this.obstacles.create(x * 32, 2 * 32 + 14, 'col_invisible');
         col.setSize(20, 16);
         col.setVisible(false);
       }
     }
+
+    // Homestead Apple Orchard Tree
+    if (this.textures.exists('prop_tree_apple')) {
+      const appleTree = this.obstacles.create(8 * 32, 14 * 32, 'prop_tree_apple');
+      appleTree.setScale(0.55);
+      appleTree.setDepth(14);
+      appleTree.setSize(32, 32);
+      this.registerInteractive(8 * 32, 14 * 32, 48, '[E] Pick Ripe Orchard Apple 🍎', () => {
+        audioManager.play('harvest');
+        this.showFloatingText(8 * 32, 14 * 32 - 18, '+1 Crisp Orchard Apple!', '#fde047');
+        gameEventBridge.emit('LOOT_ACQUIRED', { itemId: 'sunroot', amount: 1 });
+      });
+    }
+
+    // Ambient Farm Livestock (Sheep & Rooster)
+    this.spawnAmbientCreature('sheep', 6 * 32, 21 * 32);
+    this.spawnAmbientCreature('sheep', 10 * 32, 22 * 32);
+    this.spawnAmbientCreature('rooster', 14 * 32, 18 * 32);
 
     // Rustic Wood Fences around Farmstead Perimeter
     for (let fx = 4; fx <= 12; fx += 1) {
@@ -1003,32 +1069,35 @@ export default class WorldScene extends Phaser.Scene {
 
   buildHomesteadInteriorProps() {
     // 1. Interior Room Walls (Cozy 18x14 room from x=11 to 29, y=8 to 22)
+    const wallTex = this.textures.exists('tile_cottage_wall') ? 'tile_cottage_wall' : 'tile_indoor_wall';
     for (let x = 11; x <= 29; x += 1) {
-      const topWall = this.obstacles.create(x * 32 + 16, 8 * 32 + 16, 'tile_indoor_wall');
+      const topWall = this.obstacles.create(x * 32 + 16, 8 * 32 + 16, wallTex);
       topWall.setDepth(15);
       if (x !== 20) {
-        const btmWall = this.obstacles.create(x * 32 + 16, 22 * 32 + 16, 'tile_indoor_wall');
+        const btmWall = this.obstacles.create(x * 32 + 16, 22 * 32 + 16, wallTex);
         btmWall.setDepth(15);
       }
     }
     for (let y = 8; y <= 22; y += 1) {
-      const leftWall = this.obstacles.create(11 * 32 + 16, y * 32 + 16, 'tile_indoor_wall');
+      const leftWall = this.obstacles.create(11 * 32 + 16, y * 32 + 16, wallTex);
       leftWall.setDepth(15);
-      const rightWall = this.obstacles.create(29 * 32 + 16, y * 32 + 16, 'tile_indoor_wall');
+      const rightWall = this.obstacles.create(29 * 32 + 16, y * 32 + 16, wallTex);
       rightWall.setDepth(15);
     }
 
-    // 2. Cozy Bed (Restores Full Health)
-    const bed = this.obstacles.create(14 * 32, 11 * 32, 'prop_inn_bed');
+    // 2. Cozy Bed (Restores Full Health - Authentic CraftPix Bed)
+    const bedTex = this.textures.exists('prop_cottage_bed') ? 'prop_cottage_bed' : 'prop_inn_bed';
+    const bed = this.obstacles.create(14 * 32, 11 * 32, bedTex);
     bed.setDepth(16);
-    bed.setSize(28, 26);
+    bed.setSize(32, 32);
     this.registerInteractive(14 * 32, 11 * 32, 50, '[E] Sleep in Bed (+Restore Full Health) 🛏️', () => {
       this.restAtInn();
       gameEventBridge.emit('RESTED_IN_BED');
     });
 
     // 3. Fireplace Hearth
-    const fireplace = this.obstacles.create(20 * 32, 9 * 32, 'prop_fireplace');
+    const fpTex = this.textures.exists('prop_cottage_fireplace') ? 'prop_cottage_fireplace' : 'prop_fireplace';
+    const fireplace = this.obstacles.create(20 * 32, 9 * 32, fpTex);
     fireplace.setDepth(16);
     fireplace.setSize(44, 30);
     this.lightSources.push({
@@ -1042,16 +1111,19 @@ export default class WorldScene extends Phaser.Scene {
     });
 
     // 4. Velvet Rug
-    const rug = this.add.image(20 * 32, 15 * 32, 'prop_indoor_rug');
+    const rugTex = this.textures.exists('prop_cottage_rug') ? 'prop_cottage_rug' : 'prop_indoor_rug';
+    const rug = this.add.image(20 * 32, 15 * 32, rugTex);
     rug.setDepth(5);
 
     // 5. Dining Table & Stool
-    const diningTable = this.obstacles.create(25 * 32, 15 * 32, 'prop_table_chair');
+    const tblTex = this.textures.exists('prop_cottage_table') ? 'prop_cottage_table' : 'prop_table_chair';
+    const diningTable = this.obstacles.create(25 * 32, 15 * 32, tblTex);
     diningTable.setDepth(16);
     diningTable.setSize(42, 24);
 
     // 6. Arcane Bookshelf
-    const bookshelf = this.obstacles.create(26 * 32, 10 * 32, 'prop_bookshelf');
+    const shelfTex = this.textures.exists('prop_cottage_bookshelf') ? 'prop_cottage_bookshelf' : 'prop_bookshelf';
+    const bookshelf = this.obstacles.create(26 * 32, 10 * 32, shelfTex);
     bookshelf.setDepth(16);
     bookshelf.setSize(28, 38);
     this.registerInteractive(26 * 32, 10 * 32, 45, '[E] Read Sunforge Chronicles', () => {
@@ -1059,6 +1131,17 @@ export default class WorldScene extends Phaser.Scene {
       this.showFloatingText(26 * 32, 10 * 32 - 20, '📜 Ancient Warden Lore recorded!', '#fde047');
       gameEventBridge.emit('PROP_INTERACT', { propId: 'chronicle_lore' });
     });
+
+    // 6b. Storage Cabinet / Wardrobe
+    if (this.textures.exists('prop_cottage_cabinet')) {
+      const cabinet = this.obstacles.create(17 * 32, 9 * 32 + 6, 'prop_cottage_cabinet');
+      cabinet.setDepth(16);
+      cabinet.setSize(28, 32);
+      this.registerInteractive(17 * 32, 9 * 32 + 6, 45, '[E] Search Wooden Wardrobe 🧥', () => {
+        audioManager.play('tap');
+        this.showFloatingText(17 * 32, 9 * 32 - 15, 'Found Warm Adventurer Garments!', '#fde047');
+      });
+    }
 
     // 7. Storage Vault Chest
     const chest = this.obstacles.create(14 * 32, 16 * 32, 'prop_chest');
@@ -1079,15 +1162,48 @@ export default class WorldScene extends Phaser.Scene {
   }
 
   buildMineProps() {
-    // Perimeter Cave Colliders
+    // Perimeter Cave Walls (Authentic CraftPix Cavern Wall Tiles)
+    const dWallTex = this.textures.exists('tile_dungeon_wall') ? 'tile_dungeon_wall' : 'tile_indoor_wall';
     for (let x = 0; x < 40; x += 1) {
-      const topCol = this.obstacles.create(x * 32, 16, 'col_invisible');
-      topCol.setSize(32, 32);
-      topCol.setVisible(false);
-      const botCol = this.obstacles.create(x * 32, 29 * 32, 'col_invisible');
-      botCol.setSize(32, 32);
-      botCol.setVisible(false);
+      const topWall = this.obstacles.create(x * 32 + 16, 16, dWallTex);
+      topWall.setDepth(15);
+      topWall.setSize(32, 32);
+      const botWall = this.obstacles.create(x * 32 + 16, 29 * 32 + 16, dWallTex);
+      botWall.setDepth(15);
+      botWall.setSize(32, 32);
     }
+    for (let y = 1; y < 29; y += 1) {
+      if (y < 10 || y > 14) {
+        const leftWall = this.obstacles.create(16, y * 32 + 16, dWallTex);
+        leftWall.setDepth(15);
+        leftWall.setSize(32, 32);
+      }
+      const rightWall = this.obstacles.create(39 * 32 + 16, y * 32 + 16, dWallTex);
+      rightWall.setDepth(15);
+      rightWall.setSize(32, 32);
+    }
+
+    // Cavern Wall Torches (CraftPix Animated / Flickering Torches)
+    const cavernTorches = [
+      { x: 8 * 32, y: 2 * 32 },
+      { x: 18 * 32, y: 2 * 32 },
+      { x: 28 * 32, y: 2 * 32 },
+      { x: 12 * 32, y: 28 * 32 },
+      { x: 26 * 32, y: 28 * 32 },
+    ];
+    cavernTorches.forEach((tp) => {
+      const torchTex = this.textures.exists('prop_dungeon_torch') ? 'prop_dungeon_torch' : 'prop_torch';
+      const t = this.add.image(tp.x, tp.y, torchTex);
+      t.setDepth(16);
+      this.lightSources.push({
+        x: tp.x,
+        y: tp.y,
+        radius: 95,
+        color: 0xf97316,
+        intensity: 0.5,
+        flicker: true,
+      });
+    });
 
     // Mineral Seams (Solid obstacles with collision)
     const oreDeposits = [
@@ -1109,10 +1225,42 @@ export default class WorldScene extends Phaser.Scene {
         this.triggerPlayerMining(() => {
           audioManager.play('strike');
           gameEventBridge.emit(gameEvents.MINE_NODE_INTERACT, { ore });
+          gameEventBridge.emit('mine:shatter', { oreId: ore.type });
           this.showFloatingText(ox, oy - 20, `+3 ${ore.name}`, '#fef08a');
         });
       });
     });
+
+    // Ancient Cavern Relic Chest (Interactive CraftPix Dungeon Chest)
+    const chestTex = this.textures.exists('prop_dungeon_chest') ? 'prop_dungeon_chest' : 'prop_chest';
+    const dChest = this.obstacles.create(34 * 32, 26 * 32, chestTex);
+    dChest.setDepth(16);
+    dChest.setSize(28, 24);
+    this.registerInteractive(34 * 32, 26 * 32, 50, '[E] Unlock Ancient Cavern Chest 🗝️', () => {
+      audioManager.play('coin');
+      this.showFloatingText(34 * 32, 26 * 32 - 18, '+1 Lost Dungeon Relic & +150 Gold!', '#fde047');
+      gameEventBridge.emit('LOOT_ACQUIRED', { itemId: 'dungeon-relic', amount: 1 });
+      gameEventBridge.emit(gameEvents.PROP_INTERACT, { propId: 'prop_dungeon_chest' });
+      gameEventBridge.emit('prop:interacted', { propId: 'prop_dungeon_chest' });
+    });
+
+    // Ancient Cavern Urns
+    if (this.textures.exists('prop_dungeon_urn')) {
+      [
+        { x: 12 * 32, y: 10 * 32 },
+        { x: 26 * 32, y: 22 * 32 },
+      ].forEach((up) => {
+        const urn = this.obstacles.create(up.x, up.y, 'prop_dungeon_urn');
+        urn.setDepth(16);
+        urn.setSize(24, 24);
+        this.registerInteractive(up.x, up.y, 45, '[E] Search Ancient Urn 🏺', () => {
+          audioManager.play('strike');
+          this.showFloatingText(up.x, up.y - 18, '+35 Gold & Gem Shards!', '#a7f3d0');
+          gameEventBridge.emit(gameEvents.PROP_INTERACT, { propId: 'prop_dungeon_urn' });
+          urn.destroy();
+        });
+      });
+    }
 
     // Deepforge Cavern Enemies (Skeletons, Goblins, Bats, Spiders)
     this.spawnEnemy('skeleton_cavern', 16 * 32, 12 * 32);
@@ -1154,12 +1302,16 @@ export default class WorldScene extends Phaser.Scene {
       gameEventBridge.emit(gameEvents.PROP_INTERACT, { propId: 'prop_shrine' });
     });
 
-    // Trees
+    // Trees (Rich mixture of CraftPix top-down Oak & Pine trees)
     for (let i = 0; i < 22; i += 1) {
       const tx = ((i * 7) % 36 + 2) * 32;
       const ty = (((i * 11) % 24) + 3) * 32;
       if (Math.abs(tx - 20 * 32) > 64 || Math.abs(ty - 14 * 32) > 64) {
-        const tree = this.add.image(tx, ty, 'prop_tree');
+        const tTex = i % 2 === 0 && this.textures.exists('prop_tree_pine')
+          ? 'prop_tree_pine'
+          : (this.textures.exists('prop_tree_oak') ? 'prop_tree_oak' : 'prop_tree');
+        const tree = this.add.image(tx, ty, tTex);
+        if (tTex.startsWith('prop_tree_')) tree.setScale(0.5);
         tree.setDepth(10);
         const col = this.obstacles.create(tx, ty + 14, 'col_invisible');
         col.setSize(20, 16);
@@ -1167,12 +1319,13 @@ export default class WorldScene extends Phaser.Scene {
       }
     }
 
-    // Hostile Forest Monsters (Emerald Slimes, Shadow Wolves, Cavern Spiders)
+    // Hostile Forest Monsters & Hunt Wildlife (Emerald Slimes, Shadow Wolves, Bristleback Boars, Amber Foxes)
     this.spawnEnemy('slime_forest', 12 * 32, 8 * 32);
+    this.spawnEnemy('boar_bristleback', 15 * 32, 16 * 32);
+    this.spawnEnemy('fox_amber', 18 * 32, 9 * 32);
     this.spawnEnemy('slime_forest', 26 * 32, 10 * 32);
-    this.spawnEnemy('slime_forest', 15 * 32, 22 * 32);
     this.spawnEnemy('wolf_shadow', 26 * 32, 22 * 32);
-    this.spawnEnemy('wolf_shadow', 32 * 32, 16 * 32);
+    this.spawnEnemy('fox_amber', 30 * 32, 18 * 32);
     this.spawnEnemy('spider_cavern', 8 * 32, 18 * 32);
 
     // World Boss Encounter: Slime King Colossus
@@ -1192,11 +1345,12 @@ export default class WorldScene extends Phaser.Scene {
 
   buildWestRoadProps() {
     const mapWidth = 40;
-    // Central cobblestone highway spanning full width with earthen road shoulders
+    // Central cobblestone highway spanning full width with earthen road shoulders (CraftPix Cobblestone)
+    const roadTex = this.textures.exists('tile_cobblestone') ? 'tile_cobblestone' : 'tile_path';
     for (let x = 0; x < mapWidth; x += 1) {
       this.add.image(x * 32 + 16, 12 * 32 + 16, 'tile_dirt');
       for (let y = 13; y <= 15; y += 1) {
-        this.add.image(x * 32 + 16, y * 32 + 16, 'tile_path');
+        this.add.image(x * 32 + 16, y * 32 + 16, roadTex);
       }
       this.add.image(x * 32 + 16, 16 * 32 + 16, 'tile_dirt');
     }
@@ -1208,10 +1362,14 @@ export default class WorldScene extends Phaser.Scene {
       gRail.setSize(32, 16);
     }
 
-    // Northern tree barrier with natural depth
+    // Northern tree barrier with natural depth (CraftPix Oak & Pine Trees)
     for (let x = 1; x < 39; x += 3) {
       if (x % 4 !== 0) {
-        const t = this.add.image(x * 32, 4 * 32, 'prop_tree');
+        const tTex = x % 2 === 0 && this.textures.exists('prop_tree_pine')
+          ? 'prop_tree_pine'
+          : (this.textures.exists('prop_tree_oak') ? 'prop_tree_oak' : 'prop_tree');
+        const t = this.add.image(x * 32, 4 * 32, tTex);
+        if (tTex.startsWith('prop_tree_')) t.setScale(0.5);
         t.setDepth(10);
         const col = this.obstacles.create(x * 32, 4 * 32 + 14, 'col_invisible');
         col.setSize(22, 16);
@@ -1222,7 +1380,11 @@ export default class WorldScene extends Phaser.Scene {
     // Southern tree barrier with natural depth
     for (let x = 1; x < 39; x += 3) {
       if (x % 5 !== 0) {
-        const t = this.add.image(x * 32, 25 * 32, 'prop_tree');
+        const tTex = x % 3 === 0 && this.textures.exists('prop_tree_pine')
+          ? 'prop_tree_pine'
+          : (this.textures.exists('prop_tree_oak') ? 'prop_tree_oak' : 'prop_tree');
+        const t = this.add.image(x * 32, 25 * 32, tTex);
+        if (tTex.startsWith('prop_tree_')) t.setScale(0.5);
         t.setDepth(10);
         const col = this.obstacles.create(x * 32, 25 * 32 + 14, 'col_invisible');
         col.setSize(22, 16);
@@ -1301,11 +1463,12 @@ export default class WorldScene extends Phaser.Scene {
       this.switchZone('homestead', { spawnX: 3 * 32, spawnY: this.player.y });
     });
 
-    // Roadside Monsters
+    // Roadside Monsters & Hunt Beasts
     this.spawnEnemy('slime_forest', 12 * 32, 9 * 32);
+    this.spawnEnemy('boar_bristleback', 16 * 32, 20 * 32);
     this.spawnEnemy('wolf_shadow', 28 * 32, 20 * 32);
+    this.spawnEnemy('boar_bristleback', 32 * 32, 8 * 32);
     this.spawnEnemy('orc_marauder', 18 * 32, 22 * 32);
-    this.spawnEnemy('orc_marauder', 30 * 32, 8 * 32);
   }
 
   buildVillageProps() {
@@ -1419,10 +1582,11 @@ export default class WorldScene extends Phaser.Scene {
       gameEventBridge.emit('OPEN_IN_GAME_GUILD');
     });
 
-    // 3. IRON ANVIL BLACKSMITH (North-East Quarter)
-    const forgeKiln = this.obstacles.create(29 * 32, 7 * 32, 'prop_forge_furnace');
+    // 3. IRON ANVIL BLACKSMITH (North-East Quarter - CraftPix Artisan Workshop)
+    const forgeTex = this.textures.exists('prop_artisan_forge') ? 'prop_artisan_forge' : 'prop_forge_furnace';
+    const forgeKiln = this.obstacles.create(29 * 32, 7 * 32, forgeTex);
     forgeKiln.setDepth(12);
-    forgeKiln.setSize(28, 26);
+    forgeKiln.setSize(44, 38);
     this.lightSources.push({
       x: 29 * 32,
       y: 7 * 32,
@@ -1435,7 +1599,15 @@ export default class WorldScene extends Phaser.Scene {
     const anvil = this.obstacles.create(27 * 32, 8 * 32, 'prop_anvil');
     anvil.setDepth(12);
     anvil.setSize(28, 24);
-    this.registerInteractive(27 * 32, 8 * 32, 54, '[E] Speak with Blacksmith Elric (Forge & Craft) ⚒️', () => {
+
+    // Master Blacksmith Elric NPC
+    if (this.textures.exists('npc_blacksmith')) {
+      const blacksmith = this.obstacles.create(27 * 32, 7 * 32, 'npc_blacksmith');
+      blacksmith.setDepth(13);
+      blacksmith.setSize(28, 36);
+    }
+
+    this.registerInteractive(27 * 32, 8 * 32, 54, '[E] Speak with Master Blacksmith Elric (Forge & Craft) ⚒️', () => {
       audioManager.play('anvil');
       gameEventBridge.emit('OPEN_IN_GAME_FORGE');
     });
@@ -1459,6 +1631,14 @@ export default class WorldScene extends Phaser.Scene {
     const marketStand = this.obstacles.create(28 * 32, 22 * 32, 'prop_market_stand');
     marketStand.setDepth(12);
     marketStand.setSize(44, 26);
+
+    // Merchant Silas NPC
+    if (this.textures.exists('npc_merchant')) {
+      const merchant = this.obstacles.create(26 * 32, 22 * 32, 'npc_merchant');
+      merchant.setDepth(13);
+      merchant.setSize(24, 28);
+    }
+
     this.registerInteractive(28 * 32, 22 * 32, 54, '[E] Trade with Merchant Silas (Bazaar & Seeds) 🪙', () => {
       audioManager.play('coin');
       gameEventBridge.emit('OPEN_IN_GAME_BAZAAR');
@@ -1552,6 +1732,55 @@ export default class WorldScene extends Phaser.Scene {
     const fillColor = pct > 0.5 ? 0x22c55e : pct > 0.25 ? 0xeab308 : 0xef4444;
     sprite.hpBar.fillStyle(fillColor, 1);
     sprite.hpBar.fillRect(barX, barY, barW * pct, barH);
+  }
+
+  // Spawns ambient farm animals (sheep, roosters) with wandering behavior and interactions
+  spawnAmbientCreature(type, x, y) {
+    const texKey = type === 'sheep' ? 'sheep_walk' : 'rooster_walk';
+    const animKey = type === 'sheep' ? 'anim_sheep_walk' : 'anim_rooster_walk';
+    if (!this.textures.exists(texKey)) return null;
+
+    const sprite = this.physics.add.sprite(x, y, texKey, 0);
+    sprite.setDepth(14);
+    sprite.setSize(20, 16);
+    sprite.setCollideWorldBounds(true);
+    if (this.anims.exists(animKey)) {
+      sprite.play(animKey);
+    }
+
+    // Peaceful gentle roaming loop
+    this.time.addEvent({
+      delay: Phaser.Math.Between(3500, 7500),
+      loop: true,
+      callback: () => {
+        if (!sprite || !sprite.active) return;
+        const angle = Phaser.Math.Between(0, 360);
+        const rad = Phaser.Math.DegToRad(angle);
+        const speed = type === 'sheep' ? 14 : 22;
+        sprite.setVelocity(Math.cos(rad) * speed, Math.sin(rad) * speed);
+        this.time.delayedCall(Phaser.Math.Between(800, 1600), () => {
+          if (sprite && sprite.active && sprite.body) sprite.setVelocity(0, 0);
+        });
+      },
+    });
+
+    if (type === 'sheep') {
+      this.registerInteractive(x, y, 48, '[E] Shear Fluffy Sheep (Gather Wool) 🐑', () => {
+        audioManager.play('harvest');
+        this.showFloatingText(sprite.x, sprite.y - 18, '+1 Wool Bundle! (Baaa~)', '#fef08a');
+        gameEventBridge.emit('LOOT_ACQUIRED', { itemId: 'wool', amount: 1 });
+        gameEventBridge.emit(gameEvents.PROP_INTERACT, { propId: 'prop_sheep' });
+      });
+    } else {
+      this.registerInteractive(x, y, 48, '[E] Gather Fresh Farm Egg 🐓', () => {
+        audioManager.play('tap');
+        this.showFloatingText(sprite.x, sprite.y - 18, '+1 Fresh Farm Egg!', '#fde047');
+        gameEventBridge.emit('LOOT_ACQUIRED', { itemId: 'egg', amount: 1 });
+        gameEventBridge.emit(gameEvents.PROP_INTERACT, { propId: 'prop_rooster' });
+      });
+    }
+
+    return sprite;
   }
 
   // Executes player directional attack
@@ -1678,6 +1907,7 @@ export default class WorldScene extends Phaser.Scene {
 
     gameEventBridge.emit(gameEvents.COMBAT_ENEMY_DEFEATED, {
       monster: enemy.monsterDef,
+      enemyType: enemy.monsterDef.id,
       loot,
     });
 
