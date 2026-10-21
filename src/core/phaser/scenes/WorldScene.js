@@ -2628,19 +2628,27 @@ export default class WorldScene extends Phaser.Scene {
     this.isTransitioning = true;
     audioManager.play('tap');
     gameEventBridge.emit(gameEvents.ZONE_CHANGED, { zone: newZone });
+
+    let transitioned = false;
+    const doRestart = () => {
+      if (transitioned) return;
+      transitioned = true;
+      this.destroy();
+      this.scene.restart({
+        customization: this.customization,
+        profile: this.profile,
+        zone: newZone,
+        hp: this.playerHp,
+        spawnX: spawnPos ? spawnPos.spawnX : undefined,
+        spawnY: spawnPos ? spawnPos.spawnY : undefined,
+      });
+    };
+
+    this.cameras.main.once('camerafadeoutcomplete', doRestart);
     this.cameras.main.fade(200, 0, 0, 0, false, (camera, progress) => {
-      if (progress === 1) {
-        this.destroy();
-        this.scene.restart({
-          customization: this.customization,
-          profile: this.profile,
-          zone: newZone,
-          hp: this.playerHp,
-          spawnX: spawnPos ? spawnPos.spawnX : undefined,
-          spawnY: spawnPos ? spawnPos.spawnY : undefined,
-        });
-      }
+      if (progress >= 0.98) doRestart();
     });
+    this.time.delayedCall(250, doRestart);
   }
 
   setupControls() {
