@@ -41,3 +41,19 @@
 - **Playwright Automation:** Established repeatable e2e browser test suite targeting Microsoft Edge (`test:e2e`).
 - **Vitest Unit Suite:** Isolated and running 168 tests across 20 test files with 100% pass rate.
 - **Production Build:** Vite production build generates optimized chunks, gzip, and brotli assets with zero errors.
+
+### Milestone 7: Highway Bridge, Farm Livestock & Cavern Geology Integration
+- **Stone Highway Bridge (`west_road`):**
+  - Integrated authentic CraftPix Arched Stone Bridge (`craftpix-net-668008`) spanning the natural river crossing at columns 23..26 and rows 13..15.
+  - Symmetrical 112x96 composite featuring arched stonework, pillars in the flowing water, and upper balustrades (`prop_stone_bridge_rail`) rendering in front of the player.
+  - Continuous stream water rendering under the bridge with water ripple effects and active fishing spot.
+- **Expanded Farm Livestock Pasture (`homestead`):**
+  - Integrated CraftPix farm livestock pack (`craftpix-net-291971`): Farm Bull (`bull_walk`), Playful Piglet (`piglet_walk`), Gentle Lamb (`lamb_walk`), Chirping Chick (`chick_walk`), Sheep (`sheep_walk`), and Rooster (`rooster_walk`).
+  - Added autonomous wandering loops inside the fenced paddock and resource interactions (gathering wool, eggs, truffle spores, feathers, and heavy leather).
+- **Cavern Crystals, Stalagmites & Ore Nodes (`mine`):**
+  - Extracted authentic rocks, crystals, and jagged stalagmites from `craftpix-net-974061` into `public/assets/props/rocks/`.
+  - Added harvestable Azure Crystal Clusters, Amethyst Geodes, and Rich Ore Outcroppings with interactive mining feedback and inventory loot.
+- **Magic Potions Expansion:**
+  - Extracted 6 authentic transparent pixel art potion icons from `craftpix-net-128598` into `public/assets/icons/`.
+- **E2E Test Coverage Expansion:**
+  - Added cross-zone navigation verification in `tests/e2e/progression.spec.js`, bringing the Playwright E2E suite to **7 / 7 passed (100%)**.

@@ -180,4 +180,34 @@
 - **File Types:** PNG, PSD, TMX
 - **Assets Included:** 4 player character archetypes with shield/sword animations, coastal tiles, bridges
 - **Intended Gameplay Use:** Additional adventurer characters and water bridges
-- **Integration Status:** Ready for pipeline extraction
+- **Integration Status:** Integrated (Tutorial Island beach shorelines, Elder Eldon NPC)
+
+---
+
+## Pack 14: Bridges Top-Down Pixel Art Asset Pack
+- **Source / Author:** CraftPix.net (`craftpix-net-668008-free-bridges-top-down-pixel-art-asset-pack`)
+- **License:** CraftPix Free / Commercial Game License
+- **File Types:** PNG, PSD, TMX (656x672 tileset, 16x16 grid)
+- **Assets Included:** Modular arched stone and wood bridges, decking, guard railings, water support pillars, water animations
+- **Intended Gameplay Use:** West Road King's Highway arched stone river crossing with top railing depth sorting
+- **Integration Status:** Integrated (`prop_stone_bridge.png`, `prop_stone_bridge_rail.png` in `WorldScene.js`)
+
+---
+
+## Pack 15: Rocks and Stones Top-Down Pixel Art
+- **Source / Author:** CraftPix.net (`craftpix-net-974061-free-rocks-and-stones-top-down-pixel-art`)
+- **License:** CraftPix Free / Commercial Game License
+- **File Types:** PNG (64x64 discrete objects)
+- **Assets Included:** Granite boulders, mossy stones, slate rocks, azure and amethyst crystal geodes, jagged stalagmites, rich ore veins
+- **Intended Gameplay Use:** Deepforge Caverns subterranean geology and interactive crystal harvesting
+- **Integration Status:** Integrated (`public/assets/props/rocks/` in `WorldScene.js`)
+
+---
+
+## Pack 16: Magic Potions Pixel Art Icons
+- **Source / Author:** CraftPix.net (`craftpix-net-128598-free-magic-potions-pixel-art-icons`)
+- **License:** CraftPix Free / Commercial Game License
+- **File Types:** PNG (32x32 transparent icons)
+- **Assets Included:** 48 unique fantasy potions (Health, Mana, Stamina, Celestial Elixir, Antidote, Luck)
+- **Intended Gameplay Use:** Consumable item icons, hotbar healing, inventory items
+- **Integration Status:** Integrated (`public/assets/icons/`)

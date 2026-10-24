@@ -77,4 +77,55 @@ test.describe('Tutorial Island & Realm Progression Lifecycle', () => {
     });
     expect(isCompleted).toBe('true');
   });
+
+  test('navigates seamlessly across open-world zones and verifies active zone state', async ({ page }) => {
+    await page.addInitScript(() => {
+      localStorage.setItem('hasCreatedCharacter', 'true');
+      localStorage.setItem('wardenTutorialCompleted', 'true');
+      localStorage.setItem(
+        'mockCharacters',
+        JSON.stringify({
+          'offline-hero': { name: 'Hero', race: 'human', className: 'Vanguard' },
+        })
+      );
+      localStorage.setItem(
+        'mockProfiles',
+        JSON.stringify({
+          'offline-hero': {
+            username: 'offline-hero',
+            stats: { level: 1, xp: 0, power: 120, gold: 350 },
+          },
+        })
+      );
+    });
+
+    await page.goto('/');
+
+    await page.waitForFunction(() => {
+      const s = window.__PHASER_GAME__?.scene?.getScene('WorldScene');
+      return s && s.player && !s.isTransitioning;
+    }, { timeout: 15000 });
+
+    const zonesToVerify = ['village', 'forest', 'mine', 'west_road', 'homestead'];
+    for (const z of zonesToVerify) {
+      await page.evaluate((targetZone) => {
+        const s = window.__PHASER_GAME__.scene.getScene('WorldScene');
+        s.isTransitioning = false;
+        s.switchZone(targetZone);
+      }, z);
+
+      await page.waitForFunction((targetZone) => {
+        const s = window.__PHASER_GAME__?.scene?.getScene('WorldScene');
+        return s && s.currentZone === targetZone && !s.isTransitioning;
+      }, z, { timeout: 10000 });
+
+      const currentZone = await page.evaluate(() => {
+        return window.__PHASER_GAME__.scene.getScene('WorldScene').currentZone;
+      });
+      expect(currentZone).toBe(z);
+
+      // Save screenshot
+      await page.screenshot({ path: `C:/Users/abdel/WorkSpace/screenshots/${z}.png` });
+    }
+  });
 });

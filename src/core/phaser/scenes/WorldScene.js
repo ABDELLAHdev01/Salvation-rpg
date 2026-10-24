@@ -209,6 +209,32 @@ export default class WorldScene extends Phaser.Scene {
       this.load.spritesheet('fox_walk', '/assets/enemies/fox_walk.png', { frameWidth: 32, frameHeight: 32 });
       this.load.spritesheet('sheep_walk', '/assets/props/farm_animals/sheep_walk.png', { frameWidth: 32, frameHeight: 32 });
       this.load.spritesheet('rooster_walk', '/assets/props/farm_animals/rooster_walk.png', { frameWidth: 32, frameHeight: 32 });
+      this.load.spritesheet('bull_walk', '/assets/props/farm_animals/bull_walk.png', { frameWidth: 64, frameHeight: 64 });
+      this.load.spritesheet('calf_walk', '/assets/props/farm_animals/calf_walk.png', { frameWidth: 64, frameHeight: 64 });
+      this.load.spritesheet('piglet_walk', '/assets/props/farm_animals/piglet_walk.png', { frameWidth: 32, frameHeight: 32 });
+      this.load.spritesheet('lamb_walk', '/assets/props/farm_animals/lamb_walk.png', { frameWidth: 32, frameHeight: 32 });
+      this.load.spritesheet('chick_walk', '/assets/props/farm_animals/chick_walk.png', { frameWidth: 16, frameHeight: 16 });
+
+      // Highway Bridge (CraftPix Bridges Pack)
+      this.load.image('prop_stone_bridge', '/assets/props/prop_stone_bridge.png');
+      this.load.image('prop_stone_bridge_rail', '/assets/props/prop_stone_bridge_rail.png');
+
+      // Cavern Rocks, Crystals & Stalagmites (CraftPix Rocks & Stones Pack)
+      this.load.image('prop_rock_granite', '/assets/props/rocks/prop_rock_granite.png');
+      this.load.image('prop_rock_moss', '/assets/props/rocks/prop_rock_moss.png');
+      this.load.image('prop_rock_slate', '/assets/props/rocks/prop_rock_slate.png');
+      this.load.image('prop_crystal_azure', '/assets/props/rocks/prop_crystal_azure.png');
+      this.load.image('prop_crystal_amethyst', '/assets/props/rocks/prop_crystal_amethyst.png');
+      this.load.image('prop_stalagmite', '/assets/props/rocks/prop_stalagmite.png');
+      this.load.image('prop_ore_vein', '/assets/props/rocks/prop_ore_vein.png');
+
+      // CraftPix Magic Potions
+      this.load.image('potion_health_greater', '/assets/icons/potion_health_greater.png');
+      this.load.image('potion_mana_greater', '/assets/icons/potion_mana_greater.png');
+      this.load.image('potion_stamina_greater', '/assets/icons/potion_stamina_greater.png');
+      this.load.image('potion_elixir_celestial', '/assets/icons/potion_elixir_celestial.png');
+      this.load.image('potion_antidote', '/assets/icons/potion_antidote.png');
+      this.load.image('potion_luck', '/assets/icons/potion_luck.png');
 
       // Tutorial Island & CraftPix Trees from craftpix-net-385863-free-top-down-trees-pixel-art.zip
       this.load.image('tutorial_island_map', '/assets/island/island_Tiled_map.png');
@@ -388,6 +414,10 @@ export default class WorldScene extends Phaser.Scene {
       { key: 'anim_fox_walk', sheet: 'fox_walk', rate: 7, end: 5 },
       { key: 'anim_sheep_walk', sheet: 'sheep_walk', rate: 4, end: 3 },
       { key: 'anim_rooster_walk', sheet: 'rooster_walk', rate: 6, end: 3 },
+      { key: 'anim_bull_walk', sheet: 'bull_walk', rate: 4, end: 3 },
+      { key: 'anim_piglet_walk', sheet: 'piglet_walk', rate: 5, end: 3 },
+      { key: 'anim_lamb_walk', sheet: 'lamb_walk', rate: 4, end: 3 },
+      { key: 'anim_chick_walk', sheet: 'chick_walk', rate: 6, end: 3 },
     ];
     enemyAnims.forEach((ea) => {
       if (this.textures.exists(ea.sheet)) {
@@ -1140,9 +1170,12 @@ export default class WorldScene extends Phaser.Scene {
       });
     }
 
-    // Ambient Farm Livestock (Sheep & Rooster)
+    // Ambient Farm Livestock (Authentic CraftPix Sheep, Lamb, Rooster, Chick, Piglet, Bull)
     this.spawnAmbientCreature('sheep', 6 * 32, 21 * 32);
-    this.spawnAmbientCreature('sheep', 10 * 32, 22 * 32);
+    this.spawnAmbientCreature('lamb', 5 * 32, 20 * 32);
+    this.spawnAmbientCreature('piglet', 8 * 32, 21 * 32);
+    this.spawnAmbientCreature('chick', 7 * 32, 18 * 32);
+    this.spawnAmbientCreature('bull', 11 * 32, 21 * 32);
     this.spawnAmbientCreature('rooster', 14 * 32, 18 * 32);
 
     // Rustic Wood Fences around Farmstead Perimeter
@@ -1600,6 +1633,32 @@ export default class WorldScene extends Phaser.Scene {
       cb.setSize(28, 24);
     });
 
+    // Sparkling Gemstone Crystals & Jagged Stalagmites (Authentic CraftPix Rocks Pack)
+    const crystalFormations = [
+      { x: 10, y: 7, tex: 'prop_crystal_azure', name: 'Azure Crystal Cluster' },
+      { x: 26, y: 6, tex: 'prop_crystal_amethyst', name: 'Amethyst Geode' },
+      { x: 20, y: 16, tex: 'prop_crystal_azure', name: 'Luminous Azure Crystal' },
+      { x: 32, y: 12, tex: 'prop_crystal_amethyst', name: 'Deep Amethyst Spike' },
+      { x: 15, y: 24, tex: 'prop_stalagmite', name: 'Jagged Stalagmite' },
+      { x: 28, y: 22, tex: 'prop_ore_vein', name: 'Rich Ore Outcropping' },
+    ];
+
+    crystalFormations.forEach((cf) => {
+      if (this.textures.exists(cf.tex)) {
+        const crystal = this.obstacles.create(cf.x * 32, cf.y * 32, cf.tex);
+        crystal.setDepth(12);
+        crystal.setScale(0.7);
+        crystal.setSize(30, 26);
+        this.registerInteractive(cf.x * 32, cf.y * 32, 50, `[E] Harvest ${cf.name} 💎`, () => {
+          this.triggerPlayerMining(() => {
+            audioManager.play('coin');
+            this.showFloatingText(cf.x * 32, cf.y * 32 - 18, `+1 ${cf.name}!`, '#38bdf8');
+            gameEventBridge.emit('LOOT_ACQUIRED', { itemId: 'crystal', amount: 1 });
+          });
+        });
+      }
+    });
+
     // Ancient Cavern Relic Chest (Interactive CraftPix Dungeon Golden Chest)
     const chestTex = this.textures.exists('prop_chest_gold')
       ? 'prop_chest_gold'
@@ -1825,28 +1884,34 @@ export default class WorldScene extends Phaser.Scene {
       rBtm.setDepth(3);
     }
 
-    // Natural Country Stream & Sturdy Wooden Highway Bridge
+    // Natural Country Stream flowing continuously under Highway Bridge
     for (let sy = 2; sy < 28; sy += 1) {
-      if (sy < 13 || sy > 15) {
-        this.add.image(24 * 32 + 16, sy * 32 + 16, 'tile_water');
-        this.add.image(25 * 32 + 16, sy * 32 + 16, 'tile_water');
-      }
+      this.add.image(24 * 32 + 16, sy * 32 + 16, 'tile_water').setDepth(1);
+      this.add.image(25 * 32 + 16, sy * 32 + 16, 'tile_water').setDepth(1);
     }
 
-    // Wooden Bridge Decking Crossing Highway
-    for (let by = 13; by <= 15; by += 1) {
-      this.add.image(24 * 32 + 16, by * 32 + 16, 'tile_path');
-      this.add.image(25 * 32 + 16, by * 32 + 16, 'tile_path');
+    // Authentic CraftPix Arched Stone Highway Bridge (spans x=23..26, y=13..15)
+    const bridgeX = 25 * 32;
+    const bridgeY = 14 * 32 + 16;
+    const bridgeTex = this.textures.exists('prop_stone_bridge') ? 'prop_stone_bridge' : 'tile_cobblestone';
+    const bridge = this.add.image(bridgeX, bridgeY, bridgeTex);
+    bridge.setDepth(4);
+
+    if (this.textures.exists('prop_stone_bridge_rail')) {
+      const bridgeRail = this.add.image(bridgeX, 13 * 32 + 8, 'prop_stone_bridge_rail');
+      bridgeRail.setDepth(12);
     }
 
-    // Bridge Guard Rails flanking North and South of the Road
+    // Bridge Stone Balustrade Colliders flanking North and South of the Road
     for (let bx = 23; bx <= 26; bx += 1) {
       const gRailN = this.obstacles.create(bx * 32 + 16, 12 * 32 + 16, 'prop_fence_h');
       gRailN.setDepth(11);
       gRailN.setSize(32, 16);
+      gRailN.setAlpha(0.01);
       const gRailS = this.obstacles.create(bx * 32 + 16, 16 * 32 + 16, 'prop_fence_h');
       gRailS.setDepth(11);
       gRailS.setSize(32, 16);
+      gRailS.setAlpha(0.01);
     }
 
     // Water Ripple FX North & South of Bridge
@@ -2250,15 +2315,25 @@ export default class WorldScene extends Phaser.Scene {
     sprite.hpBar.fillRect(barX, barY, barW * pct, barH);
   }
 
-  // Spawns ambient farm animals (sheep, roosters) with wandering behavior and interactions
+  // Spawns ambient farm animals (sheep, roosters, piglets, lambs, chicks, bulls) with wandering behavior and interactions
   spawnAmbientCreature(type, x, y) {
-    const texKey = type === 'sheep' ? 'sheep_walk' : 'rooster_walk';
-    const animKey = type === 'sheep' ? 'anim_sheep_walk' : 'anim_rooster_walk';
+    const creatureConfig = {
+      sheep: { tex: 'sheep_walk', anim: 'anim_sheep_walk', w: 22, h: 18, speed: 14, prompt: '[E] Shear Fluffy Sheep (Gather Wool) 🐑', loot: 'wool', msg: '+1 Wool Bundle! (Baaa~)', color: '#fef08a' },
+      lamb: { tex: 'lamb_walk', anim: 'anim_lamb_walk', w: 18, h: 14, speed: 16, prompt: '[E] Pet Gentle Lamb 🐑', loot: 'wool', msg: '+1 Soft Lamb Fleece! (Baaa~)', color: '#fed7aa' },
+      rooster: { tex: 'rooster_walk', anim: 'anim_rooster_walk', w: 20, h: 16, speed: 22, prompt: '[E] Gather Fresh Farm Egg 🐓', loot: 'egg', msg: '+1 Fresh Farm Egg!', color: '#fde047' },
+      chick: { tex: 'chick_walk', anim: 'anim_chick_walk', w: 14, h: 12, speed: 16, prompt: '[E] Feed Chirping Chick 🐣', loot: 'feather', msg: '+1 Down Feather! (Cheep~)', color: '#fef08a' },
+      piglet: { tex: 'piglet_walk', anim: 'anim_piglet_walk', w: 22, h: 16, speed: 18, prompt: '[E] Feed Playful Piglet 🐷', loot: 'truffle', msg: '+1 Forest Truffle! (Oink~)', color: '#f472b6' },
+      bull: { tex: 'bull_walk', anim: 'anim_bull_walk', w: 38, h: 32, speed: 10, prompt: '[E] Tend Mighty Farm Bull 🐂', loot: 'leather', msg: '+1 Heavy Hide & Milk Pail!', color: '#cbd5e1' },
+    };
+
+    const cfg = creatureConfig[type] || creatureConfig.sheep;
+    const texKey = cfg.tex;
+    const animKey = cfg.anim;
     if (!this.textures.exists(texKey)) return null;
 
     const sprite = this.physics.add.sprite(x, y, texKey, 0);
     sprite.setDepth(14);
-    sprite.setSize(20, 16);
+    sprite.setSize(cfg.w, cfg.h);
     sprite.setCollideWorldBounds(true);
     if (this.anims.exists(animKey)) {
       sprite.play(animKey);
@@ -2272,7 +2347,7 @@ export default class WorldScene extends Phaser.Scene {
         if (!sprite || !sprite.active) return;
         const angle = Phaser.Math.Between(0, 360);
         const rad = Phaser.Math.DegToRad(angle);
-        const speed = type === 'sheep' ? 14 : 22;
+        const speed = cfg.speed;
         sprite.setVelocity(Math.cos(rad) * speed, Math.sin(rad) * speed);
         this.time.delayedCall(Phaser.Math.Between(800, 1600), () => {
           if (sprite && sprite.active && sprite.body) sprite.setVelocity(0, 0);
@@ -2280,21 +2355,12 @@ export default class WorldScene extends Phaser.Scene {
       },
     });
 
-    if (type === 'sheep') {
-      this.registerInteractive(x, y, 48, '[E] Shear Fluffy Sheep (Gather Wool) 🐑', () => {
-        audioManager.play('harvest');
-        this.showFloatingText(sprite.x, sprite.y - 18, '+1 Wool Bundle! (Baaa~)', '#fef08a');
-        gameEventBridge.emit('LOOT_ACQUIRED', { itemId: 'wool', amount: 1 });
-        gameEventBridge.emit(gameEvents.PROP_INTERACT, { propId: 'prop_sheep' });
-      });
-    } else {
-      this.registerInteractive(x, y, 48, '[E] Gather Fresh Farm Egg 🐓', () => {
-        audioManager.play('tap');
-        this.showFloatingText(sprite.x, sprite.y - 18, '+1 Fresh Farm Egg!', '#fde047');
-        gameEventBridge.emit('LOOT_ACQUIRED', { itemId: 'egg', amount: 1 });
-        gameEventBridge.emit(gameEvents.PROP_INTERACT, { propId: 'prop_rooster' });
-      });
-    }
+    this.registerInteractive(x, y, 48, cfg.prompt, () => {
+      audioManager.play('harvest');
+      this.showFloatingText(sprite.x, sprite.y - 18, cfg.msg, cfg.color);
+      gameEventBridge.emit('LOOT_ACQUIRED', { itemId: cfg.loot, amount: 1 });
+      gameEventBridge.emit(gameEvents.PROP_INTERACT, { propId: `prop_${type}` });
+    });
 
     return sprite;
   }
