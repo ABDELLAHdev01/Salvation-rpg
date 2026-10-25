@@ -326,8 +326,39 @@ export default class WorldScene extends Phaser.Scene {
 
   setupPlayerTexture() {
     const textureKey = 'player_spritesheet';
+
+    // 1. If player sprite exists, detach animation state before touching textures
+    if (this.player && this.player.anims) {
+      try {
+        this.player.anims.stop();
+      } catch {
+        // Safe guard
+      }
+    }
+
+    // 2. Remove animations while texture frames are still valid, avoiding null sourceSize errors
+    const animKeys = [
+      'player_walk_south', 'player_walk_west', 'player_walk_east', 'player_walk_north',
+      'player_mine_south', 'player_mine_east',
+      'player_attack_south', 'player_attack_west', 'player_attack_east', 'player_attack_north',
+    ];
+    animKeys.forEach((key) => {
+      if (this.anims && this.anims.exists(key)) {
+        try {
+          this.anims.remove(key);
+        } catch {
+          // Safe guard
+        }
+      }
+    });
+
+    // 3. Now safely remove existing texture
     if (this.textures.exists(textureKey)) {
-      this.textures.remove(textureKey);
+      try {
+        this.textures.remove(textureKey);
+      } catch {
+        // Safe guard
+      }
     }
 
     const canvas = generateCharacterSpritesheetCanvas(this.customization);
@@ -373,20 +404,23 @@ export default class WorldScene extends Phaser.Scene {
     ];
 
     anims.forEach((a) => {
-      if (this.anims.exists(a.key)) this.anims.remove(a.key);
-      this.anims.create({
-        key: a.key,
-        frames: this.anims.generateFrameNumbers(textureKey, { start: a.start, end: a.end }),
-        frameRate: a.rate,
-        repeat: a.repeat,
-      });
+      try {
+        this.anims.create({
+          key: a.key,
+          frames: this.anims.generateFrameNumbers(textureKey, { start: a.start, end: a.end }),
+          frameRate: a.rate,
+          repeat: a.repeat,
+        });
+      } catch {
+        // Safe guard
+      }
     });
 
-    // CRITICAL: Re-bind existing player sprite so it never references a destroyed texture
+    // CRITICAL: Re-bind existing player sprite so it references the new texture and correct frame
     if (this.player && this.player.active) {
-      this.player.setTexture(textureKey, 0);
-      const idleFrames = { south: 0, west: 4, east: 8, north: 12 };
       try {
+        this.player.setTexture(textureKey, 0);
+        const idleFrames = { south: 0, west: 4, east: 8, north: 12 };
         this.player.setFrame(idleFrames[this.playerFacing] ?? 0);
       } catch {
         // Safe guard
@@ -852,7 +886,7 @@ export default class WorldScene extends Phaser.Scene {
       spawnX = this.customSpawn.x;
       spawnY = this.customSpawn.y;
     } else if (this.currentZone === 'tutorial_island') {
-      spawnX = 390;
+      spawnX = 410;
       spawnY = 520;
     } else if (this.currentZone === 'homestead_interior') {
       spawnX = 20 * 32;
@@ -876,6 +910,16 @@ export default class WorldScene extends Phaser.Scene {
     this.player.setSize(18, 14);
     this.player.setOffset(7, 18);
     this.player.setDepth(20);
+
+    if (this.currentZone === 'tutorial_island') {
+      this.playerFacing = 'west';
+      const idleFrames = { south: 0, west: 4, east: 8, north: 12 };
+      try {
+        this.player.setFrame(idleFrames[this.playerFacing]);
+      } catch {
+        // safe guard
+      }
+    }
 
     // Collisions
     this.physics.add.collider(this.player, this.obstacles);
@@ -1064,7 +1108,12 @@ export default class WorldScene extends Phaser.Scene {
     });
 
     // 8. Interactive Objective 3: Gentle Island Training Slime
-    this.spawnEnemy('slime_forest', 520, 370);
+    const trainingSlime = this.spawnEnemy('slime_forest', 520, 370);
+    if (trainingSlime) {
+      trainingSlime.aggroRange = 65;  // Training slime stays near its grove spot until approached for combat
+      trainingSlime.aggroRadius = 65;
+      trainingSlime.damage = 2;       // Gentle trial damage
+    }
 
     // 9. Interactive Objective 4 & Finale: Departure Pier & Sloop to Mainland
     const dock = this.add.image(400, 580, 'prop_wood_dock');
@@ -2237,8 +2286,8 @@ export default class WorldScene extends Phaser.Scene {
     });
   }
 
-  registerInteractive(x, y, radius, prompt, onTrigger) {
-    this.interactiveObjects.push({ x, y, radius, prompt, onTrigger });
+  registerInteractive(x, y, radius, prompt, onTrigger, clickRadius = 24) {
+    this.interactiveObjects.push({ x, y, radius, prompt, onTrigger, clickRadius });
   }
 
   // Spawns a physical enemy sprite with domain AI state
@@ -2675,6 +2724,10 @@ export default class WorldScene extends Phaser.Scene {
   }
 
   returnHome() {
+    if (this.currentZone === 'tutorial_island') {
+      this.showFloatingText(this.player.x, this.player.y - 20, 'Board the sloop to reach Homestead!', '#fde047');
+      return;
+    }
     if (this.currentZone === 'homestead') {
       this.showFloatingText(this.player.x, this.player.y - 20, 'Already at Homestead!', '#fde047');
       return;
@@ -2765,7 +2818,7 @@ export default class WorldScene extends Phaser.Scene {
         let minDist = Infinity;
         for (const obj of this.interactiveObjects) {
           const clickDist = Phaser.Math.Distance.Between(worldPoint.x, worldPoint.y, obj.x, obj.y);
-          const effectiveRadius = Math.max(obj.radius || 48, 44);
+          const effectiveRadius = obj.clickRadius || 24;
           if (clickDist <= effectiveRadius && clickDist < minDist) {
             minDist = clickDist;
             targetObj = obj;
@@ -2832,7 +2885,7 @@ export default class WorldScene extends Phaser.Scene {
   }
 
   update(time, delta) {
-    if (!this.player || this.controlsLocked) {
+    if (!this.player || !this.player.body || this.controlsLocked) {
       if (this.player && this.player.body) {
         this.player.setVelocity(0, 0);
       }
@@ -2950,7 +3003,9 @@ export default class WorldScene extends Phaser.Scene {
       }
     }
 
-    this.player.setVelocity(vx * speed, vy * speed);
+    if (this.player && this.player.body) {
+      this.player.setVelocity(vx * speed, vy * speed);
+    }
 
     // Update Follower Pet movement & physics
     if (this.petSprite && this.petSprite.active) {

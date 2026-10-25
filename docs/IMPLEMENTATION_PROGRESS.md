@@ -1,8 +1,8 @@
 # Salvation — Implementation Progress & Verification Backlog
 
-**Document Version:** 2.0.0  
-**Status:** Release Candidate Verified (RC-1)  
-**Last Updated:** October 22, 2026  
+**Document Version:** 2.1.0  
+**Status:** Release Candidate Verified (RC-2 Ready-to-Play)  
+**Last Updated:** October 25, 2026  
 
 ---
 
@@ -10,7 +10,8 @@
 
 | Gameplay System | Subsystems / Features | Authoritative Source | Verification Status | Test Coverage |
 | :--- | :--- | :--- | :--- | :--- |
-| **Tutorial Haven** | Dedicated Tutorial Island (`tutorial_island`), spawn point, Elder NPC, castaway supply chest, sloop departure, one-way progression | `WorldScene.js`, `WorldPage.jsx` | Verified via Headless Edge & Playwright | `progression.spec.js` |
+| **Tutorial Haven** | Dedicated Tutorial Island (`tutorial_island`), spawn point (410, 520, facing west), Elder NPC, castaway supply chest, forage tree, gentle training slime, sloop departure, one-way progression | `WorldScene.js`, `WorldPage.jsx` | Verified via Headless Edge & Playwright | `progression.spec.js`, `initial_walk.spec.js` |
+| **Responsive Movement** | Instant keyboard walking (WASD, ZQSD, Arrow keys) on game start without requiring initial canvas click; decoupled click-to-move across open ground | `WorldScene.js`, `PhaserWorldCanvas.jsx` | Verified | `initial_walk.spec.js`, `movement.spec.js` |
 | **World Navigation** | Seamless transition between Homestead, West Road, Sunforge City, Whispering Forest, Deep Caverns | `WorldScene.js`, `gameEventBridge.js` | Verified | `interactions.spec.js`, `progression.spec.js`, `worldScene.test.js` |
 | **Terrain & Biomes** | Natural borderless olive-meadow stippling, cobblestone King's Highway, dungeon stone slabs, sandy beach, arched stone river bridge | `WorldTileGenerator.js`, `WorldScene.js` | Verified | Zone Screenshot Audit |
 | **Player Housing** | Manor Cottage interior (23x13), parquet floors, restorative bed (100% HP heal), hearth fireplace, laboratory | `WorldScene.js`, `homesteadInteriorProps` | Verified | `interactions.spec.js`, `homesteadInteriorAndTutorial.test.js` |
@@ -32,12 +33,13 @@
   - Dedicated configuration in `vitest.config.js` isolating unit tests from browser e2e.
 - **End-to-End Browser Automation (Playwright)**:
   - Persistent test runner configured in `playwright.config.js` with Microsoft Edge engine.
-  - 7 end-to-end scenarios tested across 4 test specs:
-    1. `tests/e2e/launch.spec.js`: Canvas mount, Phaser engine boot, WorldScene activation, console error check.
-    2. `tests/e2e/movement.spec.js`: Pathfinding and coordinate updates, boundary checks, follower pet tracking.
-    3. `tests/e2e/interactions.spec.js`: Cottage door interaction & zone transition, restorative bed healing.
-    4. `tests/e2e/progression.spec.js`: Tutorial Island initial spawn, departure sloop voyage to mainland Homestead, one-way isolation guarantee, and cross-zone open world progression.
-  - Result: **7 / 7 passed (100%)** in 19.0s.
+  - 8 end-to-end scenarios tested across 5 test specs:
+    1. `tests/e2e/initial_walk.spec.js`: Fresh character creation, canvas auto-focus, immediate WASD/Arrow keyboard walking, click-to-move, and zero console/page errors.
+    2. `tests/e2e/launch.spec.js`: Canvas mount, Phaser engine boot, WorldScene activation, console error check.
+    3. `tests/e2e/movement.spec.js`: Pathfinding and coordinate updates, boundary checks, follower pet tracking.
+    4. `tests/e2e/interactions.spec.js`: Cottage door interaction & zone transition, restorative bed healing.
+    5. `tests/e2e/progression.spec.js`: Tutorial Island initial spawn, departure sloop voyage to mainland Homestead, one-way isolation guarantee, and cross-zone open world progression.
+  - Result: **8 / 8 passed (100%)** in 22.7s.
 
 ---
 

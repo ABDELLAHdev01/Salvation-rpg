@@ -6,6 +6,8 @@ test.describe('Tutorial Island & Realm Progression Lifecycle', () => {
     await page.addInitScript(() => {
       localStorage.setItem('hasCreatedCharacter', 'true');
       localStorage.removeItem('wardenTutorialCompleted');
+      localStorage.removeItem('wardenTutorialHidden');
+      localStorage.removeItem('wardenTutorialStep');
       localStorage.setItem(
         'mockCharacters',
         JSON.stringify({
@@ -22,6 +24,7 @@ test.describe('Tutorial Island & Realm Progression Lifecycle', () => {
           'offline-hero': {
             username: 'offline-hero',
             stats: { level: 1, xp: 0, power: 120, gold: 350 },
+            inventory: {},
           },
         })
       );
@@ -41,7 +44,31 @@ test.describe('Tutorial Island & Realm Progression Lifecycle', () => {
     });
     expect(initialZone).toBe('tutorial_island');
 
-    // Verify departure pier prompt near sailboat (x: 400, y: 580)
+    // 1. Verify Player Spawn Position and Facing West
+    const spawnState = await page.evaluate(() => {
+      const s = window.__PHASER_GAME__.scene.getScene('WorldScene');
+      return {
+        x: s.player.x,
+        y: s.player.y,
+        facing: s.playerFacing,
+      };
+    });
+    expect(spawnState.x).toBe(410);
+    expect(spawnState.y).toBe(520);
+    expect(spawnState.facing).toBe('west');
+
+    // 2. Verify Return Home safety check (isolated tutorial island cannot fast-travel home prematurely)
+    await page.evaluate(() => {
+      const s = window.__PHASER_GAME__.scene.getScene('WorldScene');
+      s.returnHome();
+    });
+    await page.waitForTimeout(300);
+    const stillIsland = await page.evaluate(() => {
+      return window.__PHASER_GAME__.scene.getScene('WorldScene').currentZone;
+    });
+    expect(stillIsland).toBe('tutorial_island');
+
+    // 3. Move to departure pier near sailboat (x: 400, y: 580)
     await page.evaluate(() => {
       const s = window.__PHASER_GAME__.scene.getScene('WorldScene');
       s.player.setPosition(400, 580);

@@ -57,3 +57,20 @@
   - Extracted 6 authentic transparent pixel art potion icons from `craftpix-net-128598` into `public/assets/icons/`.
 - **E2E Test Coverage Expansion:**
   - Added cross-zone navigation verification in `tests/e2e/progression.spec.js`, bringing the Playwright E2E suite to **7 / 7 passed (100%)**.
+
+### Milestone 8: Initial Movement Architecture, Input Auto-focus & Release Candidate
+- **Problem:** Upon launching a fresh session or creating a character, players experienced inability to walk:
+  1. Texture rebuild on mount (`player:refresh_customization`) tore down textures while Phaser animations still referenced active frames, causing an uncaught `TypeError: Cannot read properties of null (reading 'sourceSize')` in Phaser's animation manager, freezing updates.
+  2. Canvas focus: On initial navigation from character creation, active DOM focus remained on the creation button or document body, dropping initial WASD / arrow keystrokes until canvas was clicked.
+  3. Click dead-zone: Interactive object click radius was coupled to proximity radius (50-55px), interpreting open sand ground clicks near Elder Eldon or campfire as NPC clicks and suppressing pathfinding.
+  4. Arcade physics body safety: `update()` did not null-check `this.player.body`, which could throw `setVelocity` if physics bodies refreshed during scene lifecycle.
+- **Solution:**
+  1. Animation Lifecycle Decoupling: In `WorldScene.setupPlayerTexture()`, animation state is cleanly stopped and existing animation keys removed prior to texture destruction and safely rebound afterwards.
+  2. Canvas Focus Bridge: Configured `PhaserWorldCanvas.jsx` to auto-focus `game.canvas` on `ready` and added a global keydown bridge for movement hotkeys (`KeyW`, `KeyA`, `KeyS`, `KeyD`, `ArrowUp`, `ArrowDown`, `ArrowLeft`, `ArrowRight`, `Space`) when not typing in form inputs.
+  3. Interactive Click Radius Decoupling: Decoupled `clickRadius` (default 24px) from proximity prompt radius (`radius`), allowing free click-to-move across open ground around NPCs and props.
+  4. Tutorial Island Spawn Optimization: Adjusted player initial spawn to `(410, 520)` facing west on open sand. Adjusted island training slime `aggroRange` to 65px with gentle trial damage so exploring and harvesting does not trigger surprise combat.
+  5. Isolated Departure Enforcement: Disallowed premature `Return Home` on tutorial island, requiring departure via the pier sloop. Once departed, the tutorial island remains strictly isolated with no return roads.
+- **Verification:**
+  - 100% Vitest unit test suite passing: **168 / 168 tests across 20 files**.
+  - 100% Playwright E2E browser automation suite passing: **8 / 8 tests across 5 spec files**.
+  - Production build cleanly compiling with zero errors.

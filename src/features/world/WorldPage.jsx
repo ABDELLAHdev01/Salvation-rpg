@@ -519,6 +519,10 @@ export default function WorldPage() {
   }, [tutorialStep, isTutorialCompleted, isTutorialHidden]);
 
   const handleReturnHome = () => {
+    if (currentZone === 'tutorial_island') {
+      toast('Board the sloop at the southern pier to set sail for Homestead!', { icon: '⛵' });
+      return;
+    }
     if (currentZone === 'homestead') {
       toast('You are already at Sunforge Homestead!', { icon: '🏡' });
       return;

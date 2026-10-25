@@ -161,6 +161,18 @@ export default function PhaserWorldCanvas({
     gameRef.current = game;
     window.__PHASER_GAME__ = game;
 
+    // Auto-focus canvas on game ready for immediate keyboard walk responsiveness
+    game.events.once('ready', () => {
+      if (game.canvas) {
+        game.canvas.setAttribute('tabindex', '0');
+        try {
+          game.canvas.focus();
+        } catch {
+          // ignore
+        }
+      }
+    });
+
     // Cleanly add and start WorldScene with initial payload
     game.scene.add('WorldScene', WorldScene, true, {
       customization: customizationRef.current,
@@ -175,8 +187,30 @@ export default function PhaserWorldCanvas({
     };
     window.addEventListener('resize', handleResize);
 
+    const handleWindowKeyDown = (e) => {
+      const activeTag = document.activeElement ? document.activeElement.tagName.toLowerCase() : '';
+      if (activeTag === 'input' || activeTag === 'textarea') return;
+      const moveKeys = [
+        'KeyW', 'KeyA', 'KeyS', 'KeyD',
+        'KeyZ', 'KeyQ',
+        'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight',
+        'Space', 'KeyE',
+      ];
+      if (moveKeys.includes(e.code) && gameRef.current?.canvas) {
+        if (document.activeElement !== gameRef.current.canvas) {
+          try {
+            gameRef.current.canvas.focus();
+          } catch {
+            // ignore
+          }
+        }
+      }
+    };
+    window.addEventListener('keydown', handleWindowKeyDown);
+
     return () => {
       window.removeEventListener('resize', handleResize);
+      window.removeEventListener('keydown', handleWindowKeyDown);
       if (gameRef.current) {
         gameRef.current.destroy(true);
         gameRef.current = null;
